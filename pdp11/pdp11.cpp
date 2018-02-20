@@ -42,7 +42,7 @@ long line_reader(char * filename, char * disposition)
 
 int interpreter(int to_interpret, int * firstbit, command *& new_command)
 {
-    int i;
+    //int i;
     string instruction;
     int code;
     //int firstbit;
@@ -51,7 +51,7 @@ int interpreter(int to_interpret, int * firstbit, command *& new_command)
     int bit0608;
     int bit0305;
     int bit0002;
-    double_operand * make_command;
+    //double_operand * make_command;
 
     //first bit indicates whether byte instruction
     //for some instructions
@@ -91,7 +91,7 @@ int interpreter(int to_interpret, int * firstbit, command *& new_command)
 
     cout << bit0002 << endl;
 
-    if(!((to_interpret & ADD) ^ ADD))
+    if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4)) ^ int(ADD)))
     {
         instruction = "ADD";
         code = ADD;
@@ -101,7 +101,7 @@ int interpreter(int to_interpret, int * firstbit, command *& new_command)
         new_command->disp();
         //new_command = make_command;
     }
-    else if(!((to_interpret & CLR) ^ CLR))
+    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3) + bit0608*pow(8, 2)) ^ int(CLR)))
     {
         instruction = "CLR";
         code = CLR;
@@ -110,7 +110,7 @@ int interpreter(int to_interpret, int * firstbit, command *& new_command)
 
         new_command->disp();
     }
-    else if(!((to_interpret & CLRB) ^ CLRB))
+    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3) + bit0608*pow(8, 2)) ^ int(CLRB)))
     {
         instruction = "CLRB";
         code = CLRB;
@@ -119,7 +119,7 @@ int interpreter(int to_interpret, int * firstbit, command *& new_command)
 
         new_command->disp();
     }
-    else if(!((to_interpret & COM) ^ COM))
+    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3) + bit0608*pow(8, 2)) ^ int(COM)))
     {
         instruction = "COM";
         code = COM;
@@ -128,7 +128,7 @@ int interpreter(int to_interpret, int * firstbit, command *& new_command)
 
         new_command->disp();
     }
-        else if(!((to_interpret & COMB) ^ COMB0))
+    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3) + bit0608*pow(8, 2)) ^ int(COMB)))
     {
         instruction = "COMB";
         code = COMB;
@@ -137,7 +137,7 @@ int interpreter(int to_interpret, int * firstbit, command *& new_command)
 
         new_command->disp();
     }
-    else if(!((to_interpret & INC) ^ INC))
+    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3) + bit0608*pow(8, 2)) ^ int(INC)))
     {
         instruction = "INC";
         code = INC;
@@ -146,7 +146,7 @@ int interpreter(int to_interpret, int * firstbit, command *& new_command)
 
         new_command->disp();
     }
-    else if(!((to_interpret & INCB) ^ INCB))
+    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3) + bit0608*pow(8, 2)) ^ int(INCB)))
     {
         instruction = "INCB";
         code = INCB;
@@ -155,7 +155,7 @@ int interpreter(int to_interpret, int * firstbit, command *& new_command)
 
         new_command->disp();
     }
-    else if(!((to_interpret & DEC) ^ DEC))
+    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3) + bit0608*pow(8, 2)) ^ int(DEC)))
     {
         instruction = "DEC";
         code = DEC;
@@ -164,7 +164,7 @@ int interpreter(int to_interpret, int * firstbit, command *& new_command)
 
         new_command->disp();
     }
-    else if(!((to_interpret & DECB) ^ DECB))
+    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3) + bit0608*pow(8, 2)) ^ int(DECB)))
     {
         instruction = "DECB";
         code = DECB;
@@ -173,7 +173,7 @@ int interpreter(int to_interpret, int * firstbit, command *& new_command)
 
         new_command->disp();
     }
-    else if(!((to_interpret & NEG) ^ NEG))
+    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3) + bit0608*pow(8, 2)) ^ int(NEG)))
     {
         instruction = "NEG";
         code = NEG;
@@ -182,7 +182,7 @@ int interpreter(int to_interpret, int * firstbit, command *& new_command)
 
         new_command->disp();
     }
-    else if(!((to_interpret & NEGB) ^ NEGB))
+    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3) + bit0608*pow(8, 2)) ^ int(NEGB)))
     {
         instruction = "NEGB";
         code = NEGB;
@@ -191,7 +191,7 @@ int interpreter(int to_interpret, int * firstbit, command *& new_command)
 
         new_command->disp();
     }
-    else if(!((to_interpret & TST) ^ TST))
+    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3) + bit0608*pow(8, 2)) ^ int(TST)))
     {
         instruction = "TST";
         code = TST;
@@ -200,7 +200,7 @@ int interpreter(int to_interpret, int * firstbit, command *& new_command)
 
         new_command->disp();
     }
-    else if(!((to_interpret & TSTB) ^ TSTB))
+    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3) + bit0608*pow(8, 2)) ^ int(TSTB)))
     {
         instruction = "TSTB";
         code = TSTB;
@@ -209,7 +209,7 @@ int interpreter(int to_interpret, int * firstbit, command *& new_command)
 
         new_command->disp();
     }
-    else if(!((to_interpret & ASR) ^ ASR))
+    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3) + bit0608*pow(8, 2)) ^ int(ASR)))
     {
         instruction = "ASR";
         code = ASR;
@@ -218,7 +218,7 @@ int interpreter(int to_interpret, int * firstbit, command *& new_command)
 
         new_command->disp();
     }
-    else if(!((to_interpret & ASRB) ^ ASRB))
+    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3) + bit0608*pow(8, 2)) ^ int(ASRB)))
     {
         instruction = "ASRB";
         code = ASRB;
@@ -227,7 +227,7 @@ int interpreter(int to_interpret, int * firstbit, command *& new_command)
 
         new_command->disp();
     }
-    else if(!((to_interpret & ASL) ^ ASL))
+    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3) + bit0608*pow(8, 2)) ^ int(ASL)))
     {
         instruction = "ASL";
         code = ASL;
@@ -236,7 +236,7 @@ int interpreter(int to_interpret, int * firstbit, command *& new_command)
 
         new_command->disp();
     }
-    else if(!((to_interpret & ASLB) ^ ASLB))
+    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3) + bit0608*pow(8, 2)) ^ int(ASLB)))
     {
         instruction = "ASLB";
         code = ASLB;
@@ -245,7 +245,7 @@ int interpreter(int to_interpret, int * firstbit, command *& new_command)
 
         new_command->disp();
     }
-    else if(!((to_interpret & ROR) ^ ROR))
+    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3) + bit0608*pow(8, 2)) ^ int(ROR)))
     {
         instruction = "ROR";
         code = ROR;
@@ -254,7 +254,7 @@ int interpreter(int to_interpret, int * firstbit, command *& new_command)
 
         new_command->disp();
     }
-    else if(!((to_interpret & RORB) ^ RORB))
+    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3) + bit0608*pow(8, 2)) ^ int(RORB)))
     {
         instruction = "RORB";
         code = RORB;
@@ -263,7 +263,7 @@ int interpreter(int to_interpret, int * firstbit, command *& new_command)
 
         new_command->disp();
     }
-    else if(!((to_interpret & ROL) ^ ROL))
+    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3) + bit0608*pow(8, 2)) ^ int(ROL)))
     {
         instruction = "ROL";
         code = ROL;
@@ -272,7 +272,7 @@ int interpreter(int to_interpret, int * firstbit, command *& new_command)
 
         new_command->disp();
     }
-    else if(!((to_interpret & ROLB) ^ ROLB))
+    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3) + bit0608*pow(8, 2)) ^ int(ROLB)))
     {
         instruction = "ROLB";
         code = ROLB;
@@ -281,7 +281,7 @@ int interpreter(int to_interpret, int * firstbit, command *& new_command)
 
         new_command->disp();
     }
-     else if(!((to_interpret & SWAB) ^ SWAB))
+    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3) + bit0608*pow(8, 2)) ^ int(SWAB)))
     {
         instruction = "SWAB";
         code = SWAB;
@@ -290,7 +290,7 @@ int interpreter(int to_interpret, int * firstbit, command *& new_command)
 
         new_command->disp();
     }
-     else if(!((to_interpret & ADC) ^ ADC))
+    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3) + bit0608*pow(8, 2)) ^ int(ADC)))
     {
         instruction = "ADC";
         code = ADC;
@@ -299,7 +299,7 @@ int interpreter(int to_interpret, int * firstbit, command *& new_command)
 
         new_command->disp();
     }
-    else if(!((to_interpret & ADCB) ^ ADCB))
+    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3) + bit0608*pow(8, 2)) ^ int(ADCB)))
     {
         instruction = "ADCB";
         code = ADCB;
@@ -308,7 +308,7 @@ int interpreter(int to_interpret, int * firstbit, command *& new_command)
 
         new_command->disp();
     }
-    else if(!((to_interpret & SBC) ^ SBC))
+    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3) + bit0608*pow(8, 3)) ^ int(SBC)))
     {
         instruction = "SBC";
         code = SBC;
@@ -317,7 +317,7 @@ int interpreter(int to_interpret, int * firstbit, command *& new_command)
 
         new_command->disp();
     }
-    else if(!((to_interpret & SBCB) ^ SBCB))
+    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3) + bit0608*pow(8, 2)) ^ int(SBCB)))
     {
         instruction = "SBCB";
         code = SBCB;
@@ -326,7 +326,7 @@ int interpreter(int to_interpret, int * firstbit, command *& new_command)
 
         new_command->disp();
     }
-    else if(!((to_interpret & SXT) ^ SXT))
+    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3) + bit0608*pow(8, 2)) ^ int(SXT)))
     {
         instruction = "SXT";
         code = SXT;
@@ -335,7 +335,7 @@ int interpreter(int to_interpret, int * firstbit, command *& new_command)
 
         new_command->disp();
     }
-    else if(!((to_interpret & MOV) ^ MOV))
+    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4)) ^ int(MOV)))
     {
         instruction = "MOV";
         code = MOV;
@@ -344,7 +344,7 @@ int interpreter(int to_interpret, int * firstbit, command *& new_command)
 
         new_command->disp();
     }
-    else if(!((to_interpret & MOVB) ^ MOVB))
+    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4)) ^ int(MOVB)))
     {
         instruction = "MOVB";
         code = MOVB;
@@ -353,7 +353,7 @@ int interpreter(int to_interpret, int * firstbit, command *& new_command)
 
         new_command->disp();
     }
-    else if(!((to_interpret & CMP) ^ CMP))
+    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4)) ^ int(CMP)))
     {
         instruction = "CMP";
         code = CMP;
@@ -362,7 +362,7 @@ int interpreter(int to_interpret, int * firstbit, command *& new_command)
 
         new_command->disp();
     }
-    else if(!((to_interpret & CMPB) ^ CMPB))
+    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4)) ^ int(CMPB)))
     {
         instruction = "CMPB";
         code = CMPB;
@@ -372,7 +372,7 @@ int interpreter(int to_interpret, int * firstbit, command *& new_command)
         new_command->disp();
     }
 
-    else if(!((to_interpret & SUB) ^ SUB))
+    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4)) ^ int(SUB)))
     {
         instruction = "SUB";
         code = SUB;
@@ -383,7 +383,7 @@ int interpreter(int to_interpret, int * firstbit, command *& new_command)
         //new_command = make_command;
     }
 
-    else if(!((to_interpret & BIT) ^ BIT))
+    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4)) ^ int(BIT)))
     {
         instruction = "BIT";
         code = BIT;
@@ -394,7 +394,7 @@ int interpreter(int to_interpret, int * firstbit, command *& new_command)
         //new_command = make_command;
     }
 
-    else if(!((to_interpret & BITB) ^ BITB))
+    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4)) ^ int(BITB)))
     {
         instruction = "BITB";
         code =  BITB;
@@ -405,7 +405,7 @@ int interpreter(int to_interpret, int * firstbit, command *& new_command)
         //new_command = make_command;
     }
 
-    else if(!((to_interpret & BIC) ^ BIC))
+    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4)) ^ int(BIC)))
     {
         instruction = "BIC";
         code = BIC;
@@ -416,7 +416,7 @@ int interpreter(int to_interpret, int * firstbit, command *& new_command)
         //new_command = make_command;
     }
 
-    else if(!((to_interpret & BICB) ^ BICB))
+    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4)) ^ int(BICB)))
     {
         instruction = "BICB";
         code = BICB;
@@ -427,7 +427,7 @@ int interpreter(int to_interpret, int * firstbit, command *& new_command)
         //new_command = make_command;
     }
 
-    else if(!((to_interpret & BIS) ^ BIS))
+    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4)) ^ int(BIS)))
     {
         instruction = "BIS";
         code = BIS;
@@ -438,7 +438,7 @@ int interpreter(int to_interpret, int * firstbit, command *& new_command)
         //new_command = make_command;
     }
 
-    else if(!((to_interpret & BISB) ^ BISB))
+    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4)) ^ int(BISB)))
     {
         instruction = "BISB";
         code = BISB;
@@ -449,147 +449,377 @@ int interpreter(int to_interpret, int * firstbit, command *& new_command)
         //new_command = make_command;
     }
     
-    else if(!((to_interpret & BR) ^ BR))
+    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3) + (bit0608 & 4)*pow(8, 2)) ^ int(BR)))
     {
         instruction = "BR";
         code = BR;
         cout << "BR" << endl;
-        new_command = new branch(to_interpret, '-', code, (bit0608 & 3) * 64 + bit0503 * 8 + bit0002);
+        new_command = new branch(to_interpret, '-', code, (bit0608 & 3) * 64 + bit0305 * 8 + bit0002);
         new_command->disp();
     }
     
-    else if(!((to_interpret & BNE) ^ BNE))
+    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3) + (bit0608 & 4)*pow(8, 2)) ^ int(BNE)))
     {
         instruction = "BNE";
         code = BNE;
         cout << "BNE" << endl;
-        new_command = new branch(to_interpret, '-', code, (bit0608 & 3) * 64 + bit0503 * 8 + bit0002);
+        new_command = new branch(to_interpret, '-', code, (bit0608 & 3) * 64 + bit0305 * 8 + bit0002);
         new_command->disp();
     }
     
-    else if(!((to_interpret & BEQ) ^ BEQ))
+    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3) + (bit0608 & 4)*pow(8, 2)) ^ int(BEQ)))
     {
         instruction = "BEQ";
         code = BEQ;
         cout << "BEQ" << endl;
-        new_command = new branch(to_interpret, '-', code, (bit0608 & 3) * 64 + bit0503 * 8 + bit0002);
+        new_command = new branch(to_interpret, '-', code, (bit0608 & 3) * 64 + bit0305 * 8 + bit0002);
         new_command->disp();
     }
     
-    else if(!((to_interpret & BPL) ^ BPL))
+    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3) + (bit0608 & 4)*pow(8, 2)) ^ int(BPL)))
     {
         instruction = "BPL";
         code = BPL;
         cout << "BPL" << endl;
-        new_command = new branch(to_interpret, '-', code, (bit0608 & 3) * 64 + bit0503 * 8 + bit0002);
+        new_command = new branch(to_interpret, '-', code, (bit0608 & 3) * 64 + bit0305 * 8 + bit0002);
         new_command->disp();
     }
     
-    else if(!((to_interpret & BMI) ^ BMI))
+    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3) + (bit0608 & 4)*pow(8, 2)) ^ int(BMI)))
     {
         instruction = "BMI";
         code = BMI;
         cout << "BMI" << endl;
-        new_command = new branch(to_interpret, '-', code, (bit0608 & 3) * 64 + bit0503 * 8 + bit0002);
+        new_command = new branch(to_interpret, '-', code, (bit0608 & 3) * 64 + bit0305 * 8 + bit0002);
         new_command->disp();
     }
     
-    else if(!((to_interpret & BVC) ^ BVC))
+    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3) + (bit0608 & 4)*pow(8, 2)) ^ int(BVC)))
     {
         instruction = "BVC";
         code = BVC;
         cout << "BVC" << endl;
-        new_command = new branch(to_interpret, '-', code, (bit0608 & 3) * 64 + bit0503 * 8 + bit0002);
+        new_command = new branch(to_interpret, '-', code, (bit0608 & 3) * 64 + bit0305 * 8 + bit0002);
         new_command->disp();
     }
     
-    else if(!((to_interpret & BVS) ^ BVS))
+    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3) + (bit0608 & 4)*pow(8, 2)) ^ int(BVS)))
     {
         instruction = "BVS";
         code = BVS;
         cout << "BVS" << endl;
-        new_command = new branch(to_interpret, '-', code, (bit0608 & 3) * 64 + bit0503 * 8 + bit0002);
+        new_command = new branch(to_interpret, '-', code, (bit0608 & 3) * 64 + bit0305 * 8 + bit0002);
         new_command->disp();
     }
     
-    else if(!((to_interpret & BCC) ^ BCC))
+    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3) + (bit0608 & 4)*pow(8, 2)) ^ int(BCC)))
     {
         instruction = "BCC";
         code = BCC;
         cout << "BCC" << endl;
-        new_command = new branch(to_interpret, '-', code, (bit0608 & 3) * 64 + bit0503 * 8 + bit0002);
+        new_command = new branch(to_interpret, '-', code, (bit0608 & 3) * 64 + bit0305 * 8 + bit0002);
         new_command->disp();
     }
     
-    else if(!((to_interpret & BCS) ^ BCS))
+    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3) + (bit0608 & 4)*pow(8, 2)) ^ int(BCS)))
     {
         instruction = "BCS";
         code = BCS;
         cout << "BCS" << endl;
-        new_command = new branch(to_interpret, '-', code, (bit0608 & 3) * 64 + bit0503 * 8 + bit0002);
+        new_command = new branch(to_interpret, '-', code, (bit0608 & 3) * 64 + bit0305 * 8 + bit0002);
         new_command->disp();
     }
     
-    else if(!((to_interpret & BGE) ^ BGE))
+    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3) + (bit0608 & 4)*pow(8, 2)) ^ int(BGE)))
     {
         instruction = "BGE";
         code = BGE;
         cout << "BGE" << endl;
-        new_command = new branch(to_interpret, '-', code, (bit0608 & 3) * 64 + bit0503 * 8 + bit0002);
+        new_command = new branch(to_interpret, '-', code, (bit0608 & 3) * 64 + bit0305 * 8 + bit0002);
         new_command->disp();
     }
     
-    else if(!((to_interpret & BLT) ^ BLT))
+    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3) + (bit0608 & 4)*pow(8, 2)) ^ int(BLT)))
     {
         instruction = "BLT";
         code = BLT;
         cout << "BLT" << endl;
-        new_command = new branch(to_interpret, '-', code, (bit0608 & 3) * 64 + bit0503 * 8 + bit0002);
+        new_command = new branch(to_interpret, '-', code, (bit0608 & 3) * 64 + bit0305 * 8 + bit0002);
         new_command->disp();
     }
     
-    else if(!((to_interpret & BGT) ^ BGT))
+    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3) + (bit0608 & 4)*pow(8, 2)) ^ int(BGT)))
     {
         instruction = "BGT";
         code = BGT;
         cout << "BGT" << endl;
-        new_command = new branch(to_interpret, '-', code, (bit0608 & 3) * 64 + bit0503 * 8 + bit0002);
+        new_command = new branch(to_interpret, '-', code, (bit0608 & 3) * 64 + bit0305 * 8 + bit0002);
         new_command->disp();
     }
     
-    else if(!((to_interpret & BLE) ^ BLE))
+    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3) + (bit0608 & 4)*pow(8, 2)) ^ int(BLE)))
     {
         instruction = "BLE";
         code = BLE;
         cout << "BLE" << endl;
-        new_command = new branch(to_interpret, '-', code, (bit0608 & 3) * 64 + bit0503 * 8 + bit0002);
+        new_command = new branch(to_interpret, '-', code, (bit0608 & 3) * 64 + bit0305 * 8 + bit0002);
         new_command->disp();
     }
     
-    else if(!((to_interpret & BHI) ^ BHI))
+    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3) + (bit0608 & 4)*pow(8, 2)) ^ int(BHI)))
     {
         instruction = "BHI";
         code = BHI;
         cout << "BHI" << endl;
-        new_command = new branch(to_interpret, '-', code, (bit0608 & 3) * 64 + bit0503 * 8 + bit0002);
+        new_command = new branch(to_interpret, '-', code, (bit0608 & 3) * 64 + bit0305 * 8 + bit0002);
         new_command->disp();
     }
     
-    else if(!((to_interpret & BLOS) ^ BLOS))
+    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3) + (bit0608 & 4)*pow(8, 2)) ^ int(BLOS)))
     {
         instruction = "BLOS";
         code = BLOS;
         cout << "BLOS" << endl;
-        new_command = new branch(to_interpret, '-', code, (bit0608 & 3) * 64 + bit0503 * 8 + bit0002);
+        new_command = new branch(to_interpret, '-', code, (bit0608 & 3) * 64 + bit0305 * 8 + bit0002);
         new_command->disp();
     }
 
-    else if(!((to_interpret & JMP) ^ JMP))
+    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3) + bit0608*pow(8, 2)) ^ int(JMP)))
     {
         instruction = "JMP";
         code = JMP;
         cout << "JMP" << endl;
-        new_command = new jump_sub(to_interpret, '-', code, 0, bit0503, bit0002, 0);
+        new_command = new jump_sub(to_interpret, '-', code, 0, bit0305, bit0002, 0);
+        
+        new_command->disp();
+    }
+
+    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3)) ^ int(JSR)))
+    {
+        instruction = "JSR";
+        code = JSR;
+        cout << "JSR" << endl;
+        new_command = new jump_sub(to_interpret, '-', code, bit0608, bit0305, bit0002, 0);
+        
+        new_command->disp();
+    }
+
+    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3) + bit0608*pow(8, 2) + bit0305*8) ^ int(RTS)))
+    {
+        instruction = "RTS";
+        code = RTS;
+        cout << "RTS" << endl;
+        new_command = new jump_sub(to_interpret, '-', code, bit0002, 0, 0, 0);
+        
+        new_command->disp();
+    }
+
+    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3)) ^ int(TRAP)))
+    {
+        instruction = "TRAP";
+        code = TRAP;
+        cout << "TRAP" << endl;
+        new_command = new trapIntMiscCond(to_interpret, '-', code, bit0608*pow(8, 2) + bit0305*pow(8, 1) + bit0002);
+        
+        new_command->disp();
+    }
+
+    else if(!(int(to_interpret) ^ int(RTI)))
+    {
+        instruction = "RTI";
+        code = RTI;
+        cout << "RTI" << endl;
+        new_command = new trapIntMiscCond(to_interpret, '-', code, 0);
+        
+        new_command->disp();
+    }
+
+    else if(!(int(to_interpret) ^ int(HALT)))
+    {
+        instruction = "HALT";
+        code = HALT;
+        cout << "HALT" << endl;
+        new_command = new trapIntMiscCond(to_interpret, '-', code, 0);
+        
+        new_command->disp();
+    }
+
+    else if(!(int(to_interpret) ^ int(WAIT)))
+    {
+        instruction = "WAIT";
+        code = WAIT;
+        cout << "WAIT" << endl;
+        new_command = new trapIntMiscCond(to_interpret, '-', code, 0);
+        
+        new_command->disp();
+    }
+
+    else if(!(int(to_interpret) ^ int(RESET)))
+    {
+        instruction = "RESET";
+        code = RESET;
+        cout << "RESET" << endl;
+        new_command = new trapIntMiscCond(to_interpret, '-', code, 0);
+        
+        new_command->disp();
+    }
+
+    else if(!(int(to_interpret) ^ int(CLC)))
+    {
+        instruction = "CLC";
+        code = CLC;
+        cout << "CLC" << endl;
+        new_command = new trapIntMiscCond(to_interpret, '-', code, 0);
+        
+        new_command->disp();
+    }
+
+    else if(!(int(to_interpret) ^ int(CLV)))
+    {
+        instruction = "CLV";
+        code = RTI;
+        cout << "CLV" << endl;
+        new_command = new trapIntMiscCond(to_interpret, '-', code, 0);
+        
+        new_command->disp();
+    }
+
+    else if(!(int(to_interpret) ^ int(CLZ)))
+    {
+        instruction = "CLZ";
+        code = CLZ;
+        cout << "CLZ" << endl;
+        new_command = new trapIntMiscCond(to_interpret, '-', code, 0);
+        
+        new_command->disp();
+    }
+
+    else if(!(int(to_interpret) ^ int(CLN)))
+    {
+        instruction = "CLN";
+        code = CLN;
+        cout << "CLN" << endl;
+        new_command = new trapIntMiscCond(to_interpret, '-', code, 0);
+        
+        new_command->disp();
+    }
+
+    else if(!(int(to_interpret) ^ int(CCC)))
+    {
+        instruction = "CCC";
+        code = CCC;
+        cout << "CCC" << endl;
+        new_command = new trapIntMiscCond(to_interpret, '-', code, 0);
+        
+        new_command->disp();
+    }
+
+    else if(!(int(to_interpret) ^ int(SEC)))
+    {
+        instruction = "SEC";
+        code = SEC;
+        cout << "SEC" << endl;
+        new_command = new trapIntMiscCond(to_interpret, '-', code, 0);
+        
+        new_command->disp();
+    }
+
+    else if(!(int(to_interpret) ^ int(SEV)))
+    {
+        instruction = "SEV";
+        code = SEV;
+        cout << "SEV" << endl;
+        new_command = new trapIntMiscCond(to_interpret, '-', code, 0);
+        
+        new_command->disp();
+    }
+
+    else if(!(int(to_interpret) ^ int(SEZ)))
+    {
+        instruction = "SEZ";
+        code = SEZ;
+        cout << "SEZ" << endl;
+        new_command = new trapIntMiscCond(to_interpret, '-', code, 0);
+        
+        new_command->disp();
+    }
+
+    else if(!(int(to_interpret) ^ int(SEN)))
+    {
+        instruction = "SEN";
+        code = SEN;
+        cout << "SEN" << endl;
+        new_command = new trapIntMiscCond(to_interpret, '-', code, 0);
+        
+        new_command->disp();
+    }
+
+    else if(!(int(to_interpret) ^ int(SCC)))
+    {
+        instruction = "SCC";
+        code = SCC;
+        cout << "SCC" << endl;
+        new_command = new trapIntMiscCond(to_interpret, '-', code, 0);
+        
+        new_command->disp();
+    }
+
+    else if(!(int(to_interpret) ^ int(NOP)))
+    {
+        instruction = "NOP";
+        code = NOP;
+        cout << "NOP" << endl;
+        new_command = new trapIntMiscCond(to_interpret, '-', code, 0);
+        
+        new_command->disp();
+    }
+
+    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3)) ^ int(MUL)))
+    {
+        instruction = "MUL";
+        code = MUL;
+        cout << "MUL" << endl;
+        new_command = new extended(to_interpret, '-', code, bit0608, bit0305, bit0002);
+        
+        new_command->disp();
+    }
+
+    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3)) ^ int(DIV)))
+    {
+        instruction = "DIV";
+        code = DIV;
+        cout << "DIV" << endl;
+        new_command = new extended(to_interpret, '-', code, bit0608, bit0305, bit0002);
+        
+        new_command->disp();
+    }
+
+    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3)) ^ int(ASH)))
+    {
+        instruction = "ASH";
+        code = ASH;
+        cout << "ASH" << endl;
+        new_command = new extended(to_interpret, '-', code, bit0608, bit0305, bit0002);
+        
+        new_command->disp();
+    }
+
+    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3)) ^ int(ASHC)))
+    {
+        instruction = "ASHC";
+        code = ASHC;
+        cout << "ASHC" << endl;
+        new_command = new extended(to_interpret, '-', code, bit0608, bit0305, bit0002);
+        
+        new_command->disp();
+    }
+
+    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3)) ^ int(XOR)))
+    {
+        instruction = "XOR";
+        code = XOR;
+        cout << "XOR" << endl;
+        new_command = new extended(to_interpret, '-', code, bit0608, bit0305, bit0002);
         
         new_command->disp();
     }
@@ -602,6 +832,66 @@ int interpreter(int to_interpret, int * firstbit, command *& new_command)
     }
 
     return code;
+}
+
+//gp_register
+gp_register::gp_register(): contents(0)
+{
+}
+
+gp_register::~gp_register()
+{
+}
+
+gp_register::gp_register(const gp_register &to_copy)
+{
+    contents = to_copy.get_gp();
+    return;
+}
+
+
+void gp_register::display()
+{
+    cout << "contents: " << contents << endl;
+}
+
+int gp_register::set_gp(int to_set)
+{
+    contents = to_set;
+
+    return contents;
+}
+
+int gp_register::get_gp() const
+{
+    return contents;
+}
+
+//CPSR
+CPSR::CPSR(): T(0), C(0), N(0), V(0), Z(0), priority(0)
+{
+}
+
+CPSR::~CPSR()
+{
+}
+
+CPSR::CPSR(const CPSR &to_copy)
+{
+    int condition = to_copy.get_condition();
+    priority = condition >> 5;
+    T = (condition >> 4) - (priority << 1);
+    N = (condition >> 3) - (T << 1) - (priority << 2);
+    Z = (condition >> 2) - (N << 1) - (T << 2) - (priority << 3);
+    V = (condition >> 1) - (Z << 1) - (N << 2) - (T << 3) - (priority << 4);
+    C = condition - (V << 1) - (Z << 2) - (N << 3) - (T << 4) - (priority << 5);
+}
+
+int CPSR::get_condition() const
+{
+    int result = (priority << 5) + (T << 4) + (N << 3) + (Z << 2) + (V << 1) + C;
+
+    return result;
 }
 
 //command
@@ -619,6 +909,91 @@ void command::disp()
     cout << "disposition: " << disposition << endl;
 }
 
+int command::instruction(gp_register *regs, CPSR *states)
+{
+    return 0;
+}
+
+int command::instructionB(gp_register *regs, CPSR *states)
+{
+    return 0;
+}
+
+//extended
+extended::extended(): command(), function_code(0), destination(0), source_mode(0), source(0)
+{
+}
+
+extended::extended(int to_data, char disposition, int to_function_code, int to_destination, int to_source_mode, int to_source): command(to_data, disposition), function_code(to_function_code), source_mode(to_source_mode), source(to_source)
+{
+}
+
+void extended::disp()
+{
+    cout << "data: " << data << endl;
+    cout << "disposition: " << disposition << endl;
+    cout << "function code: " << function_code << endl;
+    cout << "source_mode: " << source_mode << endl;
+    cout << "source: " << source << endl;
+}
+
+int extended::instruction(gp_register *regs, CPSR *states)
+{
+    switch(function_code)
+    {
+        case MUL:
+            {
+                cout << "MUL" << endl;
+                break;
+            }
+        case DIV:
+            {
+                cout << "DIV" << endl;
+                break;
+            }
+        case ASH:
+            {
+                cout << "ASH" << endl;
+                break;
+            }
+        case ASHC:
+            {
+                cout << "ASHC" << endl;
+                break;
+            }
+        case XOR:
+            {
+                cout << "XOR" << endl;
+                break;
+            }
+        default:
+            {
+                cout << "invalid" << endl;
+                break;
+            }
+    }
+
+    return 0;
+}
+
+//trapIntMiscCond
+trapIntMiscCond::trapIntMiscCond(): command(), function_code(0), trap_code(0)
+{
+}
+
+
+trapIntMiscCond::trapIntMiscCond(int to_data, char to_disposition, int to_function_code, int to_trap_code): command(to_data, to_disposition), function_code(to_function_code), trap_code(to_trap_code)
+{
+}
+
+void trapIntMiscCond::disp()
+{
+    cout << "data: " << data << endl;
+    cout << "dispostion: " << disposition << endl;
+    cout << "function code: " << function_code << endl;
+    cout << "trap code: " << trap_code << endl;
+}
+
 //jump_sub
 jump_sub::jump_sub(): command(), function_code(0), linkage_reg(0), destination_code(0), destination(0), parameters(0)
 {
@@ -628,7 +1003,7 @@ jump_sub::jump_sub(int to_data, char to_disposition, int to_function_code, int t
 {
 }
 
-void jump_sub()
+void jump_sub::disp()
 {
     cout << "data: " << data << endl;
     cout << "disposition: " << disposition << endl;
@@ -661,7 +1036,7 @@ single_operand::single_operand(): command(), function_code(0), destination_mode(
 {
 }
 
-single_operand::single_operand(int to_data, char to_disposition, int to_function_code, int to_destination_mode, int to_destination): command(to_data, to_disposition), function_code(to_function_code), destination(to_destination), destination_mode(to_destination_mode)
+single_operand::single_operand(int to_data, char to_disposition, int to_function_code, int to_destination_mode, int to_destination): command(to_data, to_disposition), function_code(to_function_code), destination_mode(to_destination_mode), destination(to_destination)
 {
 }
 
@@ -697,6 +1072,8 @@ void double_operand::disp()
 
 int main(int argc, char* argv[])
 {
+    gp_register gps[8];
+    CPSR status_reg;
     int firstbit;
     string instruction;
     int to_interpret;
@@ -707,6 +1084,8 @@ int main(int argc, char* argv[])
     instruction = interpreter(to_interpret, &firstbit, new_command);
 
     new_command->disp();
+    
+    cout << new_command->instruction(gps, &status_reg) << endl;
 
     return 0;
 }
