@@ -335,7 +335,7 @@ int interpreter(int to_interpret, int * firstbit, command *& new_command)
 
         //new_command->disp();
     }
-    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3) + bit0608*pow(8, 3)) ^ int(SBC)))
+    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3) + bit0608*pow(8, 2)) ^ int(SBC)))
     {
         instruction = "SBC";
         code = SBC;
@@ -367,7 +367,7 @@ int interpreter(int to_interpret, int * firstbit, command *& new_command)
         instruction = "MOV";
         code = MOV;
         //cout << "MOV" << endl;
-        new_command = new single_operand(to_interpret, '-', code, bit0305, bit0002);
+        new_command = new double_operand(to_interpret, '-', code, bit0911, bit0608, bit0305, bit0002);
 
         //new_command->disp();
     }
@@ -376,7 +376,7 @@ int interpreter(int to_interpret, int * firstbit, command *& new_command)
         instruction = "MOVB";
         code = MOVB;
         //cout << "MOVB" << endl;
-        new_command = new single_operand(to_interpret, '-', code, bit0305, bit0002);
+        new_command = new double_operand(to_interpret, '-', code, bit0911, bit0608, bit0305, bit0002);
 
         //new_command->disp();
     }
@@ -385,7 +385,7 @@ int interpreter(int to_interpret, int * firstbit, command *& new_command)
         instruction = "CMP";
         code = CMP;
         //cout << "CMP" << endl;
-        new_command = new single_operand(to_interpret, '-', code, bit0305, bit0002);
+        new_command = new double_operand(to_interpret, '-', code, bit0911, bit0608, bit0305, bit0002);
 
         //new_command->disp();
     }
@@ -394,7 +394,7 @@ int interpreter(int to_interpret, int * firstbit, command *& new_command)
         instruction = "CMPB";
         code = CMPB;
         //cout << "CMPB" << endl;
-        new_command = new single_operand(to_interpret, '-', code, bit0305, bit0002);
+        new_command = new double_operand(to_interpret, '-', code, bit0911, bit0608, bit0305, bit0002);
 
         //new_command->disp();
     }
@@ -1470,6 +1470,16 @@ int double_operand::instruction(gp_register *regs, CPSR *states)
 
     switch(function_code)
     {
+        case MOV:
+            {
+                cout << "MOV" << endl;
+                break;
+            }
+        case MOVB:
+            {
+                cout << "MOVB" << endl;
+                break;
+            }
         case CMP: 
             {
                 cout << "CMP" << endl;
