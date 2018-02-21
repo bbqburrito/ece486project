@@ -32,7 +32,7 @@ const int ADCB = 35648; //105500
 const int SBC = 2944; //005600
 const int SBCB = 35712; //105600
 const int SXT = 3520; //006700
-const int MOV = 512; //01000
+const int MOV = 4096; //010000
 const int MOVB = 36864; //110000
 const int CMP = 8192; //020000
 const int CMPB = 40960; //120000
@@ -156,7 +156,7 @@ class double_operand: public command
         double_operand(const double_operand &to_copy);
 
         void disp();
-        //int instruction(gp_register *regs, CPSR * states);
+        int instruction(gp_register *regs, CPSR * states);
         //int instructionB(gp_register *regs, CPSR * states);
 
 
@@ -179,7 +179,7 @@ class single_operand: public command
         ~single_operand();
         single_operand(const single_operand &to_copy);
         void disp();
-        //int instruction(gp_register *regs, CPSR *states);
+        int instruction(gp_register *regs, CPSR *states);
         //int instructionB(gp_register *regs, CPSR * states);
 
 
@@ -220,7 +220,7 @@ class branch: public command
         ~branch();
         branch(const branch &to_copy);
         void disp();
-        //int instruction(gp_register *regs, CPSR * states);
+        int instruction(gp_register *regs, CPSR * states);
         //int instructionB(gp_register *regs, CPSR * states);
 
 
@@ -239,7 +239,7 @@ class jump_sub: public command
         ~jump_sub();
         jump_sub(const jump_sub &to_copy);
         void disp();
-        //int instruction(gp_register *regs, CPSR * states);
+        int instruction(gp_register *regs, CPSR * states);
         //int instructionB(gp_register *regs, CPSR * states);
 
 
@@ -262,7 +262,7 @@ class trapIntMiscCond: public command
         ~trapIntMiscCond();
         trapIntMiscCond(const trapIntMiscCond &to_copy);
         void disp();
-        //int instruction(gp_register *regs, CPSR * states);
+        int instruction(gp_register *regs, CPSR * states);
         //int instructionB(gp_register *regs, CPSR * states);
 
 
