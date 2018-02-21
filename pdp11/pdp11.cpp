@@ -14,6 +14,11 @@ long line_reader(char * filename, char *& disposition, int & filepos)
 
     ifstream filein;
 
+    for(int i = 0; i < 100; ++i)
+    {
+        address[i] = 0;
+    }
+
     filein.open(filename);
 
     if(!filein.is_open())
@@ -22,7 +27,7 @@ long line_reader(char * filename, char *& disposition, int & filepos)
         return 0;
     }
 
-    filein.seekg(filepos);
+    filein.seekg(filepos);      //maintain file position
 
     filein.getline(address, 100);
 
@@ -36,6 +41,14 @@ long line_reader(char * filename, char *& disposition, int & filepos)
     {
         *disposition = '\0';
         data = -1;
+        filepos = filein.tellg();   //pass file position.
+
+        for(int i = 0; i < 100; ++i)
+        {
+            address[i] = '\0';
+        }
+
+        filein.close();
         return data;
     }
 
@@ -45,18 +58,38 @@ long line_reader(char * filename, char *& disposition, int & filepos)
         {
             *disposition = '\0';
             data = -1;
+            filepos = filein.tellg();   //pass file position
+
+            for(int i = 0; i < 100; ++i)
+            {
+                address[i] = '\0';
+            }
+
+            filein.close();
             return data;
         }
+
+        for(int i = 0; i < 100; ++i)
+        {
+            address[i] = '\0';          //reset address
+        }
+
         filein.getline(address, 100);
     }
     
     *disposition = address[0];          //get disposition
     address[0] = '0';                   //set first char to 0
 
+    for(int i = 0; i < 7; ++i)
+    {
+        if(address[i] > '7')
+            address[i] = '0';
+    }
+
     data = strtol(address, &endptr, 8); //convert char to long
                                             //by octal
     //data = strtol(address, &endptr, 10); //convert char to long
-    filepos = filein.tellg();
+    filepos = filein.tellg();           //pass file position
 
     filein.close();
         
@@ -856,6 +889,7 @@ int interpreter(int to_interpret, int * firstbit, command *& new_command)
         instruction = "nope";
         code = -1;
         cout << "instruction code: " << to_interpret << " nope\n";
+        new_command = new command(to_interpret, '-');
     }
 
     return code;
@@ -1544,12 +1578,12 @@ int main(int argc, char* argv[])
     gp_register gps[8];
     CPSR status_reg;
     int firstbit;
-    string instruction;
+    int make_instruction;
     int to_interpret;
     int filepos = 0;
     command * new_command;
     char make_disposition = '0';
-    char * disposition = &make_disposition;
+    char * disposition = &make_disposition;         //initialize disposition
 
     //to_interpret = atoi(argv[1]);
 
@@ -1561,7 +1595,7 @@ int main(int argc, char* argv[])
 
     while(to_interpret != -1)
     {
-        instruction = interpreter(to_interpret, &firstbit, new_command);
+        make_instruction = interpreter(to_interpret, &firstbit, new_command);
 
         //new_command->disp();
         //cout << new_command->instruction(gps, &status_reg) << endl;
