@@ -24,12 +24,16 @@ long line_reader(char * filename, char *& disposition, int & filepos)
     if(!filein.is_open())
     {
         cout << "file not found\n";
-        return 0;
+        return -1;
     }
 
     filein.seekg(filepos);      //maintain file position
 
     filein.getline(address, 100);
+    if(address[7] == '\r')
+    {
+        address[7] = '\0';
+    }
 
     //while((strlen(address) != 7) && !filein.eof()) //if line length is not 7
                                                    //and file is not ended
@@ -52,8 +56,8 @@ long line_reader(char * filename, char *& disposition, int & filepos)
         return data;
     }
 
-    while((strlen(address) != 7))
-    {
+    while((strlen(address) != 7))       //if string loaded not 7 characters
+    {                                   //read next line
         if(filein.eof())
         {
             *disposition = '\0';
@@ -75,14 +79,16 @@ long line_reader(char * filename, char *& disposition, int & filepos)
         }
 
         filein.getline(address, 100);
+        if(address[7] == '\r')
+            address[7] = '\0';
     }
     
     *disposition = address[0];          //get disposition
     address[0] = '0';                   //set first char to 0
 
-    for(int i = 0; i < 7; ++i)
+    for(int i = 0; i < 7; ++i)          //invalid characters converted to 0
     {
-        if(address[i] > '7')
+        if(address[i] > '7' && address[i] < '0')
             address[i] = '0';
     }
 
@@ -888,7 +894,7 @@ int interpreter(int to_interpret, int * firstbit, command *& new_command)
     {
         instruction = "nope";
         code = -1;
-        cout << "instruction code: " << to_interpret << " nope\n";
+        cout << "instruction code: " << to_interpret << ": nope\n";
         new_command = new command(to_interpret, '-');
     }
 
@@ -1575,12 +1581,16 @@ int double_operand::instruction(gp_register *regs, CPSR *states)
 
 int main(int argc, char* argv[])
 {
+    int index = 32768;
+    i_cache prog_mem[index];
     gp_register gps[8];
     CPSR status_reg;
     int firstbit;
     int make_instruction;
     int to_interpret;
     int filepos = 0;
+    int i = 0;
+    int j;
     command * new_command;
     char make_disposition = '0';
     char * disposition = &make_disposition;         //initialize disposition
@@ -1588,7 +1598,25 @@ int main(int argc, char* argv[])
     //to_interpret = atoi(argv[1]);
 
     //instruction = interpreter(to_interpret, &firstbit, new_command);
-   
+
+    to_interpret = line_reader(argv[1], disposition, filepos);
+
+    while(to_interpret != -1)
+    {
+        prog_mem[i].disposition = *disposition;
+        prog_mem[i].data = to_interpret;
+        ++i;
+
+        to_interpret = line_reader(argv[1], disposition, filepos);
+    }
+
+    filepos = 0;
+
+    for(j = 0; j <= i; ++j)
+    {
+        cout << prog_mem[j].disposition << prog_mem[j].data << endl;
+    }
+
     to_interpret = line_reader(argv[1], disposition, filepos);
 
     cout << to_interpret << endl;
@@ -1605,12 +1633,8 @@ int main(int argc, char* argv[])
         to_interpret = line_reader(argv[1], disposition, filepos);
     }
 
-
     return 0;
 }
-
-
-
 
     /*switch(bit1214)             //check 3 most significant bits
     {

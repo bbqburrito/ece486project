@@ -85,7 +85,11 @@ const int ASHC = 30208; //073000
 const int XOR = 30720; //074000
 
 
+struct i_cache {
 
+    int data;
+    char disposition;
+};
 
 class gp_register {
 
