@@ -127,19 +127,19 @@ int interpreter(int to_interpret, int * firstbit, command *& new_command)
     
     //next 3 bits indicate function code for double 
     //operand commands
-    bit1214 = (to_interpret >> 12) - *firstbit*8;
+    bit1214 = (to_interpret >> 12) & 7;
 
     //cout << bit1214 << endl;
 
     //next 3 bits indicate more of function code for 
     //extended instruction set
-    bit0911 = (to_interpret >> 9) - *firstbit*pow(8, 2) - bit1214*8;
+    bit0911 = (to_interpret >> 9) & 7;
 
     //cout << bit0911 << endl;
 
     //next 3 bits indicate function code for 
     //single instruction set
-    bit0608 = (to_interpret >> 6) - *firstbit*pow(8, 3) - bit1214*pow(8, 2) - bit0911*8;
+    bit0608 = (to_interpret >> 6) & 7;
 
     //cout << (to_interpret >> 6) << " - " << *firstbit*512 << " - " << bit1214*64 << " - " << bit0911*8 << endl;
 
@@ -147,13 +147,13 @@ int interpreter(int to_interpret, int * firstbit, command *& new_command)
 
     //next 3 bits indicate function code for
     //most control functions
-    bit0305 = (to_interpret >> 3)- *firstbit*pow(8, 4) - bit1214*pow(8, 3) - bit0911*64 - bit0608*8;
+    bit0305 = (to_interpret >> 3) & 7;
 
     //cout << bit0305 << endl;
 
     //next 3 bits indicate function code for
     //some control functions
-    bit0002 = to_interpret - *firstbit*pow(8, 5) - bit1214*pow(8, 4) - bit0911*pow(8, 3) - bit0608*64 - bit0305*8;
+    bit0002 = to_interpret & 7;		//- *firstbit*pow(8, 5) - bit1214*pow(8, 4) - bit0911*pow(8, 3) - bit0608*64 - bit0305*8;
 
     //cout << bit0002 << endl;
 
