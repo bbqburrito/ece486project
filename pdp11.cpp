@@ -2,6 +2,53 @@
 
 using namespace std;
 
+int findstart(i_cache * prog_mem, int prog_length)
+{
+	char answer[25];
+	int start;
+    int i;
+    int j;
+
+    cout << "input start point? (y/N) ";    //if start point not inputted as arg
+                                            //ask user for start point
+                                            //if no, find * disposition
+                                            //if no *, start from 0
+    cin.get(answer, 25, '\n');
+    cin.ignore(100, '\n');
+
+    if(toupper(answer[0]) == 'Y')
+    {
+        cout << "enter start: ";
+        cin.get(answer, 25, '\n');
+        cin.ignore(100, '\n');
+        start = strtol(answer, NULL, 10);
+        if(start > prog_length)
+        {
+            cout << "program only " << prog_length << " lines. Start set to 0\n";
+            start = 0;
+        }
+    }
+    else {
+        cout << "find '*' to start at or start at 0." << endl;
+        i = 0;
+        j = 0;                              //indicate '*' found
+        while(prog_mem[i].disposition != '*' && i < I_SIZE)
+        {
+            ++i;
+            if(prog_mem[i].disposition == '*')
+            {
+                start = i;
+                j = 1;
+            }
+        }
+
+        if(!j)
+            start = 0;
+	}
+	return start;
+}
+
+
 
 /*reads the file by line and returns the command by long
  * takes char pointer to store disposition of line
@@ -1592,6 +1639,7 @@ int main(int argc, char* argv[])
     int filepos = 0;
     int i = 0;
     int j;
+    int prog_length = 0;
     command * new_command;
     char make_disposition = '0';
     char * disposition = &make_disposition;         //initialize disposition
@@ -1632,43 +1680,14 @@ int main(int argc, char* argv[])
         new_command->instruction(gps, &status_reg);
 
         to_interpret = line_reader(argv[1], disposition, filepos);
+        ++prog_length;
     }
 
     if(argc == 3)
         start = strtol(argv[2], NULL, 10);      //was start point given as third arg?
 
     else 
-    {
-        cout << "input start point? (y/N) ";    //if start point not inputted as arg
-                                                //ask user for start point
-                                                //if no, find * disposition
-                                                //if no *, start from 0
-        cin.get(answer, 25, '\n');
-
-        if(toupper(answer[0]) == 'Y')
-        {
-            cout << "enter start: ";
-            cin.get(answer, 25, '\n');
-            start = strtol(answer, NULL, 10);
-        }
-        else {
-            cout << "find '*' to start at or start at 0." << endl;
-            i = 0;
-            j = 0;                              //indicate '*' found
-            while(prog_mem[i].disposition != '*' && i < I_SIZE)
-            {
-                ++i;
-                if(prog_mem[i].disposition == '*')
-                {
-                    start = i;
-                    j = 1;
-                }
-            }
-
-            if(!j)
-                start = 0;
-        }
-    }
+        start = findstart(prog_mem, prog_length);
 
     cout << "start point: " << start << endl;
 
