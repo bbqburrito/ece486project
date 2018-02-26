@@ -1750,30 +1750,40 @@ int main(int argc, char* argv[])
     mkfile.open(trace);
 
     if(mkfile.is_open())
+    {
+        cout << "trace file already exists. erase and use this filename (Y/n);
+        cin.get(answer, 25, '\n');
+        cin.ignore(100, '\n');
+        if(toupper(answer[0] == 'N'))
         {
-            cout << "trace file already exists. erase and use this filename (Y/n);
-            cin.get(answer, 25, '\n');
-            cin.ignore(100, '\n');
-            if(toupper(answer[0] == 'Y'))
+            //get filename from stdin
+            while(mkfile.is_open())
             {
-                //erase existing file
-                trfile.open(trfile, ios::trunc | ios::out);
-                if(!trfile.is_open())
-                {
-                    cout << "cannot open\n";
-                    return 0;
-                }
-
-                //write to file
-                time(&timer);
-                timeinfo = localtime(&timer);
-
-                trfile << asctime(timeinfo) << endl;
-
-                trfile << "type\taddress" << endl;
-                trfile.close();
+                cout << "enter name for new trace file: ";
+                cin.get(trace, 100, '\n');
+                cin.ignore(100, '\n');
+                mkfile.open(trace);
             }
         }
+    }
+
+    //erase existing file
+    trfile.open(trace, ios::trunc | ios::out);
+    if(!trfile.is_open())
+    {
+        cout << "cannot open\n";                    
+        return 0;
+    }
+
+    //write to file. put timestamp and column headers
+    time(&timer);
+    timeinfo = localtime(&timer);
+
+    trfile << asctime(timeinfo) << endl;
+
+    trfile << "type\taddress" << endl;
+    trfile.close();
+    }
 
 
     //to_interpret = atoi(argv[1]);
@@ -1814,91 +1824,12 @@ int main(int argc, char* argv[])
         to_interpret = line_reader(argv[1], disposition, filepos);
     }
 
-    start = findstart(prog_mem, prog_length);
+    start = findstart(prog_mem, prog_length);       //get start point
 
     cout << "start point: " << start << endl;
 
 
     return 0;
 }
-
-    /*switch(bit1214)             //check 3 most significant bits
-    {
-        case 1: instruction = "MOV";
-                break;
-
-        case 2: instruction = "CMP";
-                break;
-
-        case 3: instruction = "BIT";
-                break;
-
-        case 4: instruction = "BIC";
-                break;
-
-        case 5: instruction = "BIS";
-                break;
-    
-        case 6: if(*firstbit)
-                {
-                    instruction = "SUB";
-                }
-                else instruction = "ADD";
-                break;
-
-        case 7: switch(bit0911)         //extended instruction set
-                {
-                    case 0: instruction = "MUL";
-                            break;
-                            
-                    case 1: instruction = "DIV";
-                            break;
-
-                    case 2: instruction = "ASH";
-                            break;
-
-                    case 3: instruction = "ASHC";
-                            break;
-
-                    case 4: instruction = "XOR";
-                            break;
-
-                    //case 7: instruction = "SOB";          //not in 11/20 ISA
-
-                    case default: instruction = "invalid";
-                                  break;
-                }
-                break;
-
-        case 0: switch(bit0911)         //all other commands
-                {
-                    case 1: switch(*firstbit)
-                            {
-                                case 0: if(!bit0608)
-                                            instruction = "BNE";
-                                        else if(bit608 == 4)
-                                            instruction = "BEQ";
-                                        else instruction = "invalid";
-                                        break;
-
-                                case 1: if(!bit0608)
-                                            instruction = "BHI";
-                                        else if(bit0608 == 4)
-                                            instruction = "BLOS";
-                                        else instruction = "invalid";
-                                        break;
-                            }
-                            break;
-
-                    case 2: switch(*firstbit)
-                            {
-                                case 0: if(!bit0608)
-                                            instruction = "BGE";
-                                        else if(bit0608)
-                                            instruction = "BLT";
-                                        else instruction = "invalid"
-                                            */
-
-
 
 
