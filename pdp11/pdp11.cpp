@@ -2,6 +2,54 @@
 
 using namespace std;
 
+int findstart(i_cache * prog_mem, int prog_length)
+{
+	char answer[25];
+	int start;
+    int i;
+    int j;
+
+    cout << "input start point? (y/N) ";    //if start point not inputted as arg
+                                            //ask user for start point
+                                            //if no, find * disposition
+                                            //if no *, start from 0
+    cin.get(answer, 25, '\n');
+    cin.ignore(100, '\n');
+
+    if(toupper(answer[0]) == 'Y')
+    {
+        cout << "enter start: ";
+        cin.get(answer, 25, '\n');
+        cin.ignore(100, '\n');
+        start = strtol(answer, NULL, 10);
+        if(start > prog_length)
+        {
+            cout << "program only " << prog_length << " lines. Start set to 0\n";
+            start = 0;
+        }
+    }
+    else {
+        cout << "find '*' to start at or start at 0." << endl;
+        i = 0;
+        j = 0;                              //indicate '*' found
+        while(prog_mem[i].disposition != '*' && i < I_SIZE)
+        {
+            ++i;
+            if(prog_mem[i].disposition == '*')
+            {
+                start = i;
+                j = 1;
+            }
+        }
+
+        if(!j)
+            start = 0;
+	}
+	return start;
+}
+
+
+
 //writes to file specified by filename. writes address parameter
 //as an octal. returns an int to indicate outcome.
 //takes a char to indicate filename, an int to indicate
@@ -161,19 +209,19 @@ int interpreter(int to_interpret, int * firstbit, command *& new_command)
     
     //next 3 bits indicate function code for double 
     //operand commands
-    bit1214 = (to_interpret >> 12) - *firstbit*8;
+    bit1214 = (to_interpret >> 12) & 7;
 
     //cout << bit1214 << endl;
 
     //next 3 bits indicate more of function code for 
     //extended instruction set
-    bit0911 = (to_interpret >> 9) - *firstbit*pow(8, 2) - bit1214*8;
+    bit0911 = (to_interpret >> 9) & 7; 
 
     //cout << bit0911 << endl;
 
     //next 3 bits indicate function code for 
     //single instruction set
-    bit0608 = (to_interpret >> 6) - *firstbit*pow(8, 3) - bit1214*pow(8, 2) - bit0911*8;
+    bit0608 = (to_interpret >> 6) & 7;
 
     //cout << (to_interpret >> 6) << " - " << *firstbit*512 << " - " << bit1214*64 << " - " << bit0911*8 << endl;
 
@@ -181,13 +229,13 @@ int interpreter(int to_interpret, int * firstbit, command *& new_command)
 
     //next 3 bits indicate function code for
     //most control functions
-    bit0305 = (to_interpret >> 3)- *firstbit*pow(8, 4) - bit1214*pow(8, 3) - bit0911*64 - bit0608*8;
+    bit0305 = (to_interpret >> 3) & 7;
 
     //cout << bit0305 << endl;
 
     //next 3 bits indicate function code for
     //some control functions
-    bit0002 = to_interpret - *firstbit*pow(8, 5) - bit1214*pow(8, 4) - bit0911*pow(8, 3) - bit0608*64 - bit0305*8;
+    bit0002 = to_interpret & 7;
 
     //cout << bit0002 << endl;
 
@@ -1670,8 +1718,9 @@ int double_operand::instruction(gp_register *regs, CPSR *states, i_cache &progra
 
 int main(int argc, char* argv[])
 {
-    int index = 32768;
-    i_cache prog_mem[index];
+    char answer[25];
+    int start;
+    i_cache prog_mem[I_SIZE];
     gp_register gps[8];
     CPSR status_reg;
     int firstbit;
@@ -1724,6 +1773,15 @@ int main(int argc, char* argv[])
 
         to_interpret = line_reader(argv[1], disposition, filepos);
     }
+
+    if(argc == 3)
+        start = strtol(argv[2], NULL, 10);      //was start point given as third arg?
+
+    else 
+        start = findstart(prog_mem, prog_length);
+
+    cout << "start point: " << start << endl;
+
 
     return 0;
 }
