@@ -4,6 +4,7 @@
 #include <cstring>
 #include <string>
 #include <cmath>
+#include <ctime>
 
 
 const int CLR = 2560; //005000
@@ -84,6 +85,8 @@ const int ASH = 29696; //072000
 const int ASHC = 30208; //073000
 const int XOR = 30720; //074000
 
+
+const int I_SIZE = 32768;
 
 struct i_cache {
 

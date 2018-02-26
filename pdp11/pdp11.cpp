@@ -75,7 +75,7 @@ int trace_file(char * filename, int type, int address)
         return -1;
     }
 
-    outcome = sprintf(make_address, "%d %o\n", type, address);
+    outcome = sprintf(make_address, "%d\t%o\n", type, address);
 
     outfile << make_address;
 
@@ -1733,7 +1733,47 @@ int main(int argc, char* argv[])
     char make_disposition = '0';
     char * disposition = &make_disposition;         //initialize disposition
     char trace[100];
+    ostream trfile;
+    istream mkfile;
+    time_t timer;
+    struct tm * timeinfo;
 
+    if(argc != 3)
+    {
+        cout << "usage: pdp11 [input file] [output file]" >> endl;
+
+        return 0;
+    }
+
+    trace = argv[2];
+
+    mkfile.open(trace);
+
+    if(mkfile.is_open())
+        {
+            cout << "trace file already exists. erase and use this filename (Y/n);
+            cin.get(answer, 25, '\n');
+            cin.ignore(100, '\n');
+            if(toupper(answer[0] == 'Y'))
+            {
+                //erase existing file
+                trfile.open(trfile, ios::trunc | ios::out);
+                if(!trfile.is_open())
+                {
+                    cout << "cannot open\n";
+                    return 0;
+                }
+
+                //write to file
+                time(&timer);
+                timeinfo = localtime(&timer);
+
+                trfile << asctime(timeinfo) << endl;
+
+                trfile << "type\taddress" << endl;
+                trfile.close();
+            }
+        }
 
 
     //to_interpret = atoi(argv[1]);
@@ -1774,11 +1814,7 @@ int main(int argc, char* argv[])
         to_interpret = line_reader(argv[1], disposition, filepos);
     }
 
-    if(argc == 3)
-        start = strtol(argv[2], NULL, 10);      //was start point given as third arg?
-
-    else 
-        start = findstart(prog_mem, prog_length);
+    start = findstart(prog_mem, prog_length);
 
     cout << "start point: " << start << endl;
 
