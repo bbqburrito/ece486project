@@ -67,7 +67,7 @@ int trace_file(char * filename, int type, int address)
         make_address[i] = '\0';
     }
 
-    outfile.open(filename, ios::app | ios::out | ios::trunc);
+    outfile.open(filename, ios::app | ios::out);
 
     if(!outfile.is_open())
     {
