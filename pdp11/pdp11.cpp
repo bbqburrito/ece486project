@@ -2,10 +2,44 @@
 
 using namespace std;
 
+//writes to file specified by filename. writes address parameter
+//as an octal. returns an int to indicate outcome.
+//takes a char to indicate filename, an int to indicate
+//the type write, and an int to indicate the address write
+int trace_file(char * filename, int type, int address)
+{
+    char make_address[100];
+    ofstream outfile;
+    int i;
+    int outcome;
+
+    //initialize make_address to all NULL
+    for(i = 0; i < 100; ++i)
+    {
+        make_address[i] = '\0';
+    }
+
+    outfile.open(filename, ios::app | ios::out | ios::trunc);
+
+    if(!outfile.is_open())
+    {
+        cout << "file error\n";
+        return -1;
+    }
+
+    outcome = sprintf(make_address, "%d %o\n", type, address);
+
+    outfile << make_address;
+
+    return outcome;
+}
+
 
 /*reads the file by line and returns the command by long
  * takes char pointer to store disposition of line
  */
+
+
 long line_reader(char * filename, char *& disposition, int & filepos)
 {
     char address[100];
@@ -935,7 +969,7 @@ int gp_register::get_gp() const
 }
 
 //CPSR
-CPSR::CPSR(): T(0), C(0), N(0), V(0), Z(0), priority(0)
+CPSR::CPSR(): T(0), N(0), Z(0), V(0), C(0), priority(0)
 {
 }
 
@@ -947,11 +981,11 @@ CPSR::CPSR(const CPSR &to_copy)
 {
     int condition = to_copy.get_condition();
     priority = condition >> 5;
-    T = (condition >> 4) - (priority << 1);
-    N = (condition >> 3) - (T << 1) - (priority << 2);
-    Z = (condition >> 2) - (N << 1) - (T << 2) - (priority << 3);
-    V = (condition >> 1) - (Z << 1) - (N << 2) - (T << 3) - (priority << 4);
-    C = condition - (V << 1) - (Z << 2) - (N << 3) - (T << 4) - (priority << 5);
+    T = (condition >> 4) & 1;
+    N = (condition >> 3) & 1;
+    Z = (condition >> 2) & 1;
+    V = (condition >> 1) & 1;
+    C = condition & 1;
 }
 
 int CPSR::get_condition() const
@@ -960,6 +994,16 @@ int CPSR::get_condition() const
 
     return result;
 }
+
+int CPSR::set_condition(int to_set)
+{
+    T = (to_set >> 4) & 1;
+    N = (to_set >> 3) & 1;
+    Z = (to_set >> 2) & 1;
+    V = (to_set >> 1) & 1;
+    C = to_set & 1;
+}
+
 
 //command
 command::command(): data(0), disposition(0)
@@ -977,12 +1021,12 @@ void command::disp()
 }
 
 
-int command::instruction(gp_register *regs, CPSR *states)
+int command::instruction(gp_register *regs, CPSR *states, i_cache &program, int position)
 {
     return 0;
 }
 
-int command::instructionB(gp_register *regs, CPSR *states)
+int command::instructionB(gp_register *regs, CPSR *states, i_cache &program, int position)
 {
     return 0;
 }
@@ -1005,7 +1049,7 @@ void extended::disp()
     cout << "source: " << source << endl;
 }
 
-int extended::instruction(gp_register *regs, CPSR *states)
+int extended::instruction(gp_register *regs, CPSR *states, i_cache &program, int position)
 {
 
     cout << "function_code: " << function_code << ": ";
@@ -1064,8 +1108,9 @@ void trapIntMiscCond::disp()
     cout << "trap code: " << trap_code << endl;
 }
 
-int trapIntMiscCond::instruction(gp_register *regs, CPSR *states)
+int trapIntMiscCond::instruction(gp_register *regs, CPSR *states, i_cache &program, int position)
 {
+    int outcome = -1;
 
     cout << "function_code: " << function_code << ": ";
    switch(function_code)
@@ -1098,51 +1143,61 @@ int trapIntMiscCond::instruction(gp_register *regs, CPSR *states)
         case CLC:
             {
                 cout << "CLC" << endl;
+                states->set_condition(states->get_condition() & 0xFE);
                 break;
             }
         case CLV:
             {
                 cout << "CLV" << endl;
+                states->set_condition(states->get_condition() & 0xFD);
                 break;
             }
         case CLZ:
             {
                 cout << "CLZ" << endl;
+                states->set_condition(states->get_condition() & 0xFB);
                 break;
             }
         case CLN:
             {
                 cout << "CLN" << endl;
+                states->set_condition(states->get_condition() & 0xF7);
                 break;
             }
         case CCC:
             {
                 cout << "CCC" << endl;
+                states->set_condition(states->get_condition() & 0xF0);
                 break;
             }
         case SEC:
             {
                 cout << "SEC" << endl;
+                states->set_condition(states->get_condition() | 1);
                 break;
             }
         case SEV:
             {
                 cout << "SEV" << endl;
+                states->set_condition(states->get_condition() | 2);
                 break;
             }
         case SEZ:
             {
                 cout << "SEZ" << endl;
+                states->set_condition(states->get_condition() | 4);
                 break;
             }
         case SEN:
             {
                 cout << "SEN" << endl;
+                states->set_condition(states->get_condition() | 8);
                 break;
             }
         case SCC:
             {
                 cout << "SCC" << endl;
+                states->set_condition(states->get_condition() | 0xF);
                 break;
             }
         case NOP:
@@ -1179,7 +1234,7 @@ void jump_sub::disp()
     cout << "parameters: " << parameters << endl;
 }
 
-int jump_sub::instruction(gp_register *regs, CPSR *states)
+int jump_sub::instruction(gp_register *regs, CPSR *states, i_cache &program, int position)
 {
 
     cout << "function_code: " << function_code << ": ";
@@ -1227,7 +1282,7 @@ void branch::disp()
     cout << "offset: " << offset << endl;
 }
 
-int branch::instruction(gp_register *regs, CPSR *states)
+int branch::instruction(gp_register *regs, CPSR *states, i_cache &program, int position)
 {
 
     cout << "function_code: " << function_code << ": ";
@@ -1236,6 +1291,7 @@ int branch::instruction(gp_register *regs, CPSR *states)
         case BR:
             {
                 cout << "BR" << endl;
+
                 break;
             }
         case BNE:
@@ -1335,8 +1391,9 @@ void single_operand::disp()
     cout << "destination: " << destination << endl;
 }
 
-int single_operand::instruction(gp_register *regs, CPSR *states)
+int single_operand::instruction(gp_register *regs, CPSR *states, i_cache &program, int position)
 {
+    int outcome = -1;
 
     cout << "function_code: " << function_code << ": ";
 
@@ -1345,6 +1402,38 @@ int single_operand::instruction(gp_register *regs, CPSR *states)
         case CLR:
             {
                 cout << "CLR" << endl;
+                switch destination_mode {
+                    case 0: 
+                        {
+                            regs[destination] = 0;
+                            states->set_condition(4);
+                            break;
+                        }
+                    case 1:
+                        {
+                            mem[regs[destination]] = 0;
+                            states->set_condition(4);
+                            trace_file(1, regs[destination]);   //write data write to trace file
+                            outcome = 1;
+                            break;
+                        }
+                    case 2:
+                        {
+                            mem[regs[destination]] = 0;
+                            regs[destination] += 1;
+                            states->set_condition(4);
+                            trace_file(1, regs[destination] - 1);   //write data write to trace file
+                            outcome = 1;
+                            break;
+                        }
+                    default:
+                        {
+                             cout << "invalid destination mode" << endl;
+                             break;
+                        }
+                }
+
+
                 break;
             }
         case CLRB:
@@ -1503,7 +1592,7 @@ void double_operand::disp()
     cout << "destination: " << destination << endl;
 }
 
-int double_operand::instruction(gp_register *regs, CPSR *states)
+int double_operand::instruction(gp_register *regs, CPSR *states, i_cache &program, int position)
 {
 
     cout << "function_code: " << function_code << ": ";
@@ -1594,6 +1683,9 @@ int main(int argc, char* argv[])
     command * new_command;
     char make_disposition = '0';
     char * disposition = &make_disposition;         //initialize disposition
+    char trace[100];
+
+
 
     //to_interpret = atoi(argv[1]);
 

@@ -120,10 +120,10 @@ class CPSR {
 
     protected:
         int T;
-        int C;
         int N;
-        int V;
         int Z;
+        int V;
+        int C;
         int priority;
 };
 
@@ -138,8 +138,8 @@ class command {
         command (const command &to_copy);
 
         virtual void disp();
-        virtual int instruction(gp_register *regs, CPSR * states);
-        virtual int instructionB(gp_register *regs, CPSR * states);
+        virtual int instruction(gp_register *regs, CPSR * states, i_cache &program, int position);
+        virtual int instructionB(gp_register *regs, CPSR * states, i_cache &program, int position);
 
 
 
@@ -160,8 +160,8 @@ class double_operand: public command
         double_operand(const double_operand &to_copy);
 
         void disp();
-        int instruction(gp_register *regs, CPSR * states);
-        //int instructionB(gp_register *regs, CPSR * states);
+        int instruction(gp_register *regs, CPSR * states, i_cache &program, int position);
+        //int instructionB(gp_register *regs, CPSR * states, i_cache &program, int position);
 
 
 
@@ -183,8 +183,8 @@ class single_operand: public command
         ~single_operand();
         single_operand(const single_operand &to_copy);
         void disp();
-        int instruction(gp_register *regs, CPSR *states);
-        //int instructionB(gp_register *regs, CPSR * states);
+        int instruction(gp_register *regs, CPSR *states, i_cache &program, int position);
+        //int instructionB(gp_register *regs, CPSR * states, i_cache &program, int position);
 
 
     protected:
@@ -203,8 +203,8 @@ class extended: public command
         ~extended();
         extended(const extended &to_copy);
         void disp();
-        int instruction(gp_register *regs, CPSR * states);
-        //int instructionB(gp_register *regs, CPSR * states);
+        int instruction(gp_register *regs, CPSR * states, i_cache &program, int position);
+        //int instructionB(gp_register *regs, CPSR * states, i_cache &program, int position);
 
 
     protected:
@@ -224,8 +224,8 @@ class branch: public command
         ~branch();
         branch(const branch &to_copy);
         void disp();
-        int instruction(gp_register *regs, CPSR * states);
-        //int instructionB(gp_register *regs, CPSR * states);
+        int instruction(gp_register *regs, CPSR * states, i_cache &program, int position);
+        //int instructionB(gp_register *regs, CPSR * states, i_cache & program, int position);
 
 
     protected:
@@ -243,8 +243,8 @@ class jump_sub: public command
         ~jump_sub();
         jump_sub(const jump_sub &to_copy);
         void disp();
-        int instruction(gp_register *regs, CPSR * states);
-        //int instructionB(gp_register *regs, CPSR * states);
+        int instruction(gp_register *regs, CPSR * states, i_cache &program, int position);
+        //int instructionB(gp_register *regs, CPSR * states, i_cache &program, int position);
 
 
     protected:
@@ -266,8 +266,8 @@ class trapIntMiscCond: public command
         ~trapIntMiscCond();
         trapIntMiscCond(const trapIntMiscCond &to_copy);
         void disp();
-        int instruction(gp_register *regs, CPSR * states);
-        //int instructionB(gp_register *regs, CPSR * states);
+        int instruction(gp_register *regs, CPSR * states, i_cache &program, int position);
+        //int instructionB(gp_register *regs, CPSR * states, i_cache &program, int position);
 
 
     protected:
