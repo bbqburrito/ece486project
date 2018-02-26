@@ -87,6 +87,7 @@ const int XOR = 30720; //074000
 
 
 const int I_SIZE = 32768;
+const int MEM_SIZE = 32768;
 
 struct i_cache {
 
@@ -141,8 +142,8 @@ class command {
         command (const command &to_copy);
 
         virtual void disp();
-        virtual int instruction(gp_register *regs, CPSR * states, i_cache &program, int position);
-        virtual int instructionB(gp_register *regs, CPSR * states, i_cache &program, int position);
+        virtual int instruction(int *regs, CPSR * states, i_cache *program, int position, int * mem, char * tracefile);
+        virtual int instructionB(int *regs, CPSR * states, i_cache *program, int position, int * mem, char * tracefile);
 
 
 
@@ -163,8 +164,8 @@ class double_operand: public command
         double_operand(const double_operand &to_copy);
 
         void disp();
-        int instruction(gp_register *regs, CPSR * states, i_cache &program, int position);
-        //int instructionB(gp_register *regs, CPSR * states, i_cache &program, int position);
+        int instruction(int *regs, CPSR * states, i_cache *program, int position, int * mem, char * tracefile);
+        //int instructionB(int *regs, CPSR * states, i_cache *program, int position, int * mem, char * tracefile);
 
 
 
@@ -186,8 +187,8 @@ class single_operand: public command
         ~single_operand();
         single_operand(const single_operand &to_copy);
         void disp();
-        int instruction(gp_register *regs, CPSR *states, i_cache &program, int position);
-        //int instructionB(gp_register *regs, CPSR * states, i_cache &program, int position);
+        int instruction(int *regs, CPSR *states, i_cache *program, int position, int * mem, char * tracefile);
+        //int instructionB(int *regs, CPSR * states, i_cache *program, int position, int * mem, har * tracefile);
 
 
     protected:
@@ -206,8 +207,8 @@ class extended: public command
         ~extended();
         extended(const extended &to_copy);
         void disp();
-        int instruction(gp_register *regs, CPSR * states, i_cache &program, int position);
-        //int instructionB(gp_register *regs, CPSR * states, i_cache &program, int position);
+        int instruction(int *regs, CPSR * states, i_cache *program, int position, int * mem, char * tracefile);
+        //int instructionB(int *regs, CPSR * states, i_cache *program, int position, int * mem, char * tracefile);
 
 
     protected:
@@ -227,8 +228,8 @@ class branch: public command
         ~branch();
         branch(const branch &to_copy);
         void disp();
-        int instruction(gp_register *regs, CPSR * states, i_cache &program, int position);
-        //int instructionB(gp_register *regs, CPSR * states, i_cache & program, int position);
+        int instruction(int *regs, CPSR * states, i_cache *program, int position, int * mem, char * tracefile);
+        //int instructionB(int *regs, CPSR * states, i_cache *program, int position, int * mem, char * tracefile);
 
 
     protected:
@@ -246,8 +247,8 @@ class jump_sub: public command
         ~jump_sub();
         jump_sub(const jump_sub &to_copy);
         void disp();
-        int instruction(gp_register *regs, CPSR * states, i_cache &program, int position);
-        //int instructionB(gp_register *regs, CPSR * states, i_cache &program, int position);
+        int instruction(int *regs, CPSR * states, i_cache *program, int position, int * mem, char * tracefile);
+        //int instructionB(int *regs, CPSR * states, i_cache *program, int position, int * mem, char * tracefile);
 
 
     protected:
@@ -269,8 +270,8 @@ class trapIntMiscCond: public command
         ~trapIntMiscCond();
         trapIntMiscCond(const trapIntMiscCond &to_copy);
         void disp();
-        int instruction(gp_register *regs, CPSR * states, i_cache &program, int position);
-        //int instructionB(gp_register *regs, CPSR * states, i_cache &program, int position);
+        int instruction(int *regs, CPSR * states, i_cache *program, int position, int * mem, char * tracefile);
+        //int instructionB(int *regs, CPSR * states, i_cache *program, int position, int * mem, char * tracefile);
 
 
     protected:

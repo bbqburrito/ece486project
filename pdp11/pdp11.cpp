@@ -1069,12 +1069,12 @@ void command::disp()
 }
 
 
-int command::instruction(gp_register *regs, CPSR *states, i_cache &program, int position)
+int command::instruction(int *regs, CPSR *states, i_cache *program, int position, int * mem, char * tracefile)
 {
     return 0;
 }
 
-int command::instructionB(gp_register *regs, CPSR *states, i_cache &program, int position)
+int command::instructionB(int *regs, CPSR *states, i_cache * program, int position, int * mem, char * tracefile)
 {
     return 0;
 }
@@ -1097,7 +1097,7 @@ void extended::disp()
     cout << "source: " << source << endl;
 }
 
-int extended::instruction(gp_register *regs, CPSR *states, i_cache &program, int position)
+int extended::instruction(int *regs, CPSR *states, i_cache * program, int position, int * mem, char * tracefile)
 {
 
     cout << "function_code: " << function_code << ": ";
@@ -1156,7 +1156,7 @@ void trapIntMiscCond::disp()
     cout << "trap code: " << trap_code << endl;
 }
 
-int trapIntMiscCond::instruction(gp_register *regs, CPSR *states, i_cache &program, int position)
+int trapIntMiscCond::instruction(int *regs, CPSR *states, i_cache *program, int position, int * mem, char * tracefile)
 {
     int outcome = -1;
 
@@ -1282,7 +1282,7 @@ void jump_sub::disp()
     cout << "parameters: " << parameters << endl;
 }
 
-int jump_sub::instruction(gp_register *regs, CPSR *states, i_cache &program, int position)
+int jump_sub::instruction(int *regs, CPSR *states, i_cache *program, int position, int * mem, char * tracefile)
 {
 
     cout << "function_code: " << function_code << ": ";
@@ -1330,7 +1330,7 @@ void branch::disp()
     cout << "offset: " << offset << endl;
 }
 
-int branch::instruction(gp_register *regs, CPSR *states, i_cache &program, int position)
+int branch::instruction(int *regs, CPSR *states, i_cache *program, int position, int * mem, char * tracefile)
 {
 
     cout << "function_code: " << function_code << ": ";
@@ -1439,7 +1439,7 @@ void single_operand::disp()
     cout << "destination: " << destination << endl;
 }
 
-int single_operand::instruction(gp_register *regs, CPSR *states, i_cache &program, int position)
+int single_operand::instruction(int *regs, CPSR *states, i_cache *program, int position, int * mem, char * tracefile)
 {
     int outcome = -1;
 
@@ -1450,7 +1450,7 @@ int single_operand::instruction(gp_register *regs, CPSR *states, i_cache &progra
         case CLR:
             {
                 cout << "CLR" << endl;
-                switch destination_mode {
+                switch (destination_mode) {
                     case 0: 
                         {
                             regs[destination] = 0;
@@ -1461,7 +1461,7 @@ int single_operand::instruction(gp_register *regs, CPSR *states, i_cache &progra
                         {
                             mem[regs[destination]] = 0;
                             states->set_condition(4);
-                            trace_file(1, regs[destination]);   //write data write to trace file
+                            trace_file(tracefile, 1, regs[destination]);   //write data write to trace file
                             outcome = 1;
                             break;
                         }
@@ -1470,7 +1470,7 @@ int single_operand::instruction(gp_register *regs, CPSR *states, i_cache &progra
                             mem[regs[destination]] = 0;
                             regs[destination] += 1;
                             states->set_condition(4);
-                            trace_file(1, regs[destination] - 1);   //write data write to trace file
+                            trace_file(tracefile, 1, regs[destination] - 1);   //write data write to trace file
                             outcome = 1;
                             break;
                         }
@@ -1640,9 +1640,8 @@ void double_operand::disp()
     cout << "destination: " << destination << endl;
 }
 
-int double_operand::instruction(gp_register *regs, CPSR *states, i_cache &program, int position)
+int double_operand::instruction(int *regs, CPSR *states, i_cache *program, int position, int * mem, char * tracefile)
 {
-
     cout << "function_code: " << function_code << ": ";
 
     switch(function_code)
@@ -1721,26 +1720,29 @@ int main(int argc, char* argv[])
     char answer[25];
     int start;
     i_cache prog_mem[I_SIZE];
-    gp_register gps[8];
+    int memory[MEM_SIZE];
+    int gps[8];
     CPSR status_reg;
     int firstbit;
     int make_instruction;
     int to_interpret;
     int filepos = 0;
+    int prog_pos;
+    int prog_size;
     int i = 0;
     int j;
     command * new_command;
     char make_disposition = '0';
     char * disposition = &make_disposition;         //initialize disposition
-    char trace[100];
-    ostream trfile;
-    istream mkfile;
+    char * trace;
+    ofstream trfile;
+    ifstream mkfile;
     time_t timer;
     struct tm * timeinfo;
 
     if(argc != 3)
     {
-        cout << "usage: pdp11 [input file] [output file]" >> endl;
+        cout << "usage: pdp11 [input file] [output file]" << endl;
 
         return 0;
     }
@@ -1751,7 +1753,7 @@ int main(int argc, char* argv[])
 
     if(mkfile.is_open())
     {
-        cout << "trace file already exists. erase and use this filename (Y/n);
+        cout << "trace file already exists. erase and use this filename (Y/n)";
         cin.get(answer, 25, '\n');
         cin.ignore(100, '\n');
         if(toupper(answer[0] == 'N'))
@@ -1783,7 +1785,6 @@ int main(int argc, char* argv[])
 
     trfile << "type\taddress" << endl;
     trfile.close();
-    }
 
 
     //to_interpret = atoi(argv[1]);
@@ -1792,6 +1793,7 @@ int main(int argc, char* argv[])
 
     to_interpret = line_reader(argv[1], disposition, filepos);
 
+    //read file into memory
     while(to_interpret != -1)
     {
         prog_mem[i].disposition = *disposition;
@@ -1800,6 +1802,8 @@ int main(int argc, char* argv[])
 
         to_interpret = line_reader(argv[1], disposition, filepos);
     }
+
+    prog_size = i;
 
     filepos = 0;
 
@@ -1819,12 +1823,12 @@ int main(int argc, char* argv[])
         //new_command->disp();
         //cout << new_command->instruction(gps, &status_reg) << endl;
 
-        new_command->instruction(gps, &status_reg);
+        new_command->instruction(gps, &status_reg, prog_mem, prog_pos, memory, trace);
 
         to_interpret = line_reader(argv[1], disposition, filepos);
     }
 
-    start = findstart(prog_mem, prog_length);       //get start point
+    start = findstart(prog_mem, prog_size);       //get start point
 
     cout << "start point: " << start << endl;
 
