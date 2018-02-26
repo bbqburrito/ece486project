@@ -75,7 +75,7 @@ int trace_file(char * filename, int type, int address)
         return -1;
     }
 
-    outcome = sprintf(make_address, "%d\t%o\n", type, address);
+    outcome = sprintf(make_address, "%d\t\t%o\n", type, address);
 
     outfile << make_address;
 
