@@ -9,18 +9,20 @@ int findstart(i_cache * prog_mem, int prog_length)
     int i;
     int j;
 
+    cin.sync();
     cout << "input start point? (y/N) ";    //if start point not inputted as arg
                                             //ask user for start point
                                             //if no, find * disposition
                                             //if no *, start from 0
-    cin.get(answer, 25, '\n');
-    cin.ignore(100, '\n');
+    cin.getline(answer, 25);
+    cin.sync();
 
     if(toupper(answer[0]) == 'Y')
     {
+        cin.sync();
         cout << "enter start: ";
-        cin.get(answer, 25, '\n');
-        cin.ignore(100, '\n');
+        cin.getline(answer, 25);
+        cin.sync();
         start = strtol(answer, NULL, 10);
         if(start > prog_length)
         {
@@ -1753,17 +1755,20 @@ int main(int argc, char* argv[])
 
     if(mkfile.is_open())
     {
+        cin.sync();
         cout << "trace file already exists. erase and use this filename (Y/n)";
-        cin.get(answer, 25, '\n');
-        cin.ignore(100, '\n');
-        if(toupper(answer[0] == 'N'))
+        cin.getline(answer, 25);
+        cin.sync();
+        if(toupper(answer[0]) == 'N')
         {
             //get filename from stdin
             while(mkfile.is_open())
             {
+                mkfile.close();
+                cin.sync();
                 cout << "enter name for new trace file: ";
-                cin.get(trace, 100, '\n');
-                cin.ignore(100, '\n');
+                cin.getline(trace, 100);
+                cin.sync();
                 mkfile.open(trace);
             }
         }
