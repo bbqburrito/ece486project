@@ -90,6 +90,8 @@ const int XOR = 30720; //074000
 const int I_SIZE = 32768;
 const int MEM_SIZE = 32768;
 
+
+
 struct i_cache {
 
     int data;
@@ -284,6 +286,17 @@ class trapIntMiscCond: public command
         int function_code;
         int trap_code;
 };
+
+
+
+int findstart(i_cache * prog_mem, int prog_length);
+long line_reader(char * filename, char *& disposition, int & filepos);
+int trace_file(char * filename, int type, int address);
+int interpreter(int to_interpret, int * firstbit, command *& new_command, char * tracefile);
+
+
+
+
 
 
 
