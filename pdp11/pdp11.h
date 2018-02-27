@@ -5,6 +5,7 @@
 #include <string>
 #include <cmath>
 #include <ctime>
+#include <getopt.h>
 
 
 const int CLR = 2560; //005000
@@ -137,19 +138,20 @@ class command {
 
     public:
         command();
-        command(int to_data, char to_disposition);
+        command(int to_data, char to_disposition, char * tracefile);
         ~command();
         command (const command &to_copy);
 
         virtual void disp();
-        virtual int instruction(int *regs, CPSR * states, i_cache *program, int position, int * mem, char * tracefile);
-        virtual int instructionB(int *regs, CPSR * states, i_cache *program, int position, int * mem, char * tracefile);
+        virtual int instruction(int *regs, CPSR * states, i_cache *program, int position, int * mem);
+        virtual int instructionB(int *regs, CPSR * states, i_cache *program, int position, int * mem);
 
 
 
     protected:
         int data;
         char disposition;
+        char * tracefile;
 };
 
 
@@ -159,23 +161,24 @@ class double_operand: public command
     public:
         double_operand();
         double_operand(int to_data);
-        double_operand(int to_data, char to_disposition, int to_function_code, int to_source_mode, int to_source, int to_destination_mode, int to_destination);
+        double_operand(int to_data, char to_disposition, char * tracefile, int to_function_code, int to_source_mode,
+                       int to_source, int to_destination_mode, int to_destination);
         ~double_operand();
         double_operand(const double_operand &to_copy);
 
         void disp();
-        int instruction(int *regs, CPSR * states, i_cache *program, int position, int * mem, char * tracefile);
-        //int instructionB(int *regs, CPSR * states, i_cache *program, int position, int * mem, char * tracefile);
+        int instruction(int *regs, CPSR * states, i_cache *program, int position, int * mem);
+        //int instructionB(int *regs, CPSR * states, i_cache *program, int position, int * mem);
 
 
 
 
     protected:
         int function_code;
-        int source;
         int source_mode;
-        int destination;
+        int source;
         int destination_mode;
+        int destination;
 };
 
 class single_operand: public command
@@ -183,12 +186,13 @@ class single_operand: public command
     public:
         single_operand();
         single_operand(int to_data);
-        single_operand(int to_data, char to_disposition, int to_function_code, int to_destination_mode, int to_destination);
+        single_operand(int to_data, char to_disposition, char * tracefile, int to_function_code,
+                       int to_destination_mode, int to_destination);
         ~single_operand();
         single_operand(const single_operand &to_copy);
         void disp();
-        int instruction(int *regs, CPSR *states, i_cache *program, int position, int * mem, char * tracefile);
-        //int instructionB(int *regs, CPSR * states, i_cache *program, int position, int * mem, har * tracefile);
+        int instruction(int *regs, CPSR *states, i_cache *program, int position, int * mem);
+        //int instructionB(int *regs, CPSR * states, i_cache *program, int position, int * mem);
 
 
     protected:
@@ -203,12 +207,13 @@ class extended: public command
     public:
         extended();
         extended(int to_data);
-        extended(int to_data, char to_disposition, int to_function_code, int to_destination, int to_source_code, int to_source);
+        extended(int to_data, char to_disposition, char * tracefile, int to_function_code, int to_destination,
+                 int to_source_code, int to_source);
         ~extended();
         extended(const extended &to_copy);
         void disp();
-        int instruction(int *regs, CPSR * states, i_cache *program, int position, int * mem, char * tracefile);
-        //int instructionB(int *regs, CPSR * states, i_cache *program, int position, int * mem, char * tracefile);
+        int instruction(int *regs, CPSR * states, i_cache *program, int position, int * mem);
+        //int instructionB(int *regs, CPSR * states, i_cache *program, int position, int * mem);
 
 
     protected:
@@ -224,12 +229,12 @@ class branch: public command
     public:
         branch();
         branch(int to_data);
-        branch(int to_data, char disposition, int to_function_code, int to_offset);
+        branch(int to_data, char disposition, char * tracefile, int to_function_code, int to_offset);
         ~branch();
         branch(const branch &to_copy);
         void disp();
-        int instruction(int *regs, CPSR * states, i_cache *program, int position, int * mem, char * tracefile);
-        //int instructionB(int *regs, CPSR * states, i_cache *program, int position, int * mem, char * tracefile);
+        int instruction(int *regs, CPSR * states, i_cache *program, int position, int * mem);
+        //int instructionB(int *regs, CPSR * states, i_cache *program, int position, int * mem);
 
 
     protected:
@@ -243,12 +248,13 @@ class jump_sub: public command
     public:
         jump_sub();
         jump_sub(int to_data);
-        jump_sub(int to_data, char to_disposition, int to_function_code, int to_linkage_reg, int to_destination_code, int to_destination, int to_parameters);
+        jump_sub(int to_data, char to_disposition, char * tracefile, int to_function_code, int to_linkage_reg,
+                 int to_destination_code, int to_destination, int to_parameters);
         ~jump_sub();
         jump_sub(const jump_sub &to_copy);
         void disp();
-        int instruction(int *regs, CPSR * states, i_cache *program, int position, int * mem, char * tracefile);
-        //int instructionB(int *regs, CPSR * states, i_cache *program, int position, int * mem, char * tracefile);
+        int instruction(int *regs, CPSR * states, i_cache *program, int position, int * mem);
+        //int instructionB(int *regs, CPSR * states, i_cache *program, int position, int * mem);
 
 
     protected:
@@ -266,12 +272,12 @@ class trapIntMiscCond: public command
     public:
         trapIntMiscCond();
         trapIntMiscCond(int to_data);
-        trapIntMiscCond(int to_data, char to_disposition, int to_function_code, int to_trap_code);
+        trapIntMiscCond(int to_data, char to_disposition, char * tracefile, int to_function_code, int to_trap_code);
         ~trapIntMiscCond();
         trapIntMiscCond(const trapIntMiscCond &to_copy);
         void disp();
-        int instruction(int *regs, CPSR * states, i_cache *program, int position, int * mem, char * tracefile);
-        //int instructionB(int *regs, CPSR * states, i_cache *program, int position, int * mem, char * tracefile);
+        int instruction(int *regs, CPSR * states, i_cache *program, int position, int * mem);
+        //int instructionB(int *regs, CPSR * states, i_cache *program, int position, int * mem);
 
 
     protected:

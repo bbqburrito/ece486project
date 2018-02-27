@@ -1,19 +1,124 @@
+//compile with -std=c++11
+//uses auto type declaration, range-based for loops,
+//nullptr
+
+
 #include "pdp11.h"
 
 using namespace std;
 
-int findstart(i_cache * prog_mem, int prog_length)
-{
-	char answer[25];
-	int start;
+int findstart(i_cache * prog_mem, int prog_length);
+long line_reader(char * filename, char *& disposition, int & filepos);
+int trace_file(char * filename, int type, int address);
+int interpreter(int to_interpret, int * firstbit, command *& new_command, char * tracefile);
+
+/*reads the file by line and returns the command by long
+ * takes char pointer to store disposition of line
+ */
+long line_reader(char *filename, char *&disposition, int &filepos) {
+    char address[100];
+    char * endptr;
+    long data;
+
+    ifstream filein;
+
+    for (auto &addres : address) {
+        addres = '\0';
+    }
+
+    filein.open(filename);
+
+    if(!filein.is_open())
+    {
+        cout << "file not found\n";
+        return -1;
+    }
+
+    filein.seekg(filepos);      //maintain file position
+
+    filein.getline(address, 100);
+    if(address[7] == '\r')
+    {
+        address[7] = '\0';
+    }
+
+    //while((strlen(address) != 7) && !filein.eof()) //if line length is not 7
+    //and file is not ended
+    //{
+    //    filein.getline(address, 100);
+    //}
+
+    if(filein.eof())
+    {
+        *disposition = '\0';
+        data = -1;
+        filepos = static_cast<int>(filein.tellg());   //pass file position.
+
+        for (auto &addres : address) {
+            addres = '\0';
+        }
+
+        filein.close();
+        return data;
+    }
+
+    while((strlen(address) != 7))       //if string loaded not 7 characters
+    {                                   //read next line
+        if(filein.eof())
+        {
+            *disposition = '\0';
+            data = -1;
+            filepos = static_cast<int>(filein.tellg());   //pass file position
+
+            for (char &addres : address) {
+                addres = '\0';
+            }
+
+            filein.close();
+            return data;
+        }
+
+        for (auto &addres : address) {
+            addres = '\0';          //reset address
+        }
+
+        filein.getline(address, 100);
+        if(address[7] == '\r')
+            address[7] = '\0';
+    }
+
+    *disposition = address[0];          //get disposition
+    address[0] = '0';                   //set first char to 0
+
+    for(int i = 0; i < 7; ++i)          //invalid characters converted to 0
+    {
+        if ('7' < address[i]) {
+            if (address[i] < '0')
+                address[i] = '0';
+        }
+    }
+
+    data = strtol(address, &endptr, 8); //convert char to long
+    //by octal
+    //data = strtol(address, &endptr, 10); //convert char to long
+    filepos = static_cast<int>(filein.tellg());           //pass file position
+
+    filein.close();
+
+    return data;
+}
+
+int findstart(i_cache *prog_mem, int prog_length) {
+    char answer[25];
+    int start = 0;
     int i;
     int j;
 
     cin.sync();
     cout << "input start point? (y/N) ";    //if start point not inputted as arg
-                                            //ask user for start point
-                                            //if no, find * disposition
-                                            //if no *, start from 0
+    //ask user for start point
+    //if no, find * disposition
+    //if no *, start from 0
     cin.getline(answer, 25);
     cin.sync();
 
@@ -23,7 +128,7 @@ int findstart(i_cache * prog_mem, int prog_length)
         cout << "enter start: ";
         cin.getline(answer, 25);
         cin.sync();
-        start = strtol(answer, NULL, 10);
+        start = strtol(answer, nullptr, 10);
         if(start > prog_length)
         {
             cout << "program only " << prog_length << " lines. Start set to 0\n";
@@ -46,18 +151,15 @@ int findstart(i_cache * prog_mem, int prog_length)
 
         if(!j)
             start = 0;
-	}
-	return start;
+    }
+    return start;
 }
-
-
 
 //writes to file specified by filename. writes address parameter
 //as an octal. returns an int to indicate outcome.
 //takes a char to indicate filename, an int to indicate
 //the type write, and an int to indicate the address write
-int trace_file(char * filename, int type, int address)
-{
+int trace_file(char *filename, int type, int address) {
     char make_address[100];
     ofstream outfile;
     int i;
@@ -84,113 +186,11 @@ int trace_file(char * filename, int type, int address)
     return outcome;
 }
 
-
-/*reads the file by line and returns the command by long
- * takes char pointer to store disposition of line
- */
-
-
-long line_reader(char * filename, char *& disposition, int & filepos)
-{
-    char address[100];
-    char * endptr;
-    long data;
-
-    ifstream filein;
-
-    for(int i = 0; i < 100; ++i)
-    {
-        address[i] = 0;
-    }
-
-    filein.open(filename);
-
-    if(!filein.is_open())
-    {
-        cout << "file not found\n";
-        return -1;
-    }
-
-    filein.seekg(filepos);      //maintain file position
-
-    filein.getline(address, 100);
-    if(address[7] == '\r')
-    {
-        address[7] = '\0';
-    }
-
-    //while((strlen(address) != 7) && !filein.eof()) //if line length is not 7
-                                                   //and file is not ended
-    //{
-    //    filein.getline(address, 100);
-    //}
-
-    if(filein.eof())
-    {
-        *disposition = '\0';
-        data = -1;
-        filepos = filein.tellg();   //pass file position.
-
-        for(int i = 0; i < 100; ++i)
-        {
-            address[i] = '\0';
-        }
-
-        filein.close();
-        return data;
-    }
-
-    while((strlen(address) != 7))       //if string loaded not 7 characters
-    {                                   //read next line
-        if(filein.eof())
-        {
-            *disposition = '\0';
-            data = -1;
-            filepos = filein.tellg();   //pass file position
-
-            for(int i = 0; i < 100; ++i)
-            {
-                address[i] = '\0';
-            }
-
-            filein.close();
-            return data;
-        }
-
-        for(int i = 0; i < 100; ++i)
-        {
-            address[i] = '\0';          //reset address
-        }
-
-        filein.getline(address, 100);
-        if(address[7] == '\r')
-            address[7] = '\0';
-    }
-    
-    *disposition = address[0];          //get disposition
-    address[0] = '0';                   //set first char to 0
-
-    for(int i = 0; i < 7; ++i)          //invalid characters converted to 0
-    {
-        if(address[i] > '7' && address[i] < '0')
-            address[i] = '0';
-    }
-
-    data = strtol(address, &endptr, 8); //convert char to long
-                                            //by octal
-    //data = strtol(address, &endptr, 10); //convert char to long
-    filepos = filein.tellg();           //pass file position
-
-    filein.close();
-        
-    return data;
-}
-
 //takes int as a command to parse, an int pointer to pass firstbit, and a command 
 //pointer to assign to command class object by upcasting. returns an int representing
 //the function code of passed command. parses command, then creates an object of 
 //class type and stores in new_command pointer
-int interpreter(int to_interpret, int * firstbit, command *& new_command)
+int interpreter(int to_interpret, int * firstbit, command *& new_command, char * tracefile)
 {
     //int i;
     string instruction;
@@ -208,20 +208,20 @@ int interpreter(int to_interpret, int * firstbit, command *& new_command)
     *firstbit = to_interpret >> 15;
 
     //cout << *firstbit << endl;
-    
-    //next 3 bits indicate function code for double 
+
+    //next 3 bits indicate function code for double
     //operand commands
     bit1214 = (to_interpret >> 12) & 7;
 
     //cout << bit1214 << endl;
 
-    //next 3 bits indicate more of function code for 
+    //next 3 bits indicate more of function code for
     //extended instruction set
-    bit0911 = (to_interpret >> 9) & 7; 
+    bit0911 = (to_interpret >> 9) & 7;
 
     //cout << bit0911 << endl;
 
-    //next 3 bits indicate function code for 
+    //next 3 bits indicate function code for
     //single instruction set
     bit0608 = (to_interpret >> 6) & 7;
 
@@ -241,745 +241,746 @@ int interpreter(int to_interpret, int * firstbit, command *& new_command)
 
     //cout << bit0002 << endl;
 
-    if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4)) ^ int(ADD)))
+    if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4)) ^ ADD))
     {
         instruction = "ADD";
         code = ADD;
         //cout << "ADD" << endl;
-        new_command = new double_operand(to_interpret, '-', code, bit0911, bit0608, bit0305, bit0002);
+        new_command = new double_operand(to_interpret, '-', tracefile, code, bit0911, bit0608, bit0305, bit0002);
 
         //new_command->disp();
         //new_command = make_command;
     }
-    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3) + bit0608*pow(8, 2)) ^ int(CLR)))
+    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3) + bit0608*pow(8, 2)) ^ CLR))
     {
         instruction = "CLR";
         code = CLR;
         //cout << "CLR" << endl;
-        new_command = new single_operand(to_interpret, '-', code, bit0305, bit0002);
+        new_command = new single_operand(to_interpret, '-', tracefile, code, bit0305, bit0002);
 
         //new_command->disp();
     }
-    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3) + bit0608*pow(8, 2)) ^ int(CLRB)))
+    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3) + bit0608*pow(8, 2)) ^ CLRB))
     {
         instruction = "CLRB";
         code = CLRB;
         //cout << "CLRB" << endl;
-        new_command = new single_operand(to_interpret, '-', code, bit0305, bit0002);
+        new_command = new single_operand(to_interpret, '-', tracefile, code, bit0305, bit0002);
 
         //new_command->disp();
     }
-    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3) + bit0608*pow(8, 2)) ^ int(COM)))
+    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3) + bit0608*pow(8, 2)) ^ COM))
     {
         instruction = "COM";
         code = COM;
         //cout << "COM" << endl;
-        new_command = new single_operand(to_interpret, '-', code, bit0305, bit0002);
+        new_command = new single_operand(to_interpret, '-', tracefile, code, bit0305, bit0002);
 
         //new_command->disp();
     }
-    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3) + bit0608*pow(8, 2)) ^ int(COMB)))
+    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3) + bit0608*pow(8, 2)) ^ COMB))
     {
         instruction = "COMB";
         code = COMB;
         //cout << "COMB" << endl;
-        new_command = new single_operand(to_interpret, '-', code, bit0305, bit0002);
+        new_command = new single_operand(to_interpret, '-', tracefile, code, bit0305, bit0002);
 
         //new_command->disp();
     }
-    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3) + bit0608*pow(8, 2)) ^ int(INC)))
+    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3) + bit0608*pow(8, 2)) ^ INC))
     {
         instruction = "INC";
         code = INC;
         //cout << "INC" << endl;
-        new_command = new single_operand(to_interpret, '-', code, bit0305, bit0002);
+        new_command = new single_operand(to_interpret, '-', tracefile, code, bit0305, bit0002);
 
         //new_command->disp();
     }
-    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3) + bit0608*pow(8, 2)) ^ int(INCB)))
+    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3) + bit0608*pow(8, 2)) ^ INCB))
     {
         instruction = "INCB";
         code = INCB;
         //cout << "INCB" << endl;
-        new_command = new single_operand(to_interpret, '-', code, bit0305, bit0002);
+        new_command = new single_operand(to_interpret, '-', tracefile, code, bit0305, bit0002);
 
         //new_command->disp();
     }
-    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3) + bit0608*pow(8, 2)) ^ int(DEC)))
+    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3) + bit0608*pow(8, 2)) ^ DEC))
     {
         instruction = "DEC";
         code = DEC;
         //cout << "DEC" << endl;
-        new_command = new single_operand(to_interpret, '-', code, bit0305, bit0002);
+        new_command = new single_operand(to_interpret, '-', tracefile, code, bit0305, bit0002);
 
         //new_command->disp();
     }
-    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3) + bit0608*pow(8, 2)) ^ int(DECB)))
+    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3) + bit0608*pow(8, 2)) ^ DECB))
     {
         instruction = "DECB";
         code = DECB;
         //cout << "DECB" << endl;
-        new_command = new single_operand(to_interpret, '-', code, bit0305, bit0002);
+        new_command = new single_operand(to_interpret, '-', tracefile, code, bit0305, bit0002);
 
         //new_command->disp();
     }
-    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3) + bit0608*pow(8, 2)) ^ int(NEG)))
+    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3) + bit0608*pow(8, 2)) ^ NEG))
     {
         instruction = "NEG";
         code = NEG;
         //cout << "NEG" << endl;
-        new_command = new single_operand(to_interpret, '-', code, bit0305, bit0002);
+        new_command = new single_operand(to_interpret, '-', tracefile, code, bit0305, bit0002);
 
         //new_command->disp();
     }
-    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3) + bit0608*pow(8, 2)) ^ int(NEGB)))
+    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3) + bit0608*pow(8, 2)) ^ NEGB))
     {
         instruction = "NEGB";
         code = NEGB;
         //cout << "NEGB" << endl;
-        new_command = new single_operand(to_interpret, '-', code, bit0305, bit0002);
+        new_command = new single_operand(to_interpret, '-', tracefile, code, bit0305, bit0002);
 
         //new_command->disp();
     }
-    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3) + bit0608*pow(8, 2)) ^ int(TST)))
+    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3) + bit0608*pow(8, 2)) ^ TST))
     {
         instruction = "TST";
         code = TST;
         //cout << "TST" << endl;
-        new_command = new single_operand(to_interpret, '-', code, bit0305, bit0002);
+        new_command = new single_operand(to_interpret, '-', tracefile, code, bit0305, bit0002);
 
         //new_command->disp();
     }
-    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3) + bit0608*pow(8, 2)) ^ int(TSTB)))
+    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3) + bit0608*pow(8, 2)) ^ TSTB))
     {
         instruction = "TSTB";
         code = TSTB;
         //cout << "TSTB" << endl;
-        new_command = new single_operand(to_interpret, '-', code, bit0305, bit0002);
+        new_command = new single_operand(to_interpret, '-', tracefile, code, bit0305, bit0002);
 
         //new_command->disp();
     }
-    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3) + bit0608*pow(8, 2)) ^ int(ASR)))
+    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3) + bit0608*pow(8, 2)) ^ ASR))
     {
         instruction = "ASR";
         code = ASR;
         //cout << "ASR" << endl;
-        new_command = new single_operand(to_interpret, '-', code, bit0305, bit0002);
+        new_command = new single_operand(to_interpret, '-', tracefile, code, bit0305, bit0002);
 
         //new_command->disp();
     }
-    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3) + bit0608*pow(8, 2)) ^ int(ASRB)))
+    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3) + bit0608*pow(8, 2)) ^ ASRB))
     {
         instruction = "ASRB";
         code = ASRB;
         //cout << "ASRB" << endl;
-        new_command = new single_operand(to_interpret, '-', code, bit0305, bit0002);
+        new_command = new single_operand(to_interpret, '-', tracefile, code, bit0305, bit0002);
 
         //new_command->disp();
     }
-    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3) + bit0608*pow(8, 2)) ^ int(ASL)))
+    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3) + bit0608*pow(8, 2)) ^ ASL))
     {
         instruction = "ASL";
         code = ASL;
         //cout << "ASL" << endl;
-        new_command = new single_operand(to_interpret, '-', code, bit0305, bit0002);
+        new_command = new single_operand(to_interpret, '-', tracefile, code, bit0305, bit0002);
 
         //new_command->disp();
     }
-    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3) + bit0608*pow(8, 2)) ^ int(ASLB)))
+    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3) + bit0608*pow(8, 2)) ^ ASLB))
     {
         instruction = "ASLB";
         code = ASLB;
         //cout << "ASLB" << endl;
-        new_command = new single_operand(to_interpret, '-', code, bit0305, bit0002);
+        new_command = new single_operand(to_interpret, '-', tracefile, code, bit0305, bit0002);
 
         //new_command->disp();
     }
-    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3) + bit0608*pow(8, 2)) ^ int(ROR)))
+    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3) + bit0608*pow(8, 2)) ^ ROR))
     {
         instruction = "ROR";
         code = ROR;
         //cout << "ROR" << endl;
-        new_command = new single_operand(to_interpret, '-', code, bit0305, bit0002);
+        new_command = new single_operand(to_interpret, '-', tracefile, code, bit0305, bit0002);
 
         //new_command->disp();
     }
-    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3) + bit0608*pow(8, 2)) ^ int(RORB)))
+    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3) + bit0608*pow(8, 2)) ^ RORB))
     {
         instruction = "RORB";
         code = RORB;
         //cout << "RORB" << endl;
-        new_command = new single_operand(to_interpret, '-', code, bit0305, bit0002);
+        new_command = new single_operand(to_interpret, '-', tracefile, code, bit0305, bit0002);
 
         //new_command->disp();
     }
-    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3) + bit0608*pow(8, 2)) ^ int(ROL)))
+    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3) + bit0608*pow(8, 2)) ^ ROL))
     {
         instruction = "ROL";
         code = ROL;
         //cout << "ROL" << endl;
-        new_command = new single_operand(to_interpret, '-', code, bit0305, bit0002);
+        new_command = new single_operand(to_interpret, '-', tracefile, code, bit0305, bit0002);
 
         //new_command->disp();
     }
-    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3) + bit0608*pow(8, 2)) ^ int(ROLB)))
+    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3) + bit0608*pow(8, 2)) ^ ROLB))
     {
         instruction = "ROLB";
         code = ROLB;
         //cout << "ROLB" << endl;
-        new_command = new single_operand(to_interpret, '-', code, bit0305, bit0002);
+        new_command = new single_operand(to_interpret, '-', tracefile, code, bit0305, bit0002);
 
         //new_command->disp();
     }
-    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3) + bit0608*pow(8, 2)) ^ int(SWAB)))
+    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3) + bit0608*pow(8, 2)) ^ SWAB))
     {
         instruction = "SWAB";
         code = SWAB;
         //cout << "SWAB" << endl;
-        new_command = new single_operand(to_interpret, '-', code, bit0305, bit0002);
+        new_command = new single_operand(to_interpret, '-', tracefile, code, bit0305, bit0002);
 
         //new_command->disp();
     }
-    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3) + bit0608*pow(8, 2)) ^ int(ADC)))
+    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3) + bit0608*pow(8, 2)) ^ ADC))
     {
         instruction = "ADC";
         code = ADC;
         //cout << "ADC" << endl;
-        new_command = new single_operand(to_interpret, '-', code, bit0305, bit0002);
+        new_command = new single_operand(to_interpret, '-', tracefile, code, bit0305, bit0002);
 
         //new_command->disp();
     }
-    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3) + bit0608*pow(8, 2)) ^ int(ADCB)))
+    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3) + bit0608*pow(8, 2)) ^ ADCB))
     {
         instruction = "ADCB";
         code = ADCB;
         //cout << "ADCB" << endl;
-        new_command = new single_operand(to_interpret, '-', code, bit0305, bit0002);
+        new_command = new single_operand(to_interpret, '-', tracefile, code, bit0305, bit0002);
 
         //new_command->disp();
     }
-    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3) + bit0608*pow(8, 2)) ^ int(SBC)))
+    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3) + bit0608*pow(8, 2)) ^ SBC))
     {
         instruction = "SBC";
         code = SBC;
         //cout << "SBC" << endl;
-        new_command = new single_operand(to_interpret, '-', code, bit0305, bit0002);
+        new_command = new single_operand(to_interpret, '-', tracefile, code, bit0305, bit0002);
 
         //new_command->disp();
     }
-    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3) + bit0608*pow(8, 2)) ^ int(SBCB)))
+    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3) + bit0608*pow(8, 2)) ^ SBCB))
     {
         instruction = "SBCB";
         code = SBCB;
         //cout << "SBCB" << endl;
-        new_command = new single_operand(to_interpret, '-', code, bit0305, bit0002);
+        new_command = new single_operand(to_interpret, '-', tracefile, code, bit0305, bit0002);
 
         //new_command->disp();
     }
-    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3) + bit0608*pow(8, 2)) ^ int(SXT)))
+    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3) + bit0608*pow(8, 2)) ^ SXT))
     {
         instruction = "SXT";
         code = SXT;
         //cout << "SXT" << endl;
-        new_command = new single_operand(to_interpret, '-', code, bit0305, bit0002);
+        new_command = new single_operand(to_interpret, '-', tracefile, code, bit0305, bit0002);
 
         //new_command->disp();
     }
-    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4)) ^ int(MOV)))
+    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4)) ^ MOV))
     {
         instruction = "MOV";
         code = MOV;
         //cout << "MOV" << endl;
-        new_command = new double_operand(to_interpret, '-', code, bit0911, bit0608, bit0305, bit0002);
+        new_command = new double_operand(to_interpret, '-', tracefile, code, bit0911, bit0608, bit0305, bit0002);
 
         //new_command->disp();
     }
-    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4)) ^ int(MOVB)))
+    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4)) ^ MOVB))
     {
         instruction = "MOVB";
         code = MOVB;
         //cout << "MOVB" << endl;
-        new_command = new double_operand(to_interpret, '-', code, bit0911, bit0608, bit0305, bit0002);
+        new_command = new double_operand(to_interpret, '-', tracefile, code, bit0911, bit0608, bit0305, bit0002);
 
         //new_command->disp();
     }
-    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4)) ^ int(CMP)))
+    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4)) ^ CMP))
     {
         instruction = "CMP";
         code = CMP;
         //cout << "CMP" << endl;
-        new_command = new double_operand(to_interpret, '-', code, bit0911, bit0608, bit0305, bit0002);
+        new_command = new double_operand(to_interpret, '-', tracefile, code, bit0911, bit0608, bit0305, bit0002);
 
         //new_command->disp();
     }
-    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4)) ^ int(CMPB)))
+    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4)) ^ CMPB))
     {
         instruction = "CMPB";
         code = CMPB;
         //cout << "CMPB" << endl;
-        new_command = new double_operand(to_interpret, '-', code, bit0911, bit0608, bit0305, bit0002);
+        new_command = new double_operand(to_interpret, '-', tracefile, code, bit0911, bit0608, bit0305, bit0002);
 
         //new_command->disp();
     }
 
-    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4)) ^ int(SUB)))
+    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4)) ^ SUB))
     {
         instruction = "SUB";
         code = SUB;
         //cout << "SUB" << endl;
-        new_command = new double_operand(to_interpret, '-', code, bit0911, bit0608, bit0305, bit0002);
+        new_command = new double_operand(to_interpret, '-', tracefile, code, bit0911, bit0608, bit0305, bit0002);
 
         //new_command->disp();
         //new_command = make_command;
     }
 
-    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4)) ^ int(BIT)))
+    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4)) ^ BIT))
     {
         instruction = "BIT";
         code = BIT;
         //cout << "BIT" << endl;
-        new_command = new double_operand(to_interpret, '-', code, bit0911, bit0608, bit0305, bit0002);
+        new_command = new double_operand(to_interpret, '-', tracefile, code, bit0911, bit0608, bit0305, bit0002);
 
         //new_command->disp();
         //new_command = make_command;
     }
 
-    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4)) ^ int(BITB)))
+    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4)) ^ BITB))
     {
         instruction = "BITB";
         code =  BITB;
         //cout << "BITB" << endl;
-        new_command = new double_operand(to_interpret, '-', code, bit0911, bit0608, bit0305, bit0002);
+        new_command = new double_operand(to_interpret, '-', tracefile, code, bit0911, bit0608, bit0305, bit0002);
 
         //new_command->disp();
         //new_command = make_command;
     }
 
-    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4)) ^ int(BIC)))
+    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4)) ^ BIC))
     {
         instruction = "BIC";
         code = BIC;
         //cout << "BIC" << endl;
-        new_command = new double_operand(to_interpret, '-', code, bit0911, bit0608, bit0305, bit0002);
+        new_command = new double_operand(to_interpret, '-', tracefile, code, bit0911, bit0608, bit0305, bit0002);
 
         //new_command->disp();
         //new_command = make_command;
     }
 
-    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4)) ^ int(BICB)))
+    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4)) ^ BICB))
     {
         instruction = "BICB";
         code = BICB;
         //cout << "BICB" << endl;
-        new_command = new double_operand(to_interpret, '-', code, bit0911, bit0608, bit0305, bit0002);
+        new_command = new double_operand(to_interpret, '-', tracefile, code, bit0911, bit0608, bit0305, bit0002);
 
         //new_command->disp();
         //new_command = make_command;
     }
 
-    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4)) ^ int(BIS)))
+    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4)) ^ BIS))
     {
         instruction = "BIS";
         code = BIS;
         //cout << "BIS" << endl;
-        new_command = new double_operand(to_interpret, '-', code, bit0911, bit0608, bit0305, bit0002);
+        new_command = new double_operand(to_interpret, '-', tracefile, code, bit0911, bit0608, bit0305, bit0002);
 
         //new_command->disp();
         //new_command = make_command;
     }
 
-    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4)) ^ int(BISB)))
+    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4)) ^ BISB))
     {
         instruction = "BISB";
         code = BISB;
         //cout << "BISB" << endl;
-        new_command = new double_operand(to_interpret, '-', code, bit0911, bit0608, bit0305, bit0002);
+        new_command = new double_operand(to_interpret, '-', tracefile, code, bit0911, bit0608, bit0305, bit0002);
 
         //new_command->disp();
         //new_command = make_command;
     }
-    
-    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3) + (bit0608 & 4)*pow(8, 2)) ^ int(BR)))
+
+    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3) + (bit0608 & 4)*pow(8, 2)) ^ BR))
     {
         instruction = "BR";
         code = BR;
         //cout << "BR" << endl;
-        new_command = new branch(to_interpret, '-', code, (bit0608 & 3) * 64 + bit0305 * 8 + bit0002);
+        new_command = new branch(to_interpret, '-', tracefile, code, (bit0608 & 3) * 64 + bit0305 * 8 + bit0002);
         //new_command->disp();
     }
-    
-    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3) + (bit0608 & 4)*pow(8, 2)) ^ int(BNE)))
+
+    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3) + (bit0608 & 4)*pow(8, 2)) ^ BNE))
     {
         instruction = "BNE";
         code = BNE;
         //cout << "BNE" << endl;
-        new_command = new branch(to_interpret, '-', code, (bit0608 & 3) * 64 + bit0305 * 8 + bit0002);
+        new_command = new branch(to_interpret, '-', tracefile, code, (bit0608 & 3) * 64 + bit0305 * 8 + bit0002);
         //new_command->disp();
     }
-    
-    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3) + (bit0608 & 4)*pow(8, 2)) ^ int(BEQ)))
+
+    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3) + (bit0608 & 4)*pow(8, 2)) ^ BEQ))
     {
         instruction = "BEQ";
         code = BEQ;
         //cout << "BEQ" << endl;
-        new_command = new branch(to_interpret, '-', code, (bit0608 & 3) * 64 + bit0305 * 8 + bit0002);
+        new_command = new branch(to_interpret, '-', tracefile, code, (bit0608 & 3) * 64 + bit0305 * 8 + bit0002);
         //new_command->disp();
     }
-    
-    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3) + (bit0608 & 4)*pow(8, 2)) ^ int(BPL)))
+
+    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3) + (bit0608 & 4)*pow(8, 2)) ^ BPL))
     {
         instruction = "BPL";
         code = BPL;
         //cout << "BPL" << endl;
-        new_command = new branch(to_interpret, '-', code, (bit0608 & 3) * 64 + bit0305 * 8 + bit0002);
+        new_command = new branch(to_interpret, '-', tracefile, code, (bit0608 & 3) * 64 + bit0305 * 8 + bit0002);
         //new_command->disp();
     }
-    
-    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3) + (bit0608 & 4)*pow(8, 2)) ^ int(BMI)))
+
+    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3) + (bit0608 & 4)*pow(8, 2)) ^ BMI))
     {
         instruction = "BMI";
         code = BMI;
         //cout << "BMI" << endl;
-        new_command = new branch(to_interpret, '-', code, (bit0608 & 3) * 64 + bit0305 * 8 + bit0002);
+        new_command = new branch(to_interpret, '-', tracefile, code, (bit0608 & 3) * 64 + bit0305 * 8 + bit0002);
         //new_command->disp();
     }
-    
-    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3) + (bit0608 & 4)*pow(8, 2)) ^ int(BVC)))
+
+    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3) + (bit0608 & 4)*pow(8, 2)) ^ BVC))
     {
         instruction = "BVC";
         code = BVC;
         //cout << "BVC" << endl;
-        new_command = new branch(to_interpret, '-', code, (bit0608 & 3) * 64 + bit0305 * 8 + bit0002);
+        new_command = new branch(to_interpret, '-', tracefile, code, (bit0608 & 3) * 64 + bit0305 * 8 + bit0002);
         //new_command->disp();
     }
-    
-    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3) + (bit0608 & 4)*pow(8, 2)) ^ int(BVS)))
+
+    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3) + (bit0608 & 4)*pow(8, 2)) ^ BVS))
     {
         instruction = "BVS";
         code = BVS;
         //cout << "BVS" << endl;
-        new_command = new branch(to_interpret, '-', code, (bit0608 & 3) * 64 + bit0305 * 8 + bit0002);
+        new_command = new branch(to_interpret, '-', tracefile, code, (bit0608 & 3) * 64 + bit0305 * 8 + bit0002);
         //new_command->disp();
     }
-    
-    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3) + (bit0608 & 4)*pow(8, 2)) ^ int(BCC)))
+
+    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3) + (bit0608 & 4)*pow(8, 2)) ^ BCC))
     {
         instruction = "BCC";
         code = BCC;
         //cout << "BCC" << endl;
-        new_command = new branch(to_interpret, '-', code, (bit0608 & 3) * 64 + bit0305 * 8 + bit0002);
+        new_command = new branch(to_interpret, '-', tracefile, code, (bit0608 & 3) * 64 + bit0305 * 8 + bit0002);
         //new_command->disp();
     }
-    
-    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3) + (bit0608 & 4)*pow(8, 2)) ^ int(BCS)))
+
+    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3) + (bit0608 & 4)*pow(8, 2)) ^ BCS))
     {
         instruction = "BCS";
         code = BCS;
         //cout << "BCS" << endl;
-        new_command = new branch(to_interpret, '-', code, (bit0608 & 3) * 64 + bit0305 * 8 + bit0002);
+        new_command = new branch(to_interpret, '-', tracefile, code, (bit0608 & 3) * 64 + bit0305 * 8 + bit0002);
         //new_command->disp();
     }
-    
-    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3) + (bit0608 & 4)*pow(8, 2)) ^ int(BGE)))
+
+    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3) + (bit0608 & 4)*pow(8, 2)) ^ BGE))
     {
         instruction = "BGE";
         code = BGE;
         //cout << "BGE" << endl;
-        new_command = new branch(to_interpret, '-', code, (bit0608 & 3) * 64 + bit0305 * 8 + bit0002);
+        new_command = new branch(to_interpret, '-', tracefile, code, (bit0608 & 3) * 64 + bit0305 * 8 + bit0002);
         //new_command->disp();
     }
-    
-    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3) + (bit0608 & 4)*pow(8, 2)) ^ int(BLT)))
+
+    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3) + (bit0608 & 4)*pow(8, 2)) ^ BLT))
     {
         instruction = "BLT";
         code = BLT;
         //cout << "BLT" << endl;
-        new_command = new branch(to_interpret, '-', code, (bit0608 & 3) * 64 + bit0305 * 8 + bit0002);
+        new_command = new branch(to_interpret, '-', tracefile, code, (bit0608 & 3) * 64 + bit0305 * 8 + bit0002);
         //new_command->disp();
     }
-    
-    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3) + (bit0608 & 4)*pow(8, 2)) ^ int(BGT)))
+
+    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3) + (bit0608 & 4)*pow(8, 2)) ^ BGT))
     {
         instruction = "BGT";
         code = BGT;
         //cout << "BGT" << endl;
-        new_command = new branch(to_interpret, '-', code, (bit0608 & 3) * 64 + bit0305 * 8 + bit0002);
+        new_command = new branch(to_interpret, '-', tracefile, code, (bit0608 & 3) * 64 + bit0305 * 8 + bit0002);
         //new_command->disp();
     }
-    
-    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3) + (bit0608 & 4)*pow(8, 2)) ^ int(BLE)))
+
+    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3) + (bit0608 & 4)*pow(8, 2)) ^ BLE))
     {
         instruction = "BLE";
         code = BLE;
         //cout << "BLE" << endl;
-        new_command = new branch(to_interpret, '-', code, (bit0608 & 3) * 64 + bit0305 * 8 + bit0002);
+        new_command = new branch(to_interpret, '-', tracefile, code, (bit0608 & 3) * 64 + bit0305 * 8 + bit0002);
         //new_command->disp();
     }
-    
-    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3) + (bit0608 & 4)*pow(8, 2)) ^ int(BHI)))
+
+    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3) + (bit0608 & 4)*pow(8, 2)) ^ BHI))
     {
         instruction = "BHI";
         code = BHI;
         //cout << "BHI" << endl;
-        new_command = new branch(to_interpret, '-', code, (bit0608 & 3) * 64 + bit0305 * 8 + bit0002);
+        new_command = new branch(to_interpret, '-', tracefile, code, (bit0608 & 3) * 64 + bit0305 * 8 + bit0002);
         //new_command->disp();
     }
-    
-    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3) + (bit0608 & 4)*pow(8, 2)) ^ int(BLOS)))
+
+    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3) + (bit0608 & 4)*pow(8, 2)) ^ BLOS))
     {
         instruction = "BLOS";
         code = BLOS;
         //cout << "BLOS" << endl;
-        new_command = new branch(to_interpret, '-', code, (bit0608 & 3) * 64 + bit0305 * 8 + bit0002);
+        new_command = new branch(to_interpret, '-', tracefile, code, (bit0608 & 3) * 64 + bit0305 * 8 + bit0002);
         //new_command->disp();
     }
 
-    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3) + bit0608*pow(8, 2)) ^ int(JMP)))
+    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3) + bit0608*pow(8, 2)) ^ JMP))
     {
         instruction = "JMP";
         code = JMP;
         //cout << "JMP" << endl;
-        new_command = new jump_sub(to_interpret, '-', code, 0, bit0305, bit0002, 0);
-        
+        new_command = new jump_sub(to_interpret, '-', tracefile, code, 0, bit0305, bit0002, 0);
+
         //new_command->disp();
     }
 
-    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3)) ^ int(JSR)))
+    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3)) ^ JSR))
     {
         instruction = "JSR";
         code = JSR;
         //cout << "JSR" << endl;
-        new_command = new jump_sub(to_interpret, '-', code, bit0608, bit0305, bit0002, 0);
-        
+        new_command = new jump_sub(to_interpret, '-', tracefile, code, bit0608, bit0305, bit0002, 0);
+
         //new_command->disp();
     }
 
-    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3) + bit0608*pow(8, 2) + bit0305*8) ^ int(RTS)))
+    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3) + bit0608*pow(8, 2) + bit0305*8) ^ RTS))
     {
         instruction = "RTS";
         code = RTS;
         //cout << "RTS" << endl;
-        new_command = new jump_sub(to_interpret, '-', code, bit0002, 0, 0, 0);
-        
+        new_command = new jump_sub(to_interpret, '-', tracefile, code, bit0002, 0, 0, 0);
+
         //new_command->disp();
     }
 
-    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3)) ^ int(TRAP)))
+    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3)) ^ TRAP))
     {
         instruction = "TRAP";
         code = TRAP;
         //cout << "TRAP" << endl;
-        new_command = new trapIntMiscCond(to_interpret, '-', code, bit0608*pow(8, 2) + bit0305*pow(8, 1) + bit0002);
-        
+        new_command = new trapIntMiscCond(to_interpret, '-', tracefile, code,
+                                          static_cast<int>(bit0608 * pow(8, 2) + bit0305 * pow(8, 1) + bit0002));
+
         //new_command->disp();
     }
 
-    else if(!(int(to_interpret) ^ int(RTI)))
+    else if(!(to_interpret ^ RTI))
     {
         instruction = "RTI";
         code = RTI;
         //cout << "RTI" << endl;
-        new_command = new trapIntMiscCond(to_interpret, '-', code, 0);
-        
+        new_command = new trapIntMiscCond(to_interpret, '-', tracefile, code, 0);
+
         //new_command->disp();
     }
 
-    else if(!(int(to_interpret) ^ int(HALT)))
+    else if(!(to_interpret ^ HALT))
     {
         instruction = "HALT";
         code = HALT;
         //cout << "HALT" << endl;
-        new_command = new trapIntMiscCond(to_interpret, '-', code, 0);
-        
+        new_command = new trapIntMiscCond(to_interpret, '-', tracefile, code, 0);
+
         //new_command->disp();
     }
 
-    else if(!(int(to_interpret) ^ int(WAIT)))
+    else if(!(to_interpret ^ WAIT))
     {
         instruction = "WAIT";
         code = WAIT;
         //cout << "WAIT" << endl;
-        new_command = new trapIntMiscCond(to_interpret, '-', code, 0);
-        
+        new_command = new trapIntMiscCond(to_interpret, '-', tracefile, code, 0);
+
         //new_command->disp();
     }
 
-    else if(!(int(to_interpret) ^ int(RESET)))
+    else if(!(to_interpret ^ RESET))
     {
         instruction = "RESET";
         code = RESET;
         //cout << "RESET" << endl;
-        new_command = new trapIntMiscCond(to_interpret, '-', code, 0);
-        
+        new_command = new trapIntMiscCond(to_interpret, '-', tracefile, code, 0);
+
         //new_command->disp();
     }
 
-    else if(!(int(to_interpret) ^ int(CLC)))
+    else if(!(to_interpret ^ CLC))
     {
         instruction = "CLC";
         code = CLC;
         //cout << "CLC" << endl;
-        new_command = new trapIntMiscCond(to_interpret, '-', code, 0);
-        
+        new_command = new trapIntMiscCond(to_interpret, '-', tracefile, code, 0);
+
         //new_command->disp();
     }
 
-    else if(!(int(to_interpret) ^ int(CLV)))
+    else if(!(to_interpret ^ CLV))
     {
         instruction = "CLV";
         code = RTI;
         //cout << "CLV" << endl;
-        new_command = new trapIntMiscCond(to_interpret, '-', code, 0);
-        
+        new_command = new trapIntMiscCond(to_interpret, '-', tracefile, code, 0);
+
         //new_command->disp();
     }
 
-    else if(!(int(to_interpret) ^ int(CLZ)))
+    else if(!(to_interpret ^ CLZ))
     {
         instruction = "CLZ";
         code = CLZ;
         //cout << "CLZ" << endl;
-        new_command = new trapIntMiscCond(to_interpret, '-', code, 0);
-        
+        new_command = new trapIntMiscCond(to_interpret, '-', tracefile, code, 0);
+
         //new_command->disp();
     }
 
-    else if(!(int(to_interpret) ^ int(CLN)))
+    else if(!(to_interpret ^ CLN))
     {
         instruction = "CLN";
         code = CLN;
         //cout << "CLN" << endl;
-        new_command = new trapIntMiscCond(to_interpret, '-', code, 0);
-        
+        new_command = new trapIntMiscCond(to_interpret, '-', tracefile, code, 0);
+
         //new_command->disp();
     }
 
-    else if(!(int(to_interpret) ^ int(CCC)))
+    else if(!(to_interpret ^ CCC))
     {
         instruction = "CCC";
         code = CCC;
         //cout << "CCC" << endl;
-        new_command = new trapIntMiscCond(to_interpret, '-', code, 0);
-        
+        new_command = new trapIntMiscCond(to_interpret, '-', tracefile, code, 0);
+
         //new_command->disp();
     }
 
-    else if(!(int(to_interpret) ^ int(SEC)))
+    else if(!(to_interpret ^ SEC))
     {
         instruction = "SEC";
         code = SEC;
         //cout << "SEC" << endl;
-        new_command = new trapIntMiscCond(to_interpret, '-', code, 0);
-        
+        new_command = new trapIntMiscCond(to_interpret, '-', tracefile, code, 0);
+
         //new_command->disp();
     }
 
-    else if(!(int(to_interpret) ^ int(SEV)))
+    else if(!(to_interpret ^ SEV))
     {
         instruction = "SEV";
         code = SEV;
         //cout << "SEV" << endl;
-        new_command = new trapIntMiscCond(to_interpret, '-', code, 0);
-        
+        new_command = new trapIntMiscCond(to_interpret, '-', tracefile, code, 0);
+
         //new_command->disp();
     }
 
-    else if(!(int(to_interpret) ^ int(SEZ)))
+    else if(!(to_interpret ^ SEZ))
     {
         instruction = "SEZ";
         code = SEZ;
         //cout << "SEZ" << endl;
-        new_command = new trapIntMiscCond(to_interpret, '-', code, 0);
-        
+        new_command = new trapIntMiscCond(to_interpret, '-', tracefile, code, 0);
+
         //new_command->disp();
     }
 
-    else if(!(int(to_interpret) ^ int(SEN)))
+    else if(!(to_interpret ^ SEN))
     {
         instruction = "SEN";
         code = SEN;
         //cout << "SEN" << endl;
-        new_command = new trapIntMiscCond(to_interpret, '-', code, 0);
-        
+        new_command = new trapIntMiscCond(to_interpret, '-', tracefile, code, 0);
+
         //new_command->disp();
     }
 
-    else if(!(int(to_interpret) ^ int(SCC)))
+    else if(!(to_interpret ^ SCC))
     {
         instruction = "SCC";
         code = SCC;
         //cout << "SCC" << endl;
-        new_command = new trapIntMiscCond(to_interpret, '-', code, 0);
-        
+        new_command = new trapIntMiscCond(to_interpret, '-', tracefile, code, 0);
+
         //new_command->disp();
     }
 
-    else if(!(int(to_interpret) ^ int(NOP)))
+    else if(!(to_interpret ^ NOP))
     {
         instruction = "NOP";
         code = NOP;
         //cout << "NOP" << endl;
-        new_command = new trapIntMiscCond(to_interpret, '-', code, 0);
-        
+        new_command = new trapIntMiscCond(to_interpret, '-', tracefile, code, 0);
+
         //new_command->disp();
     }
 
-    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3)) ^ int(MUL)))
+    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3)) ^ MUL))
     {
         instruction = "MUL";
         code = MUL;
         //cout << "MUL" << endl;
-        new_command = new extended(to_interpret, '-', code, bit0608, bit0305, bit0002);
-        
+        new_command = new extended(to_interpret, '-', tracefile, code, bit0608, bit0305, bit0002);
+
         //new_command->disp();
     }
 
-    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3)) ^ int(DIV)))
+    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3)) ^ DIV))
     {
         instruction = "DIV";
         code = DIV;
         //cout << "DIV" << endl;
-        new_command = new extended(to_interpret, '-', code, bit0608, bit0305, bit0002);
-        
+        new_command = new extended(to_interpret, '-', tracefile, code, bit0608, bit0305, bit0002);
+
         //new_command->disp();
     }
 
-    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3)) ^ int(ASH)))
+    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3)) ^ ASH))
     {
         instruction = "ASH";
         code = ASH;
         //cout << "ASH" << endl;
-        new_command = new extended(to_interpret, '-', code, bit0608, bit0305, bit0002);
-        
+        new_command = new extended(to_interpret, '-', tracefile, code, bit0608, bit0305, bit0002);
+
         //new_command->disp();
     }
 
-    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3)) ^ int(ASHC)))
+    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3)) ^ ASHC))
     {
         instruction = "ASHC";
         code = ASHC;
         //cout << "ASHC" << endl;
-        new_command = new extended(to_interpret, '-', code, bit0608, bit0305, bit0002);
-        
+        new_command = new extended(to_interpret, '-', tracefile, code, bit0608, bit0305, bit0002);
+
         //new_command->disp();
     }
 
-    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3)) ^ int(XOR)))
+    else if(!(int(*firstbit*pow(8, 5) + bit1214*pow(8, 4) + bit0911*pow(8, 3)) ^ XOR))
     {
         instruction = "XOR";
         code = XOR;
         //cout << "XOR" << endl;
-        new_command = new extended(to_interpret, '-', code, bit0608, bit0305, bit0002);
-        
+        new_command = new extended(to_interpret, '-', tracefile, code, bit0608, bit0305, bit0002);
+
         //new_command->disp();
     }
 
-    else 
+    else
     {
         instruction = "nope";
         code = -1;
         cout << "instruction code: " << to_interpret << ": nope\n";
-        new_command = new command(to_interpret, '-');
+        new_command = new command(to_interpret, '-', tracefile);
     }
 
     return code;
@@ -991,13 +992,11 @@ gp_register::gp_register(): contents(0)
 }
 
 gp_register::~gp_register()
-{
-}
+= default;
 
 gp_register::gp_register(const gp_register &to_copy)
 {
     contents = to_copy.get_gp();
-    return;
 }
 
 
@@ -1024,8 +1023,7 @@ CPSR::CPSR(): T(0), N(0), Z(0), V(0), C(0), priority(0)
 }
 
 CPSR::~CPSR()
-{
-}
+= default;
 
 CPSR::CPSR(const CPSR &to_copy)
 {
@@ -1056,11 +1054,12 @@ int CPSR::set_condition(int to_set)
 
 
 //command
-command::command(): data(0), disposition(0)
+command::command(): data(0), disposition(0), tracefile(nullptr)
 {
 }
 
-command::command(int to_data, char to_disposition): data(to_data), disposition(to_disposition)
+command::command(int to_data, char to_disposition, char * to_tracefile): data(to_data), disposition(to_disposition),
+                                                                      tracefile(to_tracefile)
 {
 }
 
@@ -1071,12 +1070,12 @@ void command::disp()
 }
 
 
-int command::instruction(int *regs, CPSR *states, i_cache *program, int position, int * mem, char * tracefile)
+int command::instruction(int *regs, CPSR *states, i_cache *program, int position, int * mem)
 {
     return 0;
 }
 
-int command::instructionB(int *regs, CPSR *states, i_cache * program, int position, int * mem, char * tracefile)
+int command::instructionB(int *regs, CPSR *states, i_cache * program, int position, int * mem)
 {
     return 0;
 }
@@ -1086,7 +1085,9 @@ extended::extended(): command(), function_code(0), destination(0), source_mode(0
 {
 }
 
-extended::extended(int to_data, char disposition, int to_function_code, int to_destination, int to_source_mode, int to_source): command(to_data, disposition), function_code(to_function_code), source_mode(to_source_mode), source(to_source)
+extended::extended(int to_data, char disposition, char * to_tracefile, int to_function_code, int to_destination,
+                   int to_source_mode, int to_source): command(to_data, disposition, to_tracefile), function_code(to_function_code),
+                                                       destination(to_destination), source_mode(to_source_mode), source(to_source)
 {
 }
 
@@ -1095,15 +1096,15 @@ void extended::disp()
     cout << "data: " << data << endl;
     cout << "disposition: " << disposition << endl;
     cout << "function code: " << function_code << endl;
+    cout << "destination" << destination << endl;
     cout << "source_mode: " << source_mode << endl;
     cout << "source: " << source << endl;
 }
 
-int extended::instruction(int *regs, CPSR *states, i_cache * program, int position, int * mem, char * tracefile)
+int extended::instruction(int *regs, CPSR *states, i_cache * program, int position, int * mem)
 {
-
     cout << "function_code: " << function_code << ": ";
-   switch(function_code)
+    switch(function_code)
     {
         case MUL:
             {
@@ -1146,7 +1147,9 @@ trapIntMiscCond::trapIntMiscCond(): command(), function_code(0), trap_code(0)
 }
 
 
-trapIntMiscCond::trapIntMiscCond(int to_data, char to_disposition, int to_function_code, int to_trap_code): command(to_data, to_disposition), function_code(to_function_code), trap_code(to_trap_code)
+trapIntMiscCond::trapIntMiscCond(int to_data, char to_disposition, char * to_tracefile, int to_function_code,
+                                 int to_trap_code): command(to_data, to_disposition, to_tracefile),
+                                                    function_code(to_function_code), trap_code(to_trap_code)
 {
 }
 
@@ -1158,7 +1161,7 @@ void trapIntMiscCond::disp()
     cout << "trap code: " << trap_code << endl;
 }
 
-int trapIntMiscCond::instruction(int *regs, CPSR *states, i_cache *program, int position, int * mem, char * tracefile)
+int trapIntMiscCond::instruction(int *regs, CPSR *states, i_cache *program, int position, int * mem)
 {
     int outcome = -1;
 
@@ -1269,7 +1272,11 @@ jump_sub::jump_sub(): command(), function_code(0), linkage_reg(0), destination_c
 {
 }
 
-jump_sub::jump_sub(int to_data, char to_disposition, int to_function_code, int to_linkage_reg, int to_destination_code, int to_destination, int to_parameters): command(to_data, to_disposition), function_code(to_function_code), linkage_reg(to_linkage_reg), destination_code(to_destination_code), destination(to_destination), parameters(to_parameters)
+jump_sub::jump_sub(int to_data, char to_disposition, char * to_tracefile, int to_function_code, int to_linkage_reg,
+                   int to_destination_code, int to_destination,
+                   int to_parameters): command(to_data, to_disposition, to_tracefile), function_code(to_function_code),
+                                       linkage_reg(to_linkage_reg), destination_code(to_destination_code),
+                                       destination(to_destination), parameters(to_parameters)
 {
 }
 
@@ -1284,7 +1291,7 @@ void jump_sub::disp()
     cout << "parameters: " << parameters << endl;
 }
 
-int jump_sub::instruction(int *regs, CPSR *states, i_cache *program, int position, int * mem, char * tracefile)
+int jump_sub::instruction(int *regs, CPSR *states, i_cache *program, int position, int * mem)
 {
 
     cout << "function_code: " << function_code << ": ";
@@ -1320,7 +1327,8 @@ branch::branch(): command(), function_code(0), offset(0)
 {
 }
 
-branch::branch(int to_data, char to_disposition, int to_function_code, int to_offset): command(to_data, to_disposition), function_code(to_function_code), offset(to_offset)
+branch::branch(int to_data, char to_disposition, char * to_tracefile, int to_function_code,
+               int to_offset): command(to_data, to_disposition, to_tracefile), function_code(to_function_code), offset(to_offset)
 {
 }
 
@@ -1332,7 +1340,7 @@ void branch::disp()
     cout << "offset: " << offset << endl;
 }
 
-int branch::instruction(int *regs, CPSR *states, i_cache *program, int position, int * mem, char * tracefile)
+int branch::instruction(int *regs, CPSR *states, i_cache *program, int position, int * mem)
 {
 
     cout << "function_code: " << function_code << ": ";
@@ -1428,7 +1436,10 @@ single_operand::single_operand(): command(), function_code(0), destination_mode(
 {
 }
 
-single_operand::single_operand(int to_data, char to_disposition, int to_function_code, int to_destination_mode, int to_destination): command(to_data, to_disposition), function_code(to_function_code), destination_mode(to_destination_mode), destination(to_destination)
+single_operand::single_operand(int to_data, char to_disposition, char * to_tracefile, int to_function_code,
+                               int to_destination_mode,
+                               int to_destination): command(to_data, to_disposition, to_tracefile), function_code(to_function_code),
+                                                    destination_mode(to_destination_mode), destination(to_destination)
 {
 }
 
@@ -1441,7 +1452,7 @@ void single_operand::disp()
     cout << "destination: " << destination << endl;
 }
 
-int single_operand::instruction(int *regs, CPSR *states, i_cache *program, int position, int * mem, char * tracefile)
+int single_operand::instruction(int *regs, CPSR *states, i_cache *program, int position, int * mem)
 {
     int outcome = -1;
 
@@ -1618,16 +1629,22 @@ int single_operand::instruction(int *regs, CPSR *states, i_cache *program, int p
             }
     }
 
-    return 0;
+    return outcome;
 }
 
 
 //double_operand
-double_operand::double_operand(): command(), function_code(0), source(0), source_mode(0), destination(0), destination_mode(0)
+double_operand::double_operand(): command(), function_code(0), source(0), source_mode(0), destination(0),
+                                  destination_mode(0)
 {
 }
 
-double_operand::double_operand(int to_data, char to_disposition, int to_function_code, int to_source_mode, int to_source, int to_destination_mode, int to_destination): command(to_data, to_disposition), function_code(to_function_code), source(to_source), source_mode(to_source_mode), destination(to_destination), destination_mode(to_destination_mode)
+double_operand::double_operand(int to_data, char to_disposition, char * to_tracefile, int to_function_code,
+                               int to_source_mode, int to_source, int to_destination_mode,
+                               int to_destination): command(to_data, to_disposition, to_tracefile),
+                                                    function_code(to_function_code), source(to_source),
+                                                    source_mode(to_source_mode), destination(to_destination),
+                                                    destination_mode(to_destination_mode)
 {
 }
 
@@ -1642,7 +1659,7 @@ void double_operand::disp()
     cout << "destination: " << destination << endl;
 }
 
-int double_operand::instruction(int *regs, CPSR *states, i_cache *program, int position, int * mem, char * tracefile)
+int double_operand::instruction(int *regs, CPSR *states, i_cache *program, int position, int * mem)
 {
     cout << "function_code: " << function_code << ": ";
 
@@ -1733,6 +1750,7 @@ int main(int argc, char* argv[])
     int prog_size;
     int i = 0;
     int j;
+    int c;
     command * new_command;
     char make_disposition = '0';
     char * disposition = &make_disposition;         //initialize disposition
@@ -1742,10 +1760,95 @@ int main(int argc, char* argv[])
     time_t timer;
     struct tm * timeinfo;
 
-    if(argc != 3)
-    {
-        cout << "usage: pdp11 [input file] [output file]" << endl;
+    static struct option const long_options[] =
+            {
+                    //{"number-nonblank", no_argument, NULL, 'b'},
+                    //{"number", no_argument, NULL, 'n'},
+                    //{"squeeze-blank", no_argument, NULL, 's'},
+                    //{"show-nonprinting", no_argument, NULL, 'v'},
+                    //{"show-ends", no_argument, NULL, 'E'},
+                    //{"show-tabs", no_argument, NULL, 'T'},
+                    //{"show-all", no_argument, NULL, 'A'},
+                    //{GETOPT_HELP_OPTION_DECL},
+                    //{GETOPT_VERSION_OPTION_DECL},
+                    {nullptr, 0, nullptr, 0}
+            };
 
+
+    //parse options
+    while ((c = getopt_long (argc, argv, "benstuvAET", long_options, nullptr))
+           != -1)
+    {
+        switch (c)
+        {
+            /*case 'b':
+                number = true;
+                number_nonblank = true;
+                break;
+
+            case 'e':
+                show_ends = true;
+                show_nonprinting = true;
+                break;
+
+            case 'n':
+                number = true;
+                break;
+
+            case 's':
+                squeeze_blank = true;
+                break;
+
+            case 't':
+                show_tabs = true;
+                show_nonprinting = true;
+                break;
+
+            case 'u':
+                /* We provide the -u feature unconditionally.  */
+                /*break;
+
+            case 'v':
+                show_nonprinting = true;
+                break;
+
+            case 'A':
+                show_nonprinting = true;
+                show_ends = true;
+                show_tabs = true;
+                break;
+
+            case 'E':
+                show_ends = true;
+                break;
+
+            case 'T':
+                show_tabs = true;
+                break;
+
+                case_GETOPT_HELP_CHAR;
+
+                case_GETOPT_VERSION_CHAR (PROGRAM_NAME, AUTHORS);
+*/
+            default:
+                c = 0;
+                //usage (EXIT_FAILURE);
+
+        }
+    }
+
+
+
+    if(argc < 3)
+    {
+        cout << "usage: pdp11 [-options] <input file> <output file>" << endl;
+
+        return 0;
+    }
+
+    if(argc == 3 && argv[2][0] == '-')
+    {
+        cout << "usage: pdp11 [-options] <input file> <output file>" << endl;
         return 0;
     }
 
@@ -1791,10 +1894,10 @@ int main(int argc, char* argv[])
     trfile << "type\taddress" << endl;
     trfile.close();
 
-
     //to_interpret = atoi(argv[1]);
 
     //instruction = interpreter(to_interpret, &firstbit, new_command);
+
 
     to_interpret = line_reader(argv[1], disposition, filepos);
 
@@ -1823,12 +1926,12 @@ int main(int argc, char* argv[])
 
     while(to_interpret != -1)
     {
-        make_instruction = interpreter(to_interpret, &firstbit, new_command);
+        make_instruction = interpreter(to_interpret, &firstbit, new_command, trace);
 
         //new_command->disp();
         //cout << new_command->instruction(gps, &status_reg) << endl;
 
-        new_command->instruction(gps, &status_reg, prog_mem, prog_pos, memory, trace);
+        new_command->instruction(gps, &status_reg, prog_mem, prog_pos, memory);
 
         to_interpret = line_reader(argv[1], disposition, filepos);
     }
