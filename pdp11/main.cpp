@@ -30,6 +30,7 @@ int main(int argc, char* argv[])
     char * disposition = &make_disposition;         //initialize disposition
     char * trace;
     ofstream trfile;
+    ofstream outfile;
     ifstream mkfile;
     time_t timer;
     struct tm * timeinfo;
@@ -218,6 +219,14 @@ int main(int argc, char* argv[])
 
     gps[7] = start * 2;
 
+    gps[2] = 20;
+
+    for(i = 0; i < 8; ++i)
+    {
+        cout << gps[i] << ' ';
+    }
+    cout << endl;
+
     while(gps[7]/2 < prog_size)
     {
         to_interpret = interpreter(prog_mem[gps[7]/2].data, &firstbit, new_command, trace);
@@ -227,11 +236,15 @@ int main(int argc, char* argv[])
 
     cout << "program size: " << prog_size << endl;
 
-    for(i = 0; i < prog_size; ++i)
+    outfile.open("data.txt", ios_base::trunc | ios_base::out);
+
+
+    for(i = 0; i < I_SIZE; ++i)
     {
-        cout << "mem[" << i << "] = " << prog_mem[i].data << endl;
+        outfile << "mem[" << i << "] = " << prog_mem[i].data << endl;
     }
 
+    outfile.close();
 
     return 0;
 }

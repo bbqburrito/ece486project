@@ -1426,6 +1426,7 @@ void single_operand::disp()
 
 int single_operand::instruction(int *regs, CPSR *states, i_cache *program)
 {
+    int i;
     int outcome = -1;
 
     cout << "function_code: " << function_code << ": ";
@@ -1435,12 +1436,18 @@ int single_operand::instruction(int *regs, CPSR *states, i_cache *program)
         case CLR:
             {
                 cout << "CLR" << endl;
+                trace_file(tracefile, 2, regs[7]);
                 switch (destination_mode) {
                     case 0: {           //register:
                                         //set register to 0
                         regs[destination] = 0;
                         states->set_condition(4);
                         regs[7] += 2;
+                        for(i = 0; i < 8; ++i)
+                        {
+                            cout << regs[i] << ' ';
+                        }
+                        cout << endl;
                         break;
                     }
                     case 1: {           //register deferred:
@@ -1451,6 +1458,11 @@ int single_operand::instruction(int *regs, CPSR *states, i_cache *program)
                         trace_file(tracefile, 1, regs[destination]);   //write data write to trace file
                         outcome = 1;
                         regs[7] += 2;
+                        for(i = 0; i < 8; ++i)
+                        {
+                            cout << regs[i] << ' ';
+                        }
+                        cout << endl;
                         break;
                     }
                     case 2: {           //autoincrement:
@@ -1462,6 +1474,11 @@ int single_operand::instruction(int *regs, CPSR *states, i_cache *program)
                         states->set_condition(4);
                         outcome = 1;
                         regs[7] += 2;
+                        for(i = 0; i < 8; ++i)
+                        {
+                            cout << regs[i] << ' ';
+                        }
+                        cout << endl;
                         break;
                     }
                     case 3:         //autoincrement deferred:
@@ -1470,12 +1487,17 @@ int single_operand::instruction(int *regs, CPSR *states, i_cache *program)
                                     //register, then increment register
                     {
                         program[program[regs[destination]/2].data/2].data = 0;
-                        trace_file(tracefile, 0, regs[destination]);
-                        trace_file(tracefile, 1, program[regs[destination]/2].data);
+                        trace_file(tracefile, 0, regs[destination]/2);
+                        trace_file(tracefile, 1, program[regs[destination]/2].data/2);
                         regs[destination] += 2;
                         states->set_condition(4);
                         outcome = 1;
                         regs[7] += 2;
+                        for(i = 0; i < 8; ++i)
+                        {
+                            cout << regs[i] << ' ';
+                        }
+                        cout << endl;
                         break;
                     }
                     case 4:         //autodecrement:
@@ -1488,6 +1510,11 @@ int single_operand::instruction(int *regs, CPSR *states, i_cache *program)
                         states->set_condition(4);
                         trace_file(tracefile, 1, regs[destination]);
                         regs[7] += 2;
+                        for(i = 0; i < 8; ++i)
+                        {
+                            cout << regs[i] << ' ';
+                        }
+                        cout << endl;
                         break;
                     }
                     case 5: {       //autodecrement deferred:
@@ -1502,6 +1529,11 @@ int single_operand::instruction(int *regs, CPSR *states, i_cache *program)
                         states->set_condition(4);
                         outcome = 1;
                         regs[7] += 2;
+                        for(i = 0; i < 8; ++i)
+                        {
+                            cout << regs[i] << ' ';
+                        }
+                        cout << endl;
                         break;
                     }
                     case 6: {       //index:
@@ -1512,6 +1544,11 @@ int single_operand::instruction(int *regs, CPSR *states, i_cache *program)
                         trace_file(tracefile, 1, regs[destination] + program[regs[7]/2 + 1].data);
                         trace_file(tracefile, 0, program[regs[7]/2].data + 1);
                         regs[7] += 4;
+                        for(i = 0; i < 8; ++i)
+                        {
+                            cout << regs[i] << ' ';
+                        }
+                        cout << endl;
                         states->set_condition(4);
                         outcome = 1;
                         break;
@@ -1522,9 +1559,14 @@ int single_operand::instruction(int *regs, CPSR *states, i_cache *program)
                                     //instruction, to 0
                         program[program[(regs[destination] + program[regs[7]/2 + 1].data)/2].data/2].data = 0;
                         trace_file(tracefile, 1, program[(regs[destination] + program[regs[7]/2 + 1].data)/2].data);
-                        trace_file(tracefile, 0, regs[destination] + program[regs[7]/2 + 1].data);
+                        trace_file(tracefile, 0, ((regs[destination] + program[regs[7]/2 + 1].data)/2));
                         trace_file(tracefile, 0, program[regs[7]/2].data + 1);
                         regs[7] += 4;
+                        for(i = 0; i < 8; ++i)
+                        {
+                            cout << regs[i] << ' ';
+                        }
+                        cout << endl;
                         states->set_condition(4);
                         outcome = 1;
                         break;
@@ -1547,6 +1589,156 @@ int single_operand::instruction(int *regs, CPSR *states, i_cache *program)
         case COM:
             {
                 cout << "COM" << endl;
+                trace_file(tracefile, 2, regs[7]);
+                switch (destination_mode) {
+                    case 0: {           //register:
+                                        //flip register bits
+                        regs[destination] ^= 0xFF;     //flip bits
+                        regs[destination] &= 0xFF;  //capture 16 bits
+                        states->set_condition(1 | (regs[destination] & 16) | (!(regs[destination] | 0) & 4));
+                        regs[7] += 2;
+                        for(i = 0; i < 8; ++i)
+                        {
+                            cout << regs[i] << ' ';
+                        }
+                        cout << endl;
+                        break;
+                    }
+                    case 1: {           //register deferred:
+                                        //flip bits at memory location 
+                                        //pointed to by register
+                        program[regs[destination] / 2].data ^= 0xFF;   //flip bits
+                        program[regs[destination] / 2].data &= 0xFF;    //capture 16 bits
+                        states->set_condition(1 | (regs[destination] & 16) | (!(regs[destination] | 0) & 4));
+                        trace_file(tracefile, 1, regs[destination]);   //write data write to trace file
+                        outcome = 1;
+                        regs[7] += 2;                                   //increment PC
+                        for(i = 0; i < 8; ++i)
+                        {
+                            cout << regs[i] << ' ';
+                        }
+                        cout << endl;
+                        break;
+                    }
+                    case 2: {           //autoincrement:
+                                        //flip bits at memory location pointed to by
+                                        //register, then increment register
+                        program[regs[destination] / 2].data ^= 0xFF;
+                        program[regs[destination] / 2].data &= 0xFF;
+                        trace_file(tracefile, 1, regs[destination]);    //write data write to trace file
+                        regs[destination] += 2;
+                        states->set_condition(1 | (regs[destination] & 16) | (!(regs[destination] | 0) & 4));
+                        outcome = 1;
+                        regs[7] += 2;
+                        for(i = 0; i < 8; ++i)
+                        {
+                            cout << regs[i] << ' ';
+                        }
+                        cout << endl;
+                        break;
+                    }
+                    case 3:         //autoincrement deferred:
+                                    //set memory location pointed to by
+                                    //memory at location pointed to by
+                                    //register, then increment register
+                    {
+                        program[program[regs[destination]/2].data/2].data ^= 0xFF;
+                        program[program[regs[destination]/2].data/2].data &= 0xFF;
+                        trace_file(tracefile, 0, regs[destination]);
+                        trace_file(tracefile, 1, program[regs[destination]/2].data);
+                        regs[destination] += 2;
+                        states->set_condition(1 | (regs[destination] & 16) | (!(regs[destination] | 0) & 4));
+                        outcome = 1;
+                        regs[7] += 2;
+                        for(i = 0; i < 8; ++i)
+                        {
+                            cout << regs[i] << ' ';
+                        }
+                        cout << endl;
+                        break;
+                    }
+                    case 4:         //autodecrement:
+                                    //decrement register, then
+                                    //set memory location pointed to by
+                                    //register to 0
+                    {
+                        regs[destination] -= 2;
+                        program[regs[destination]/2].data ^= 0xFF;
+                        program[regs[destination]/2].data &= 0xFF;
+                        states->set_condition(1 | (regs[destination] & 16) | (!(regs[destination] | 0) & 4));
+                        trace_file(tracefile, 1, regs[destination]);
+                        regs[7] += 2;
+                        for(i = 0; i < 8; ++i)
+                        {
+                            cout << regs[i] << ' ';
+                        }
+                        cout << endl;
+                        break;
+                    }
+                    case 5: {       //autodecrement deferred:
+                                    //decrement register, then
+                                    //set memory location pointed to by
+                                    //memory location pointed to by register
+                                    //to 0
+                        regs[destination] -= 2;
+                        program[program[regs[destination]/2].data/2].data ^= 0xFF;
+                        program[program[regs[destination]/2].data/2].data &= 0xFF;
+                        trace_file(tracefile, 0, regs[destination]);
+                        trace_file(tracefile, 1, program[regs[destination]/2].data);
+                        states->set_condition(1 | (regs[destination] & 16) | (!(regs[destination] | 0) & 4));
+                        outcome = 1;
+                        regs[7] += 2;
+                        for(i = 0; i < 8; ++i)
+                        {
+                            cout << regs[i] << ' ';
+                        }
+                        cout << endl;
+                        break;
+                    }
+                    case 6: {       //index:
+                                    //set memory pointed to by register plus
+                                    //index, which is located just after instruction,
+                                    //to 0
+                        program[(regs[destination] + program[regs[7]/2 + 1].data)/2].data ^= 0xFF;
+                        program[(regs[destination] + program[regs[7]/2 + 1].data)/2].data &= 0xFF;
+                        trace_file(tracefile, 1, regs[destination] + program[regs[7]/2 + 1].data);
+                        trace_file(tracefile, 0, program[regs[7]/2].data + 1);
+                        regs[7] += 4;
+                        for(i = 0; i < 8; ++i)
+                        {
+                            cout << regs[i] << ' ';
+                        }
+                        cout << endl;
+                        states->set_condition(1 | (regs[destination] & 16) | (!(regs[destination] | 0) & 4));
+                        outcome = 1;
+                        break;
+                    }
+                    case 7: {       //index deferred:
+                                    //set memory pointed to by memory pointed to
+                                    //by register plus index, which is located just after
+                                    //instruction, to 0
+                        program[program[(regs[destination] + program[regs[7]/2 + 1].data)/2].data/2].data ^= 0xFF;
+                        program[program[(regs[destination] + program[regs[7]/2 + 1].data)/2].data/2].data &= 0xFF;
+                        trace_file(tracefile, 1, program[(regs[destination] + program[regs[7]/2 + 1].data)/2].data);
+                        trace_file(tracefile, 0, regs[destination] + program[regs[7]/2 + 1].data);
+                        trace_file(tracefile, 0, program[regs[7]/2].data + 1);
+                        regs[7] += 4;
+                        states->set_condition(1 | (regs[destination] & 16) | (!(regs[destination] | 0) & 4));
+                        for(i = 0; i < 8; ++i)
+                        {
+                            cout << regs[i] << ' ';
+                        }
+                        cout << endl;
+
+                        outcome = 1;
+                        break;
+                    }
+                    default:
+                        {
+                             cout << "invalid destination mode" << endl;
+                             break;
+                        }
+                }
                 break;
             }
         case COMB:
