@@ -122,6 +122,10 @@ int main(int argc, char* argv[])
     }
 
     i = 0;
+<<<<<<< HEAD
+=======
+    j = 0;
+>>>>>>> master
 
     for(j = 1; j < argc; ++j)
     {
