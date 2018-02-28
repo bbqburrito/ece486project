@@ -122,10 +122,6 @@ int main(int argc, char* argv[])
     }
 
     i = 0;
-<<<<<<< HEAD
-=======
-    j = 0;
->>>>>>> master
 
     for(j = 1; j < argc; ++j)
     {
@@ -190,6 +186,8 @@ int main(int argc, char* argv[])
 
     to_interpret = line_reader(argv[argc - 2], disposition, filepos);
 
+    i = 0;
+
     //read file into memory
     while(to_interpret != -1)
     {
@@ -197,7 +195,7 @@ int main(int argc, char* argv[])
         prog_mem[i].data = to_interpret;
         ++i;
 
-        to_interpret = line_reader(argv[1], disposition, filepos);
+        to_interpret = line_reader(argv[argc - 2], disposition, filepos);
     }
 
     prog_size = i;
@@ -209,38 +207,30 @@ int main(int argc, char* argv[])
         cout << prog_mem[j].disposition << prog_mem[j].data << endl;
     }
 
-    to_interpret = line_reader(argv[1], disposition, filepos);
-
-    cout << to_interpret << endl;
-
-    while(to_interpret != -1)
-    {
-        make_instruction = interpreter(to_interpret, &firstbit, new_command, trace);
-
-        //new_command->disp();
-        //cout << new_command->instruction(gps, &status_reg) << endl;
-
-        new_command->instruction(gps, &status_reg, prog_mem);
-
-        to_interpret = line_reader(argv[1], disposition, filepos);
-    }
-
-
-    while(to_interpret != -1)
-    {
-        make_instruction = interpreter(to_interpret, &firstbit, new_command, trace);
-
-        //new_command->disp();
-        //cout << new_command->instruction(gps, &status_reg) << endl;
-
-        new_command->instruction(gps, &status_reg, prog_mem);
-
-        to_interpret = line_reader(argv[1], disposition, filepos);
-    }
-
     start= findstart(prog_mem, prog_size);       //get start point
 
     cout << "start point: " << start << endl;
+    
+    for(i = 0; i < prog_size; ++i)
+    {
+        cout << "mem[" << i << "] = " << prog_mem[i].data << endl;
+    }
+
+    gps[7] = start * 2;
+
+    while(gps[7]/2 < prog_size)
+    {
+        to_interpret = interpreter(prog_mem[gps[7]/2].data, &firstbit, new_command, trace);
+
+        to_interpret = new_command->instruction(gps, &status_reg, prog_mem);
+    }
+
+    cout << "program size: " << prog_size << endl;
+
+    for(i = 0; i < prog_size; ++i)
+    {
+        cout << "mem[" << i << "] = " << prog_mem[i].data << endl;
+    }
 
 
     return 0;
