@@ -13,14 +13,14 @@ int main(int argc, char* argv[])
     char answer[25];
     int start;
     i_cache prog_mem[I_SIZE];
-    int memory[MEM_SIZE];
+    //int memory[MEM_SIZE];             //data memory and program memory same,
+                                        //so no separate data memory required.
     int gps[8];
     CPSR status_reg;
     int firstbit;
     int make_instruction;
     int to_interpret;
     int filepos = 0;
-    int prog_pos;
     int prog_size;
     int i = 0;
     int j;
@@ -50,7 +50,7 @@ int main(int argc, char* argv[])
 
 
     //parse options
-    while ((c = getopt_long (argc, argv, "benstuvAET", long_options, nullptr))
+    while ((c = getopt (argc, argv, "benstuvAET"))
            != -1)
     {
         switch (c)
@@ -73,7 +73,8 @@ int main(int argc, char* argv[])
                 squeeze_blank = true;
                 break;
 
-            case 't':
+            */case 't':
+                cout << "option t" << endl;/*
                 show_tabs = true;
                 show_nonprinting = true;
                 break;
@@ -120,13 +121,23 @@ int main(int argc, char* argv[])
         return 0;
     }
 
-    if(argc == 3 && argv[2][0] == '-')
+    i = 0;
+
+    for(j = 1; j < argc; ++j)
+    {
+        if(argv[j][0] != '-')
+        {
+            ++i;
+        }                
+    }
+
+    if(i != 2)
     {
         cout << "usage: pdp11 [-options] <input file> <output file>" << endl;
         return 0;
     }
 
-    trace = argv[2];
+    trace = argv[argc - 1];
 
     mkfile.open(trace);
 
@@ -173,7 +184,7 @@ int main(int argc, char* argv[])
     //instruction = interpreter(to_interpret, &firstbit, new_command);
 
 
-    to_interpret = line_reader(argv[1], disposition, filepos);
+    to_interpret = line_reader(argv[argc - 2], disposition, filepos);
 
     //read file into memory
     while(to_interpret != -1)
@@ -205,12 +216,25 @@ int main(int argc, char* argv[])
         //new_command->disp();
         //cout << new_command->instruction(gps, &status_reg) << endl;
 
-        new_command->instruction(gps, &status_reg, prog_mem, prog_pos, memory);
+        new_command->instruction(gps, &status_reg, prog_mem);
 
         to_interpret = line_reader(argv[1], disposition, filepos);
     }
 
-    start = findstart(prog_mem, prog_size);       //get start point
+
+    while(to_interpret != -1)
+    {
+        make_instruction = interpreter(to_interpret, &firstbit, new_command, trace);
+
+        //new_command->disp();
+        //cout << new_command->instruction(gps, &status_reg) << endl;
+
+        new_command->instruction(gps, &status_reg, prog_mem);
+
+        to_interpret = line_reader(argv[1], disposition, filepos);
+    }
+
+    start= findstart(prog_mem, prog_size);       //get start point
 
     cout << "start point: " << start << endl;
 

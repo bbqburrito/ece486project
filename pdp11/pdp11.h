@@ -98,21 +98,6 @@ struct i_cache {
     char disposition;
 };
 
-class gp_register {
-
-    public:
-        gp_register();
-        ~gp_register();
-        gp_register(const gp_register &to_copy);
-
-        int set_gp(int to_set);
-        int get_gp() const;
-        void display();
-
-    protected:
-        int contents;
-};
-
 class CPSR {
     public:
         CPSR();
@@ -140,13 +125,13 @@ class command {
 
     public:
         command();
-        command(int to_data, char to_disposition, char * tracefile);
+        command(int to_data, char to_disposition, char * to_tracefile);
         ~command();
         command (const command &to_copy);
 
         virtual void disp();
-        virtual int instruction(int *regs, CPSR * states, i_cache *program, int position, int * mem);
-        virtual int instructionB(int *regs, CPSR * states, i_cache *program, int position, int * mem);
+        virtual int instruction(int *regs, CPSR * states, i_cache *program);
+        virtual int instructionB(int *regs, CPSR * states, i_cache *program);
 
 
 
@@ -154,6 +139,7 @@ class command {
         int data;
         char disposition;
         char * tracefile;
+        int program_counter;
 };
 
 
@@ -169,8 +155,8 @@ class double_operand: public command
         double_operand(const double_operand &to_copy);
 
         void disp();
-        int instruction(int *regs, CPSR * states, i_cache *program, int position, int * mem);
-        //int instructionB(int *regs, CPSR * states, i_cache *program, int position, int * mem);
+        int instruction(int *regs, CPSR * states, i_cache *program);
+        //int instructionB(int *regs, CPSR * states, i_cache *program);
 
 
 
@@ -193,8 +179,8 @@ class single_operand: public command
         ~single_operand();
         single_operand(const single_operand &to_copy);
         void disp();
-        int instruction(int *regs, CPSR *states, i_cache *program, int position, int * mem);
-        //int instructionB(int *regs, CPSR * states, i_cache *program, int position, int * mem);
+        int instruction(int *regs, CPSR *states, i_cache *program);
+        //int instructionB(int *regs, CPSR * states, i_cache *program);
 
 
     protected:
@@ -214,8 +200,8 @@ class extended: public command
         ~extended();
         extended(const extended &to_copy);
         void disp();
-        int instruction(int *regs, CPSR * states, i_cache *program, int position, int * mem);
-        //int instructionB(int *regs, CPSR * states, i_cache *program, int position, int * mem);
+        int instruction(int *regs, CPSR * states, i_cache *program);
+        //int instructionB(int *regs, CPSR * states, i_cache *program);
 
 
     protected:
@@ -235,8 +221,8 @@ class branch: public command
         ~branch();
         branch(const branch &to_copy);
         void disp();
-        int instruction(int *regs, CPSR * states, i_cache *program, int position, int * mem);
-        //int instructionB(int *regs, CPSR * states, i_cache *program, int position, int * mem);
+        int instruction(int *regs, CPSR * states, i_cache *program);
+        //int instructionB(int *regs, CPSR * states, i_cache *program);
 
 
     protected:
@@ -255,8 +241,8 @@ class jump_sub: public command
         ~jump_sub();
         jump_sub(const jump_sub &to_copy);
         void disp();
-        int instruction(int *regs, CPSR * states, i_cache *program, int position, int * mem);
-        //int instructionB(int *regs, CPSR * states, i_cache *program, int position, int * mem);
+        int instruction(int *regs, CPSR * states, i_cache *program);
+        //int instructionB(int *regs, CPSR * states, i_cache *program);
 
 
     protected:
@@ -278,8 +264,8 @@ class trapIntMiscCond: public command
         ~trapIntMiscCond();
         trapIntMiscCond(const trapIntMiscCond &to_copy);
         void disp();
-        int instruction(int *regs, CPSR * states, i_cache *program, int position, int * mem);
-        //int instructionB(int *regs, CPSR * states, i_cache *program, int position, int * mem);
+        int instruction(int *regs, CPSR * states, i_cache *program);
+        //int instructionB(int *regs, CPSR * states, i_cache *program);
 
 
     protected:

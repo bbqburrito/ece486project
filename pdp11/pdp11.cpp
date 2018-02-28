@@ -103,6 +103,7 @@ long line_reader(char *filename, char *&disposition, int &filepos) {
     return data;
 }
 
+
 int findstart(i_cache *prog_mem, int prog_length) {
     char answer[25];
     int start = 0;
@@ -981,36 +982,6 @@ int interpreter(int to_interpret, int * firstbit, command *& new_command, char *
     return code;
 }
 
-//gp_register
-gp_register::gp_register(): contents(0)
-{
-}
-
-gp_register::~gp_register()
-= default;
-
-gp_register::gp_register(const gp_register &to_copy)
-{
-    contents = to_copy.get_gp();
-}
-
-
-void gp_register::display()
-{
-    cout << "contents: " << contents << endl;
-}
-
-int gp_register::set_gp(int to_set)
-{
-    contents = to_set;
-
-    return contents;
-}
-
-int gp_register::get_gp() const
-{
-    return contents;
-}
 
 //CPSR
 CPSR::CPSR(): T(0), N(0), Z(0), V(0), C(0), priority(0)
@@ -1065,14 +1036,18 @@ void command::disp()
 }
 
 
-int command::instruction(int *regs, CPSR *states, i_cache *program, int position, int * mem)
+int command::instruction(int *regs, CPSR *states, i_cache *program)
 {
     return 0;
 }
 
-int command::instructionB(int *regs, CPSR *states, i_cache * program, int position, int * mem)
+int command::instructionB(int *regs, CPSR *states, i_cache * program)
 {
     return 0;
+}
+
+command::~command() {
+
 }
 
 //extended
@@ -1080,9 +1055,10 @@ extended::extended(): command(), function_code(0), destination(0), source_mode(0
 {
 }
 
-extended::extended(int to_data, char disposition, char * to_tracefile, int to_function_code, int to_destination,
-                   int to_source_mode, int to_source): command(to_data, disposition, to_tracefile), function_code(to_function_code),
-                                                       destination(to_destination), source_mode(to_source_mode), source(to_source)
+extended::extended(int to_data, char disposition, char * to_tracefile, int to_function_code,
+                   int to_destination, int to_source_mode,
+                   int to_source): command(to_data, disposition, to_tracefile), function_code(to_function_code),
+                                   destination(to_destination), source_mode(to_source_mode), source(to_source)
 {
 }
 
@@ -1096,7 +1072,7 @@ void extended::disp()
     cout << "source: " << source << endl;
 }
 
-int extended::instruction(int *regs, CPSR *states, i_cache * program, int position, int * mem)
+int extended::instruction(int *regs, CPSR *states, i_cache * program)
 {
     cout << "function_code: " << function_code << ": ";
     switch(function_code)
@@ -1156,7 +1132,7 @@ void trapIntMiscCond::disp()
     cout << "trap code: " << trap_code << endl;
 }
 
-int trapIntMiscCond::instruction(int *regs, CPSR *states, i_cache *program, int position, int * mem)
+int trapIntMiscCond::instruction(int *regs, CPSR *states, i_cache *program)
 {
     int outcome = -1;
 
@@ -1286,7 +1262,7 @@ void jump_sub::disp()
     cout << "parameters: " << parameters << endl;
 }
 
-int jump_sub::instruction(int *regs, CPSR *states, i_cache *program, int position, int * mem)
+int jump_sub::instruction(int *regs, CPSR *states, i_cache *program)
 {
 
     cout << "function_code: " << function_code << ": ";
@@ -1294,6 +1270,7 @@ int jump_sub::instruction(int *regs, CPSR *states, i_cache *program, int positio
     {
         case JMP:
             {
+                
                 cout << "JMP" << endl;
                 break;
             }
@@ -1335,7 +1312,7 @@ void branch::disp()
     cout << "offset: " << offset << endl;
 }
 
-int branch::instruction(int *regs, CPSR *states, i_cache *program, int position, int * mem)
+int branch::instruction(int *regs, CPSR *states, i_cache *program)
 {
 
     cout << "function_code: " << function_code << ": ";
@@ -1447,7 +1424,7 @@ void single_operand::disp()
     cout << "destination: " << destination << endl;
 }
 
-int single_operand::instruction(int *regs, CPSR *states, i_cache *program, int position, int * mem)
+int single_operand::instruction(int *regs, CPSR *states, i_cache *program)
 {
     int outcome = -1;
 
@@ -1459,29 +1436,93 @@ int single_operand::instruction(int *regs, CPSR *states, i_cache *program, int p
             {
                 cout << "CLR" << endl;
                 switch (destination_mode) {
-                    case 0: 
-                        {
-                            regs[destination] = 0;
-                            states->set_condition(4);
-                            break;
-                        }
-                    case 1:
-                        {
-                            mem[regs[destination]] = 0;
-                            states->set_condition(4);
-                            trace_file(tracefile, 1, regs[destination]);   //write data write to trace file
-                            outcome = 1;
-                            break;
-                        }
-                    case 2:
-                        {
-                            mem[regs[destination]] = 0;
-                            regs[destination] += 1;
-                            states->set_condition(4);
-                            trace_file(tracefile, 1, regs[destination] - 1);   //write data write to trace file
-                            outcome = 1;
-                            break;
-                        }
+                    case 0: {           //register:
+                                        //set register to 0
+                        regs[destination] = 0;
+                        states->set_condition(4);
+                        break;
+                    }
+                    case 1: {           //register deferred:
+                                        //set memory location pointed to by
+                                        //register to 0
+                        program[regs[destination] / 2].data = 0;
+                        states->set_condition(4);
+                        trace_file(tracefile, 1, regs[destination]);   //write data write to trace file
+                        outcome = 1;
+                        break;
+                    }
+                    case 2: {           //autoincrement:
+                                        //set memory location pointed to by
+                                        //register to 0, then increment register
+                        program[regs[destination] / 2].data = 0;
+                        trace_file(tracefile, 1, regs[destination]);    //write data write to trace file
+                        regs[destination] += 2;
+                        states->set_condition(4);
+                        outcome = 1;
+                        break;
+                    }
+                    case 3:         //autoincrement deferred:
+                                    //set memory location pointed to by
+                                    //memory at location pointed to by
+                                    //register, then increment register
+                    {
+                        program[program[regs[destination]/2].data/2].data = 0;
+                        trace_file(tracefile, 0, regs[destination]);
+                        trace_file(tracefile, 1, program[regs[destination]/2].data);
+                        regs[destination] += 2;
+                        states->set_condition(4);
+                        outcome = 1;
+                        break;
+                    }
+                    case 4:         //autodecrement:
+                                    //decrement register, then
+                                    //set memory location pointed to by
+                                    //register to 0
+                    {
+                        regs[destination] -= 2;
+                        program[regs[destination]/2].data = 0;
+                        states->set_condition(4);
+                        trace_file(tracefile, 1, regs[destination]);
+                        break;
+                    }
+                    case 5: {       //autodecrement deferred:
+                                    //decrement register, then
+                                    //set memory location pointed to by
+                                    //memory location pointed to by register
+                                    //to 0
+                        regs[destination] -= 2;
+                        program[program[regs[destination]/2].data/2].data = 0;
+                        trace_file(tracefile, 0, regs[destination]);
+                        trace_file(tracefile, 1, program[regs[destination]/2].data);
+                        states->set_condition(4);
+                        outcome = 1;
+                        break;
+                    }
+                    case 6: {       //index:
+                                    //set memory pointed to by register plus
+                                    //index, which is located just after instruction,
+                                    //to 0
+                        program[(regs[destination] + program[regs[7]/2 + 1].data)/2].data = 0;
+                        trace_file(tracefile, 1, regs[destination] + program[regs[7]/2 + 1].data);
+                        trace_file(tracefile, 0, program[regs[7]/2].data + 1);
+                        regs[7] += 4;
+                        states->set_condition(4);
+                        outcome = 1;
+                        break;
+                    }
+                    case 7: {       //index deferred:
+                                    //set memory pointed to by memory pointed to
+                                    //by register plus index, which is located just after
+                                    //instruction, to 0
+                        program[program[(regs[destination] + program[regs[7]/2 + 1].data)/2].data/2].data = 0;
+                        trace_file(tracefile, 1, program[(regs[destination] + program[regs[7]/2 + 1].data)/2].data);
+                        trace_file(tracefile, 0, regs[destination] + program[regs[7]/2 + 1].data);
+                        trace_file(tracefile, 0, program[regs[7]/2].data + 1);
+                        regs[7] += 4;
+                        states->set_condition(4);
+                        outcome = 1;
+                        break;
+                    }
                     default:
                         {
                              cout << "invalid destination mode" << endl;
@@ -1654,7 +1695,7 @@ void double_operand::disp()
     cout << "destination: " << destination << endl;
 }
 
-int double_operand::instruction(int *regs, CPSR *states, i_cache *program, int position, int * mem)
+int double_operand::instruction(int *regs, CPSR *states, i_cache *program)
 {
     cout << "function_code: " << function_code << ": ";
 
