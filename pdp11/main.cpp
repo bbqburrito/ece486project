@@ -1,6 +1,9 @@
 //compile with -std=c++11
 //uses auto type declaration, range-based for loops,
-//nullptr
+//nullptr 
+//outputs memory contents to "memory.txt"
+//will delete any file in current folder
+//named memory.txt
 
 
 #include "pdp11.h"
@@ -34,6 +37,7 @@ int main(int argc, char* argv[])
     ifstream mkfile;
     time_t timer;
     struct tm * timeinfo;
+    int to_run;
 
     static struct option const long_options[] =
             {
@@ -190,10 +194,12 @@ int main(int argc, char* argv[])
     i = 0;
 
     //read file into memory
-    while(to_interpret != -1)
+    while((to_interpret != -1) && (i < I_SIZE))
     {
         prog_mem[i].disposition = *disposition;
-        prog_mem[i].data = to_interpret;
+        prog_mem[i].data = (to_interpret & 0xFF);     //low bytes stored at even-numbered memory locations 
+        prog_mem[++i].data = (to_interpret & 0xFF00) >> 8;    //high bytes stored at odd-numbered memory locations
+        prog_mem[i].disposition = *disposition;
         ++i;
 
         to_interpret = line_reader(argv[argc - 2], disposition, filepos);
@@ -205,19 +211,19 @@ int main(int argc, char* argv[])
 
     for(j = 0; j <= i; ++j)
     {
-        cout << prog_mem[j].disposition << prog_mem[j].data << endl;
+        cout << prog_mem[j].disposition << (prog_mem[j].data + (prog_mem[++j].data << 8)) << endl;
     }
 
     start= findstart(prog_mem, prog_size);       //get start point
 
     cout << "start point: " << start << endl;
     
-    for(i = 0; i < prog_size; ++i)
+    for(i = 0; i < prog_size * 2; ++i)
     {
         cout << "mem[" << i << "] = " << prog_mem[i].data << endl;
     }
 
-    gps[7] = start * 2;
+    gps[PC] = start * 2;
 
     gps[2] = 20;
 
@@ -227,16 +233,27 @@ int main(int argc, char* argv[])
     }
     cout << endl;
 
-    while(gps[7]/2 < prog_size)
+
+    for(i = 0; i < I_SIZE; ++i)
     {
-        to_interpret = interpreter(prog_mem[gps[7]/2].data, &firstbit, new_command, trace);
+        outfile << "mem[" << i << "] = " << prog_mem[i].data << endl;
+    }
+
+        //to_run = prog_mem[gps[PC]].data + (prog_mem[gps[PC] + 1].data << 8);
+        //to_interpret = interpreter(to_run, &firstbit, new_command, trace);
+        //to_interpret = new_command->instruction(gps, &status_reg, prog_mem);
+
+    while(gps[PC] < prog_size)
+    {
+        to_run = prog_mem[gps[PC]].data + (prog_mem[gps[PC] + 1].data << 8);
+        to_interpret = interpreter(to_run, &firstbit, new_command, trace);
 
         to_interpret = new_command->instruction(gps, &status_reg, prog_mem);
     }
 
     cout << "program size: " << prog_size << endl;
 
-    outfile.open("data.txt", ios_base::trunc | ios_base::out);
+    outfile.open("memory.txt", ios_base::trunc | ios_base::out);
 
 
     for(i = 0; i < I_SIZE; ++i)
