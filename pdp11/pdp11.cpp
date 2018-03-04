@@ -167,7 +167,7 @@ int trace_file(char *filename, int type, int address) {
         make_address[i] = '\0';
     }
 
-    outfile.open(filename, ios::app | ios::out);
+    outfile.open(filename, ios::app);
 
     if(!outfile.is_open())
     {
@@ -1445,11 +1445,9 @@ int single_operand::instruction(int *regs, CPSR *states, i_cache *program)
         case CLR:
             {
                 cout << "CLR" << endl;
-                trace_file(tracefile, 2, regs[PC]);
                 switch (destination_mode) {
                     case 0: {           //register:
                                         //set register to 0
-                        regs[PC] += 2;
                         regs[destination] = 0;
                         states->set_condition(4);
                         for(i = 0; i < 8; ++i)
@@ -1462,7 +1460,6 @@ int single_operand::instruction(int *regs, CPSR *states, i_cache *program)
                     case 1: {           //register deferred:
                                         //set memory location pointed to by
                                         //register to 0
-                        regs[PC] += 2;
                         program[regs[destination]].data = 0;
                         program[regs[destination] + 1].data = 0;
                         states->set_condition(4);
@@ -1478,7 +1475,6 @@ int single_operand::instruction(int *regs, CPSR *states, i_cache *program)
                     case 2: {           //autoincrement:
                                         //set memory location pointed to by
                                         //register to 0, then increment register
-                        regs[PC] += 2;
                         program[regs[destination]].data = 0;
                         program[regs[destination] + 1].data = 0;
                         trace_file(tracefile, 1, regs[destination]);    //write data write to trace file
@@ -1497,8 +1493,7 @@ int single_operand::instruction(int *regs, CPSR *states, i_cache *program)
                                     //memory at location pointed to by
                                     //register, then increment register
                     {
-                        regs[PC] += 2;
-                        deferred = ((program[regs[destination] + 1].data << 8) + (program[regs[destination]].data & 0xFF)) & 0xFFFF;      //get address as 16 bit value
+                        deferred = (((program[regs[destination] + 1].data << 8) & 0xFF00) + (program[regs[destination]].data & 0xFF)) & 0xFFFF;      //get address as 16 bit value
                         
                         program[deferred].data = 0;
                         program[deferred + 1].data = 0;
@@ -1519,7 +1514,6 @@ int single_operand::instruction(int *regs, CPSR *states, i_cache *program)
                                     //set memory location pointed to by
                                     //register to 0
                     {
-                        regs[PC] += 2;
                         regs[destination] -= 2;
                         program[regs[destination]].data = 0;
                         program[regs[destination] + 1].data = 0;
@@ -1537,13 +1531,12 @@ int single_operand::instruction(int *regs, CPSR *states, i_cache *program)
                                     //set memory location pointed to by
                                     //memory location pointed to by register
                                     //to 0
-                        regs[PC] += 2;
                         regs[destination] -= 2;
-                        deferred = ((program[regs[destination] + 1].data << 8) + (program[regs[destination]].data & 0xFF)) & 0xFFFF;      //get address as 16 bit value
+                        deferred = (((program[regs[destination] + 1].data << 8) & 0xFF00) + (program[regs[destination]].data & 0xFF)) & 0xFFFF;      //get address as 16 bit value
                         program[deferred].data = 0;
                         program[deferred + 1].data = 0;
                         trace_file(tracefile, 0, regs[destination]);
-                        trace_file(tracefile, 1, program[deferred].data);
+                        trace_file(tracefile, 1, destination);
                         states->set_condition(4);
                         outcome = 1;
                         for(i = 0; i < 8; ++i)
@@ -1557,19 +1550,18 @@ int single_operand::instruction(int *regs, CPSR *states, i_cache *program)
                                     //set memory pointed to by register plus
                                     //index, which is located just after instruction,
                                     //to 0
-                        regs[PC] += 2;
-                        index = ((program[regs[PC] + 1].data << 8) + (program[regs[PC]].data & 0xFF) + (regs[destination] & 0xFFFF)) & 0xFFFF;
+                        index = ((((program[regs[PC] + 1].data << 8) & 0xFF00) + (program[regs[PC]].data & 0xFF) + (regs[destination] & 0xFFFF)) & 0xFFFF);
                         program[index].data = 0;        //MSB
                         program[index + 1].data = 0;    //LSB
                         trace_file(tracefile, 0, regs[PC]);
                         trace_file(tracefile, 1, index);
                         regs[PC] += 2;
+                        states->set_condition(4);
                         for(i = 0; i < 8; ++i)
                         {
                             cout << regs[i] << ' ';
                         }
                         cout << endl;
-                        states->set_condition(4);
                         outcome = 1;
                         break;
                     }
@@ -1577,20 +1569,20 @@ int single_operand::instruction(int *regs, CPSR *states, i_cache *program)
                                     //set memory pointed to by memory pointed to
                                     //by register plus index, which is located just after
                                     //instruction, to 0
-                        regs[PC] += 2;
-                        index = ((((program[regs[PC] + 1].data << 8) + program[regs[PC]].data) & 0xFF) + regs[destination]) & 0xFFFF;
-                        regs[PC] += 2;
+                        index = ((((program[regs[PC] + 1].data << 8) & 0xFF00) + (program[regs[PC]].data & 0xFF) + (regs[destination] & 0xFFFF)) & 0xFFFF);     //get pointer
+                        trace_file(tracefile, 0, index);
+                        trace_file(tracefile, 0, program[index].data);
+                        index = ((program[index].data & 0xFF) + ((program[index + 1].data << 8) & 0xFF00) & 0xFFFF);     //get index
                         program[index].data = 0;
                         program[index + 1].data = 0;
-                        trace_file(tracefile, 0, regs[PC]);
-                        trace_file(tracefile, 0, index);
-                        trace_file(tracefile, 1, program[index].data);
+                        trace_file(tracefile, 1, index);
+                        regs[PC] += 2;
+                        states->set_condition(4);
                         for(i = 0; i < 8; ++i)
                         {
                             cout << regs[i] << ' ';
                         }
                         cout << endl;
-                        states->set_condition(4);
                         outcome = 1;
                         break;
                     }
@@ -1612,11 +1604,9 @@ int single_operand::instruction(int *regs, CPSR *states, i_cache *program)
         case COM:
             {
                 cout << "COM" << endl;
-                trace_file(tracefile, 2, regs[7]);
                 switch (destination_mode) {
                     case 0: {           //register:
                                         //flip register bits
-                        regs[PC] += 2;
                         regs[destination] &= 0xFFFF;  //ensure 16 bit value
                         regs[destination] ^= 0xFFFF;     //flip bits
                         regs[destination] &= 0xFFFF;  //capture 16 bits
@@ -1631,7 +1621,6 @@ int single_operand::instruction(int *regs, CPSR *states, i_cache *program)
                     case 1: {           //register deferred:
                                         //flip bits at memory location 
                                         //pointed to by register
-                        regs[PC] += 2;                         //increment PC
                         program[regs[destination]].data &= 0xFF; //ensure 8 bit value
                         program[regs[destination] + 1].data &= 0xFF; //ensure 8 bit value
                         program[regs[destination]].data ^= 0xFF;   //flip bits
@@ -1651,7 +1640,6 @@ int single_operand::instruction(int *regs, CPSR *states, i_cache *program)
                     case 2: {           //autoincrement:
                                         //flip bits at memory location pointed to by
                                         //register, then increment register
-                        regs[PC] += 2;
                         program[regs[destination]].data &= 0xFF;
                         program[regs[destination] + 1].data &= 0xFF;
                         program[regs[destination]].data ^= 0xFF;
@@ -1676,8 +1664,7 @@ int single_operand::instruction(int *regs, CPSR *states, i_cache *program)
                                     //memory at location pointed to by
                                     //register, then increment register
                     {
-                        regs[PC] += 2;
-                        deferred = ((program[regs[destination] + 1].data << 8) + (program[(regs[destination])].data & 0xFF)) & 0xFFFF;      //get address as 16 bit value
+                        deferred = (((program[regs[destination] + 1].data << 8) & 0xFF00) + (program[regs[destination]].data & 0xFF)) & 0xFFFF;      //get address as 16 bit value
                         program[deferred].data &= 0xFF;
                         program[deferred + 1].data &= 0xFF;
                         program[deferred].data ^= 0xFF;
@@ -1685,7 +1672,7 @@ int single_operand::instruction(int *regs, CPSR *states, i_cache *program)
                         program[deferred].data &= 0xFF;
                         program[deferred + 1].data &= 0xFF;
                         trace_file(tracefile, 0, regs[destination]);
-                        trace_file(tracefile, 1, program[regs[destination]].data);
+                        trace_file(tracefile, 1, deferred);
                         regs[destination] += 2;
                         states->set_condition(((program[deferred + 1].data >> 8) & 8)  | (!(program[deferred].data | program[deferred + 1].data  | 0) & 4) | 1);
                         outcome = 1;
@@ -1701,7 +1688,6 @@ int single_operand::instruction(int *regs, CPSR *states, i_cache *program)
                                     //set memory location pointed to by
                                     //register to 0
                     {
-                        regs[PC] += 2;
                         regs[destination] -= 2;
                         program[regs[destination]].data ^= 0xFF;
                         program[regs[destination] + 1].data ^= 0xFF;
@@ -1721,9 +1707,8 @@ int single_operand::instruction(int *regs, CPSR *states, i_cache *program)
                                     //set memory location pointed to by
                                     //memory location pointed to by register
                                     //to 0
-                        regs[PC] += 2;
                         regs[destination] -= 2;
-                        deferred = ((program[regs[destination]].data << 8) + (program[regs[destination] + 1].data & 0xFF) & 0xFFFF);      //get address as 16 bit value
+                        deferred = (((program[regs[destination] + 1].data << 8) & 0xFF00) + (program[regs[destination]].data & 0xFF)) & 0xFFFF;      //get address as 16 bit value
                         program[deferred].data &= 0xFF;
                         program[deferred + 1].data &= 0xFF;
                         program[deferred].data ^= 0xFF;
@@ -1731,7 +1716,7 @@ int single_operand::instruction(int *regs, CPSR *states, i_cache *program)
                         program[deferred].data &= 0xFF;
                         program[deferred + 1].data &= 0xFF;
                         trace_file(tracefile, 0, regs[destination]);
-                        trace_file(tracefile, 1, program[deferred].data);
+                        trace_file(tracefile, 1, deferred);
                         states->set_condition((((program[deferred + 1].data + 1) >> 8) & 8)  | (!(program[deferred].data | program[deferred + 1].data | 0) & 4) | 1);
                         outcome = 1;
                         for(i = 0; i < 8; ++i)
@@ -1744,9 +1729,7 @@ int single_operand::instruction(int *regs, CPSR *states, i_cache *program)
                     case 6: {       //index:
                                     //set memory pointed to by register plus
                                     //index, which is located just after instruction
-                        regs[PC] += 2;
-                        index = ((program[regs[PC] + 1].data << 8) + (program[regs[PC]].data & 0xFF) + (regs[destination] & 0xFFFF) & 0xFFFF);
-                        regs[PC] += 2;
+                        index = ((((program[regs[PC] + 1].data << 8) & 0xFF00) + (program[regs[PC]].data & 0xFF) + (regs[destination] & 0xFFFF)) & 0xFFFF);
                         program[index].data &= 0xFF;
                         program[index + 1].data &= 0xFF;
                         program[index].data ^= 0xFF;
@@ -1769,11 +1752,10 @@ int single_operand::instruction(int *regs, CPSR *states, i_cache *program)
                                     //set memory pointed to by memory pointed to
                                     //by register plus index, which is located just after
                                     //instruction, to 0
-                        regs[PC] += 2;
-                        index = (((program[regs[PC] + 1].data << 8) + (program[regs[PC]].data) & 0xFF) + regs[destination]) & 0xFFFF;  //get pointer
+                        index = ((((program[regs[PC] + 1].data << 8) & 0xFF00) + (program[regs[PC]].data & 0xFF) + (regs[destination] & 0xFFFF)) & 0xFFFF);     //get pointer
                         trace_file(tracefile, 0, index);
-                        trace_file(tracefile, 0, regs[PC]);
-                        index = ((program[index + 1].data << 8) + program[index].data) & 0xFFFF;    //get index
+                        trace_file(tracefile, 0, program[index].data);
+                        index = ((program[index].data & 0xFF) + ((program[index + 1].data << 8) & 0xFF00) & 0xFFFF);     //get index
                         program[index].data &= 0xFF;
                         program[index + 1].data &= 0xFF;
                         program[index].data ^= 0xFF;

@@ -225,7 +225,8 @@ int main(int argc, char* argv[])
 
     gps[PC] = start * 2;
 
-    gps[2] = 20;
+    gps[2] = 70;
+    gps[4] = 60;
 
     for(i = 0; i < 8; ++i)
     {
@@ -245,7 +246,9 @@ int main(int argc, char* argv[])
 
     while(gps[PC] < prog_size)
     {
-        to_run = prog_mem[gps[PC]].data + (prog_mem[gps[PC] + 1].data << 8);
+        to_run = prog_mem[gps[PC]].data + (prog_mem[gps[PC] + 1].data << 8);    //get instruction from memory
+        trace_file(trace, 2, gps[PC]);      //write to trace file
+        gps[PC] += 2;
         to_interpret = interpreter(to_run, &firstbit, new_command, trace);
 
         to_interpret = new_command->instruction(gps, &status_reg, prog_mem);
