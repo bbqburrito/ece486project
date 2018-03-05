@@ -1445,8 +1445,6 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
     {
         case CLR:
             {
-                {
-                    cout << "unaligned 
                 cout << "CLR" << endl;
                 switch (destination_mode) {
                     case 0: {           //register:
@@ -1516,7 +1514,7 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         program[deferred].data = 0;
                         program[deferred + 1].data = 0;
                         trace_file(tracefile, 0, regs[destination]);
-                        trace_file(tracefile, 1, deferred);
+                        trace_file(tracefile, 1, (uint16_t)deferred);
                         regs[destination] += 2;
                         states->set_condition(4);
                         outcome = 1;
@@ -1594,7 +1592,7 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         program[index].data = 0;        
                         program[index + 1].data = 0;    
                         trace_file(tracefile, 0, regs[PC]);
-                        trace_file(tracefile, 1, index);
+                        trace_file(tracefile, 1, (uint16_t)index);
                         regs[PC] += 2;
                         states->set_condition(4);
                         for(i = 0; i < 8; ++i)
@@ -1620,7 +1618,7 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         }
 
 
-                        trace_file(tracefile, 0, index);
+                        trace_file(tracefile, 0, (uint16_t)index);
                         trace_file(tracefile, 0, regs[PC]);
                         program[program[index].data].data = 0;
                         program[program[index].data + 1].data = 0;
@@ -1675,7 +1673,7 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         }
                         program[regs[destination]].data ^= 0xFFFF;   //flip bits
                         program[regs[destination] + 1].data ^= 0xFFFF;   //flip bits
-                        states->set_condition(((program[regs[destinaion]].data & 16) << 3)  | (!(program[regs[destination]].data) << 2) | 1);
+                        states->set_condition(((program[regs[destination]].data & 16) << 3)  | (!(program[regs[destination]].data) << 2) | 1);
                         trace_file(tracefile, 1, regs[destination]);   //write data write to trace file
                         outcome = 1;
                         for(i = 0; i < 8; ++i)
@@ -1720,7 +1718,7 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         program[deferred].data ^= 0xFFFF;
                         program[deferred + 1].data ^= 0xFFFF;
                         trace_file(tracefile, 0, regs[destination]);
-                        trace_file(tracefile, 1, deferred);
+                        trace_file(tracefile, 1, (uint16_t)deferred);
                         regs[destination] += 2;
                         states->set_condition(((program[deferred].data & 16) << 3)  | (!(program[deferred].data) << 2) | 1);
                         outcome = 1;
@@ -1770,7 +1768,7 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         program[deferred].data ^= 0xFFFF;
                         program[deferred + 1].data ^= 0xFFFF;
                         trace_file(tracefile, 0, regs[destination]);
-                        trace_file(tracefile, 1, deferred);
+                        trace_file(tracefile, 1, (uint16_t)deferred);
                         states->set_condition(((program[deferred].data & 16) << 3)  | (!(program[deferred].data) << 2) | 1);
                         outcome = 1;
                         for(i = 0; i < 8; ++i)
@@ -1794,7 +1792,7 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         }
                         program[index].data ^= 0xFFFF;
                         program[index + 1].data ^= 0xFFFF;
-                        trace_file(tracefile, 1, index);
+                        trace_file(tracefile, 1, (uint16_t)index);
                         trace_file(tracefile, 0, regs[PC]);
                         regs[PC] += 2;
                         for(i = 0; i < 8; ++i)
@@ -1825,7 +1823,7 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         regs[PC] += 2;
                         states->set_condition(((program[program[index + 1].data].data & 16) << 3)  | (!(program[program[index].data].data) << 2) | 1);
                         trace_file(tracefile, 0, regs[PC]);
-                        trace_file(tracefile, 0, index);
+                        trace_file(tracefile, 0, (uint16_t)index);
                         trace_file(tracefile, 1, program[index].data);
                         for(i = 0; i < 8; ++i)
                         {
@@ -1859,16 +1857,16 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         if ((regs[destination]) == 0077777)        //check for overflow
                         {
                             condition |= V_OVERFLOW;
-                        } else condition &= ^V_OVERFLOW;
+                        } else condition &= ~V_OVERFLOW;
                         regs[destination] += 1;
                         if (!(regs[destination]))           //check for zero
                         {
                             condition |= ZERO;
-                        } else condition &= ^ZERO;
+                        } else condition &= ~ZERO;
                         if ((int16_t)regs[destination] < 0)          //check for negative
                         {
                             condition |= NEGATIVE;
-                        } else condition &= ^NEGATIVE;
+                        } else condition &= ~NEGATIVE;
                         states->set_condition(condition);       //set conditions
                         for (i = 0; i < 8; ++i) {
                             cout << regs[i] << ' ';
@@ -1886,19 +1884,19 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         }
                         condition = states->get_condition() & CARRY;    //get CARRY condition bit
                         program[regs[destination]].data += 1;
-                        if (program[regs[destinaton] + 1].data == 0077777)        //increment and check for overflow
+                        if (program[regs[destination] + 1].data == 0077777)        //increment and check for overflow
                         {
                             condition |= V_OVERFLOW;
-                        } else condition &= ^V_OVERFLOW;
+                        } else condition &= ~V_OVERFLOW;
                         program[regs[destination] + 1].data += 1;
                         if (!(program[regs[destination]].data))           //check for zero
                         {
                             condition |= ZERO;
-                        } else condition &= ^ZERO;
+                        } else condition &= ~ZERO;
                         if ((int16_t)program[regs[destination]].data < 0)          //check for negative
                         {
                             condition |= NEGATIVE;
-                        } else condition &= ^NEGATIVE;
+                        } else condition &= ~NEGATIVE;
                         states->set_condition(condition);       //set conditions
                         trace_file(tracefile, 1, regs[destination]);   //write data write to trace file
                         outcome = 1;
@@ -1920,19 +1918,19 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         if (program[regs[destination]].data == 0077777)        //check for overflow
                         {
                             condition |= V_OVERFLOW;
-                        } else condition &= ^V_OVERFLOW;
+                        } else condition &= ~V_OVERFLOW;
                         program[regs[destination]].data += 1;
                         program[regs[destination] + 1].data += 1;
                         if (!(program[regs[destination]].data))           //check for zero
                         {
                             condition |= ZERO;
-                        } else condition &= ^ZERO;
+                        } else condition &= ~ZERO;
                         if ((int16_t)program[regs[destination]].data < 0)          //check for negative
                         {
                             condition |= NEGATIVE;
-                        } else condition &= ^NEGATIVE;
+                        } else condition &= ~NEGATIVE;
                         states->set_condition(condition);       //set conditions
-                        trace_file(tracefile, 1, regs[destination]i);   //write data write to trace file
+                        trace_file(tracefile, 1, regs[destination]);   //write data write to trace file
                         regs[destination] += 2;
                         outcome = 1;
                         for (i = 0; i < 8; ++i) {
@@ -1956,20 +1954,20 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         if (program[deferred].data == 0077777)        //increment and check for overflow
                         {
                             condition |= V_OVERFLOW;
-                        } else condition &= ^V_OVERFLOW;
+                        } else condition &= ~V_OVERFLOW;
                         program[deferred].data += 1;
                         program[deferred + 1].data += 1;
                         if (!(program[deferred].data))           //check for zero
                         {
                             condition |= ZERO;
-                        } else condition &= ^ZERO;
+                        } else condition &= ~ZERO;
                         if ((int16_t)program[deferred].data < 0)          //check for negative
                         {
                             condition |= NEGATIVE;
-                        } else condition &= ^NEGATIVE;
+                        } else condition &= ~NEGATIVE;
                         states->set_condition(condition);       //set conditions
                         trace_file(tracefile, 0, regs[destination]);
-                        trace_file(tracefile, 1, deferred);
+                        trace_file(tracefile, 1, (uint16_t)deferred);
                         regs[destination] += 2;
                         outcome = 1;
                         for (i = 0; i < 8; ++i) {
@@ -1995,16 +1993,16 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         if (program[regs[destination]].data == 0077777)        //check for overflow
                         {
                             condition |= V_OVERFLOW;
-                        } else condition &= ^V_OVERFLOW;
+                        } else condition &= ~V_OVERFLOW;
                         program[regs[destination]].data += 1;
                         if (!(program[regs[destination]].data))           //check for zero
                         {
                             condition |= ZERO;
-                        } else condition &= ^ZERO;
+                        } else condition &= ~ZERO;
                         if ((int16_t)program[regs[destination]].data < 0)          //check for negative
                         {
                             condition |= NEGATIVE;
-                        } else condition &= ^NEGATIVE;
+                        } else condition &= ~NEGATIVE;
                         states->set_condition(condition);       //set conditions
                         trace_file(tracefile, 1, regs[destination]);   //write data write to trace file
                         for (i = 0; i < 8; ++i) {
@@ -2031,19 +2029,19 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         if (program[deferred].data == 0077777)        //check for overflow
                         {
                             condition |= V_OVERFLOW;
-                        } else condition &= ^V_OVERFLOW;
+                        } else condition &= ~V_OVERFLOW;
                         program[deferred].data += 1;
                         if (!(program[deferred].data))           //check for zero
                         {
                             condition |= ZERO;
-                        } else condition &= ^ZERO;
+                        } else condition &= ~ZERO;
                         if ((int16_t)program[deferred].data < 0)          //check for negative
                         {
                             condition |= NEGATIVE;
-                        } else condition &= ^NEGATIVE;
+                        } else condition &= ~NEGATIVE;
                         states->set_condition(condition);       //set conditions
                         trace_file(tracefile, 0, regs[destination]);
-                        trace_file(tracefile, 1, deferred);
+                        trace_file(tracefile, 1, (uint16_t)deferred);
                         for (i = 0; i < 8; ++i) {
                             cout << regs[i] << ' ';
                         }
@@ -2067,18 +2065,18 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         if (program[index].data == 0077777)        //check for overflow
                         {
                             condition |= V_OVERFLOW;
-                        } else condition &= ^V_OVERFLOW;
+                        } else condition &= ~V_OVERFLOW;
                         program[index].data += 1;
                         if (!(program[index].data))           //check for zero
                         {
                             condition |= ZERO;
-                        } else conditon &= ^ZERO;
+                        } else condition &= ~ZERO;
                         if ((int16_t)program[index].data < 0)          //check for negative
                         {
                             condition |= NEGATIVE;
-                        } else condition &= ^NEGATIVE;
+                        } else condition &= ~NEGATIVE;
                         states->set_condition(condition);       //set conditions
-                        trace_file(tracefile, 1, index);
+                        trace_file(tracefile, 1, (uint16_t)index);
                         trace_file(tracefile, 0, regs[PC]);
                         regs[PC] += 2;
                         for (i = 0; i < 8; ++i) {
@@ -2112,13 +2110,13 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         if (!(program[program[index].data].data))           //check for zero
                         {
                             condition |= ZERO;
-                        } else condition &= ^ZERO;
+                        } else condition &= ~ZERO;
                         if ((int16_t)program[program[index].data].data < 0)          //check for negative
                         {
                             condition |= NEGATIVE;
-                        } else condition &= ^NEGATIVE;
+                        } else condition &= ~NEGATIVE;
                         states->set_condition(condition);       //set conditions
-                        trace_file(tracefile, 0, index);
+                        trace_file(tracefile, 0, (uint16_t)index);
                         trace_file(tracefile, 0, regs[PC]);
                         trace_file(tracefile, 1, program[index].data);
                         
@@ -2154,16 +2152,16 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         if ((regs[destination]) == 0100000)        //check for overflow
                         {
                             condition |= V_OVERFLOW;
-                        } else condition &= ^V_OVERFLOW;
+                        } else condition &= ~V_OVERFLOW;
                         regs[destination] -= 1;
                         if (!(regs[destination]))           //check for zero
                         {
                             condition |= ZERO;
-                        } else condition &= ^ZERO;
+                        } else condition &= ~ZERO;
                         if ((int16_t)regs[destination] < 0)          //check for negative
                         {
                             condition |= NEGATIVE;
-                        } else condition &= ^NEGATIVE;
+                        } else condition &= ~NEGATIVE;
                         states->set_condition(condition);       //set conditions
                         for (i = 0; i < 8; ++i) {
                             cout << regs[i] << ' ';
@@ -2181,19 +2179,19 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         }
                         condition = states->get_condition() & CARRY;    //get CARRY condition bit
                         program[regs[destination]].data -= 1;
-                        if (program[regs[destinaton] + 1].data == 0100000)        //increment and check for overflow
+                        if (program[regs[destination] + 1].data == 0100000)        //increment and check for overflow
                         {
                             condition |= V_OVERFLOW;
-                        } else condition &= ^V_OVERFLOW;
+                        } else condition &= ~V_OVERFLOW;
                         program[regs[destination] + 1].data -= 1;
                         if (!(program[regs[destination]].data))           //check for zero
                         {
                             condition |= ZERO;
-                        } else condition &= ^ZERO;
+                        } else condition &= ~ZERO;
                         if ((int16_t)program[regs[destination]].data < 0)          //check for negative
                         {
                             condition |= NEGATIVE;
-                        } else condition &= ^NEGATIVE;
+                        } else condition &= ~NEGATIVE;
                         states->set_condition(condition);       //set conditions
                         trace_file(tracefile, 1, regs[destination]);   //write data write to trace file
                         outcome = 1;
@@ -2215,19 +2213,19 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         if (program[regs[destination]].data == 0100000)        //check for overflow
                         {
                             condition |= V_OVERFLOW;
-                        } else condition &= ^V_OVERFLOW;
+                        } else condition &= ~V_OVERFLOW;
                         program[regs[destination]].data -= 1;
                         program[regs[destination] + 1].data -= 1;
                         if (!(program[regs[destination]].data))           //check for zero
                         {
                             condition |= ZERO;
-                        } else condition &= ^ZERO;
+                        } else condition &= ~ZERO;
                         if ((int16_t)program[regs[destination]].data < 0)          //check for negative
                         {
                             condition |= NEGATIVE;
-                        } else condition &= ^NEGATIVE;
+                        } else condition &= ~NEGATIVE;
                         states->set_condition(condition);       //set conditions
-                        trace_file(tracefile, 1, regs[destination]i);   //write data write to trace file
+                        trace_file(tracefile, 1, regs[destination]);   //write data write to trace file
                         regs[destination] += 2;
                         outcome = 1;
                         for (i = 0; i < 8; ++i) {
@@ -2251,20 +2249,20 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         if (program[deferred].data == 0100000)        //increment and check for overflow
                         {
                             condition |= V_OVERFLOW;
-                        } else condition &= ^V_OVERFLOW;
+                        } else condition &= ~V_OVERFLOW;
                         program[deferred].data -= 1;
                         program[deferred + 1].data -= 1;
                         if (!(program[deferred].data))           //check for zero
                         {
                             condition |= ZERO;
-                        } else condition &= ^ZERO;
+                        } else condition &= ~ZERO;
                         if ((int16_t)program[deferred].data < 0)          //check for negative
                         {
                             condition |= NEGATIVE;
-                        } else condition &= ^NEGATIVE;
+                        } else condition &= ~NEGATIVE;
                         states->set_condition(condition);       //set conditions
                         trace_file(tracefile, 0, regs[destination]);
-                        trace_file(tracefile, 1, deferred);
+                        trace_file(tracefile, 1, (uint16_t)deferred);
                         regs[destination] += 2;
                         outcome = 1;
                         for (i = 0; i < 8; ++i) {
@@ -2290,16 +2288,16 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         if (program[regs[destination]].data == 0100000)        //check for overflow
                         {
                             condition |= V_OVERFLOW;
-                        } else condition &= ^V_OVERFLOW;
+                        } else condition &= ~V_OVERFLOW;
                         program[regs[destination]].data -= 1;
                         if (!(program[regs[destination]].data))           //check for zero
                         {
                             condition |= ZERO;
-                        } else condition &= ^ZERO;
+                        } else condition &= ~ZERO;
                         if ((int16_t)program[regs[destination]].data < 0)          //check for negative
                         {
                             condition |= NEGATIVE;
-                        } else condition &= ^NEGATIVE;
+                        } else condition &= ~NEGATIVE;
                         states->set_condition(condition);       //set conditions
                         trace_file(tracefile, 1, regs[destination]);   //write data write to trace file
                         for (i = 0; i < 8; ++i) {
@@ -2326,19 +2324,19 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         if (program[deferred].data == 0100000)        //check for overflow
                         {
                             condition |= V_OVERFLOW;
-                        } else condition &= ^V_OVERFLOW;
+                        } else condition &= ~V_OVERFLOW;
                         program[deferred].data -= 1;
                         if (!(program[deferred].data))           //check for zero
                         {
                             condition |= ZERO;
-                        } else condition &= ^ZERO;
+                        } else condition &= ~ZERO;
                         if ((int16_t)program[deferred].data < 0)          //check for negative
                         {
                             condition |= NEGATIVE;
-                        } else condition &= ^NEGATIVE;
+                        } else condition &= ~NEGATIVE;
                         states->set_condition(condition);       //set conditions
                         trace_file(tracefile, 0, regs[destination]);
-                        trace_file(tracefile, 1, deferred);
+                        trace_file(tracefile, 1, (uint16_t)deferred);
                         for (i = 0; i < 8; ++i) {
                             cout << regs[i] << ' ';
                         }
@@ -2362,18 +2360,18 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         if (program[index].data == 0100000)        //check for overflow
                         {
                             condition |= V_OVERFLOW;
-                        } else condition &= ^V_OVERFLOW;
+                        } else condition &= ~V_OVERFLOW;
                         program[index].data -= 1;
                         if (!(program[index].data))           //check for zero
                         {
                             condition |= ZERO;
-                        } else condition &= ^ZERO;
+                        } else condition &= ~ZERO;
                         if ((int16_t)program[index].data < 0)          //check for negative
                         {
                             condition |= NEGATIVE;
-                        } else condition &= ^NEGATIVE;
+                        } else condition &= ~NEGATIVE;
                         states->set_condition(condition);       //set conditions
-                        trace_file(tracefile, 1, index);
+                        trace_file(tracefile, 1, (uint16_t)index);
                         trace_file(tracefile, 0, regs[PC]);
                         regs[PC] += 2;
                         for (i = 0; i < 8; ++i) {
@@ -2402,18 +2400,18 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         if (program[program[index].data].data == 0100000)        //check for overflow
                         {
                             condition |= V_OVERFLOW;
-                        } else condition &= ^V_OVERFLOW
+                        } else condition &= ~V_OVERFLOW;
                         program[program[index].data].data -= 1;     //increment
                         if (!(program[program[index].data].data))           //check for zero
                         {
                             condition |= ZERO;
-                        } else condition &= ^ZERO;
+                        } else condition &= ~ZERO;
                         if ((int16_t)program[program[index].data].data < 0)          //check for negative
                         {
                             condition |= NEGATIVE;
-                        } else condition &= ^NEGATIVE;
+                        } else condition &= ~NEGATIVE;
                         states->set_condition(condition);       //set conditions
-                        trace_file(tracefile, 0, index);
+                        trace_file(tracefile, 0, (uint16_t)index);
                         trace_file(tracefile, 0, regs[PC]);
                         trace_file(tracefile, 1, program[index].data);
                         
@@ -2451,19 +2449,19 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         if ((regs[destination]) == 0100000)        //check for overflow
                         {
                             condition |= V_OVERFLOW;
-                        } else condition &= ^V_OVERFLOW;
+                        } else condition &= ~V_OVERFLOW;
                         if (!(regs[destination]))           //check for zero
                         {
                             condition |= ZERO;
-                        } else condition &= ^ZERO;
+                        } else condition &= ~ZERO;
                         if ((int16_t)regs[destination] < 0)          //check for negative
                         {
                             condition |= NEGATIVE;
-                        } else condition &= ^NEGATIVE;
+                        } else condition &= ~NEGATIVE;
                         if (!regs[destination])
                         {
                             condition |= CARRY;
-                        } else condition &= ^CARRY;
+                        } else condition &= ~CARRY;
 
                         states->set_condition(condition);       //set conditions
                         for (i = 0; i < 8; ++i) {
@@ -2485,22 +2483,22 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         program[regs[destination]].data += 1;
                         program[regs[destination] + 1].data ^= 0xFFFF;
                         program[regs[destination] + 1].data += 1;
-                        if (program[regs[destinaton]].data == 0100000)        //increment and check for overflow
+                        if (program[regs[destination]].data == 0100000)        //increment and check for overflow
                         {
                             condition |= V_OVERFLOW;
-                        } else condition &= ^V_OVERFLOW;
+                        } else condition &= ~V_OVERFLOW;
                         if (!(program[regs[destination]].data))           //check for zero
                         {
                             condition |= ZERO;
-                        } else condition &= ^ZERO;
+                        } else condition &= ~ZERO;
                         if ((int16_t)program[regs[destination]].data < 0)          //check for negative
                         {
                             condition |= NEGATIVE;
-                        }else condition &= ^NEGATIVE;
+                        }else condition &= ~NEGATIVE;
                         if (!(program[regs[destination]].data))
                         {
                             condition |= CARRY;
-                        } else condition &= ^CARRY;
+                        } else condition &= ~CARRY;
 
                         states->set_condition(condition);       //set conditions
                         trace_file(tracefile, 1, regs[destination]);   //write data write to trace file
@@ -2524,22 +2522,22 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         program[regs[destination]].data += 1;
                         program[regs[destination] + 1].data ^= 0xFFFF;
                         program[regs[destination] + 1].data += 1;
-                        if (program[regs[destinaton]].data == 0100000)        //increment and check for overflow
+                        if (program[regs[destination]].data == 0100000)        //increment and check for overflow
                         {
                             condition |= V_OVERFLOW;
-                        } else condition &= ^V_OVERFLOW;
+                        } else condition &= ~V_OVERFLOW;
                         if (!(program[regs[destination]].data))           //check for zero
                         {
                             condition |= ZERO;
-                        } else condition &= ^ZERO;
+                        } else condition &= ~ZERO;
                         if ((int16_t)program[regs[destination]].data < 0)          //check for negative
                         {
                             condition |= NEGATIVE;
-                        }else condition &= ^NEGATIVE;
+                        }else condition &= ~NEGATIVE;
                         if (!(program[regs[destination]].data))
                         {
                             condition |= CARRY;
-                        } else condition &= ^CARRY;
+                        } else condition &= ~CARRY;
 
                         trace_file(tracefile, 1, regs[destination]);   //write data write to trace file
                         regs[destination] += 2;
@@ -2569,23 +2567,23 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         if (program[deferred].data == 0100000)        //increment and check for overflow
                         {
                             condition |= V_OVERFLOW;
-                        } else condition &= ^V_OVERFLOW;
+                        } else condition &= ~V_OVERFLOW;
                         if (!(program[deferred].data))           //check for zero
                         {
                             condition |= ZERO;
-                        } else condition &= ^ZERO;
+                        } else condition &= ~ZERO;
                         if ((int16_t)program[deferred].data < 0)          //check for negative
                         {
                             condition |= NEGATIVE;
-                        }else condition &= ^NEGATIVE;
+                        }else condition &= ~NEGATIVE;
                         if (!(program[deferred].data))
                         {
                             condition |= CARRY;
-                        } else condition &= ^CARRY;
+                        } else condition &= ~CARRY;
 
                         states->set_condition(condition);       //set conditions
                         trace_file(tracefile, 0, regs[destination]);
-                        trace_file(tracefile, 1, deferred);
+                        trace_file(tracefile, 1, (uint16_t)deferred);
                         regs[destination] += 2;
                         outcome = 1;
                         for (i = 0; i < 8; ++i) {
@@ -2614,19 +2612,19 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         if (program[regs[destination]].data == 0100000)        //increment and check for overflow
                         {
                             condition |= V_OVERFLOW;
-                        } else condition &= ^V_OVERFLOW;
+                        } else condition &= ~V_OVERFLOW;
                         if (!(program[regs[destination]].data))           //check for zero
                         {
                             condition |= ZERO;
-                        } else condition &= ^ZERO;
+                        } else condition &= ~ZERO;
                         if ((int16_t)program[regs[destination]].data < 0)          //check for negative
                         {
                             condition |= NEGATIVE;
-                        }else condition &= ^NEGATIVE;
+                        }else condition &= ~NEGATIVE;
                         if (!(program[regs[destination]].data))
                         {
                             condition |= CARRY;
-                        } else condition &= ^CARRY;
+                        } else condition &= ~CARRY;
 
                         states->set_condition(condition);       //set conditions
                         trace_file(tracefile, 1, regs[destination]);   //write data write to trace file
@@ -2657,23 +2655,23 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         if (program[deferred].data == 0100000)        //increment and check for overflow
                         {
                             condition |= V_OVERFLOW;
-                        } else condition &= ^V_OVERFLOW;
+                        } else condition &= ~V_OVERFLOW;
                         if (!(program[deferred].data))           //check for zero
                         {
                             condition |= ZERO;
-                        } else condition &= ^ZERO;
+                        } else condition &= ~ZERO;
                         if ((int16_t)program[deferred].data < 0)          //check for negative
                         {
                             condition |= NEGATIVE;
-                        }else condition &= ^NEGATIVE;
+                        }else condition &= ~NEGATIVE;
                         if (!(program[deferred].data))
                         {
                             condition |= CARRY;
-                        } else condition &= ^CARRY;
+                        } else condition &= ~CARRY;
 
                         states->set_condition(condition);       //set conditions
                         trace_file(tracefile, 0, regs[destination]);
-                        trace_file(tracefile, 1, deferred);
+                        trace_file(tracefile, 1, (uint16_t)deferred);
                         for (i = 0; i < 8; ++i) {
                             cout << regs[i] << ' ';
                         }
@@ -2700,22 +2698,22 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         if (program[index].data == 0100000)        //increment and check for overflow
                         {
                             condition |= V_OVERFLOW;
-                        } else condition &= ^V_OVERFLOW;
+                        } else condition &= ~V_OVERFLOW;
                         if (!(program[index].data))           //check for zero
                         {
                             condition |= ZERO;
-                        } else condition &= ^ZERO;
+                        } else condition &= ~ZERO;
                         if ((int16_t)program[index].data < 0)          //check for negative
                         {
                             condition |= NEGATIVE;
-                        }else condition &= ^NEGATIVE;
+                        }else condition &= ~NEGATIVE;
                         if (!(program[index].data))
                         {
                             condition |= CARRY;
-                        } else condition &= ^CARRY;
+                        } else condition &= ~CARRY;
 
                         states->set_condition(condition);       //set conditions
-                        trace_file(tracefile, 1, index);
+                        trace_file(tracefile, 1, (uint16_t)index);
                         trace_file(tracefile, 0, regs[PC]);
                         regs[PC] += 2;
                         for (i = 0; i < 8; ++i) {
@@ -2747,22 +2745,22 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         if (program[program[index].data].data == 0100000)        //increment and check for overflow
                         {
                             condition |= V_OVERFLOW;
-                        } else condition &= ^V_OVERFLOW;
+                        } else condition &= ~V_OVERFLOW;
                         if (!(program[program[index].data].data))           //check for zero
                         {
                             condition |= ZERO;
-                        } else condition &= ^ZERO;
+                        } else condition &= ~ZERO;
                         if ((int16_t)program[program[index].data].data < 0)          //check for negative
                         {
                             condition |= NEGATIVE;
-                        }else condition &= ^NEGATIVE;
+                        }else condition &= ~NEGATIVE;
                         if (!(program[program[index].data].data))
                         {
                             condition |= CARRY;
-                        } else condition &= ^CARRY;
+                        } else condition &= ~CARRY;
 
                         states->set_condition(condition);       //set conditions
-                        trace_file(tracefile, 0, index);
+                        trace_file(tracefile, 0, (uint16_t)index);
                         trace_file(tracefile, 0, regs[PC]);
                         trace_file(tracefile, 1, program[index].data);
                         
@@ -2794,15 +2792,15 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                 switch (destination_mode) {
                     case 0: {           //register:
                         // signed value
-                        condition = states->get_condition() & ^(V_OVERFLOW | CARRY);
+                        condition = states->get_condition() & ~(V_OVERFLOW | CARRY);
                         if (!(regs[destination]))           //check for zero
                         {
                             condition |= ZERO;
-                        } else condition &= ^ZERO;
+                        } else condition &= ~ZERO;
                         if ((int16_t)regs[destination] < 0)          //check for negative
                         {
                             condition |= NEGATIVE;
-                        } else condition &= ^NEGATIVE;
+                        } else condition &= ~NEGATIVE;
 
                         states->set_condition(condition);       //set conditions
                         for (i = 0; i < 8; ++i) {
@@ -2819,15 +2817,15 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                             cout << "unaligned reference\n";
                             break;
                         }
-                        condition = states->get_condition() & ^(V_OVERFLOW | CARRY);    //get condition bit
+                        condition = states->get_condition() & ~(V_OVERFLOW | CARRY);    //get condition bit
                         if (!(program[regs[destination]].data))           //check for zero
                         {
                             condition |= ZERO;
-                        } else condition &= ^ZERO;
+                        } else condition &= ~ZERO;
                         if ((int16_t)program[regs[destination]].data < 0)          //check for negative
                         {
                             condition |= NEGATIVE;
-                        }else condition &= ^NEGATIVE;
+                        }else condition &= ~NEGATIVE;
 
                         states->set_condition(condition);       //set conditions
                         trace_file(tracefile, 0, regs[destination]);   //write data write to trace file
@@ -2846,15 +2844,15 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                             cout << "unaligned reference\n";
                             break;
                         }
-                        condition = states->get_condition() & ^(CARRY | V_OVERFLOW);    //get condition bit
+                        condition = states->get_condition() & ~(CARRY | V_OVERFLOW);    //get condition bit
                         if (!(program[regs[destination]].data))           //check for zero
                         {
                             condition |= ZERO;
-                        } else condition &= ^ZERO;
+                        } else condition &= ~ZERO;
                         if ((int16_t)program[regs[destination]].data < 0)          //check for negative
                         {
                             condition |= NEGATIVE;
-                        }else condition &= ^NEGATIVE;
+                        }else condition &= ~NEGATIVE;
 
                         trace_file(tracefile, 0, regs[destination]);   //write data write to trace file
                         regs[destination] += 2;
@@ -2876,19 +2874,19 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                             cout << "unaligned reference\n";
                             break;
                         }
-                        condition = states->get_condition() & ^(V_OVERFLOW | CARRY);    //get condition bit
+                        condition = states->get_condition() & ~(V_OVERFLOW | CARRY);    //get condition bit
                         if (!(program[deferred].data))           //check for zero
                         {
                             condition |= ZERO;
-                        } else condition &= ^ZERO;
+                        } else condition &= ~ZERO;
                         if ((int16_t)program[deferred].data < 0)          //check for negative
                         {
                             condition |= NEGATIVE;
-                        }else condition &= ^NEGATIVE;
+                        }else condition &= ~NEGATIVE;
 
                         states->set_condition(condition);       //set conditions
                         trace_file(tracefile, 0, regs[destination]);
-                        trace_file(tracefile, 0, deferred);
+                        trace_file(tracefile, 0, (uint16_t)deferred);
                         regs[destination] += 2;
                         outcome = 1;
                         for (i = 0; i < 8; ++i) {
@@ -2909,15 +2907,15 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                             regs[destination] += 2;
                             break;
                         }
-                        condition = states->get_condition() & ^(CARRY | V_OVERFLOW);    //get condition bit
+                        condition = states->get_condition() & ~(CARRY | V_OVERFLOW);    //get condition bit
                         if (!(program[regs[destination]].data))           //check for zero
                         {
                             condition |= ZERO;
-                        } else condition &= ^ZERO;
+                        } else condition &= ~ZERO;
                         if ((int16_t)program[regs[destination]].data < 0)          //check for negative
                         {
                             condition |= NEGATIVE;
-                        }else condition &= ^NEGATIVE;
+                        }else condition &= ~NEGATIVE;
 
                         states->set_condition(condition);       //set conditions
                         trace_file(tracefile, 0, regs[destination]);   //write data write to trace file
@@ -2940,19 +2938,19 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                             regs[destination] += 2;
                             break;
                         }
-                        condition = states->get_condition() & ^(CARRY | V_OVERFLOW);    //get condition bit
+                        condition = states->get_condition() & ~(CARRY | V_OVERFLOW);    //get condition bit
                         if (!(program[deferred].data))           //check for zero
                         {
                             condition |= ZERO;
-                        } else condition &= ^ZERO;
+                        } else condition &= ~ZERO;
                         if ((int16_t)program[deferred].data < 0)          //check for negative
                         {
                             condition |= NEGATIVE;
-                        }else condition &= ^NEGATIVE;
+                        }else condition &= ~NEGATIVE;
 
                         states->set_condition(condition);       //set conditions
                         trace_file(tracefile, 0, regs[destination]);
-                        trace_file(tracefile, 0, deferred);
+                        trace_file(tracefile, 0, (uint16_t)deferred);
                         for (i = 0; i < 8; ++i) {
                             cout << regs[i] << ' ';
                         }
@@ -2971,18 +2969,18 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                             regs[PC] += 2;
                             break;
                         }
-                        condition = states->get_condition() & ^(CARRY | V_OVERFLOW);    //get condition bit
+                        condition = states->get_condition() & ~(CARRY | V_OVERFLOW);    //get condition bit
                         if (!(program[index].data))           //check for zero
                         {
                             condition |= ZERO;
-                        } else condition &= ^ZERO;
+                        } else condition &= ~ZERO;
                         if ((int16_t)program[index].data < 0)          //check for negative
                         {
                             condition |= NEGATIVE;
-                        }else condition &= ^NEGATIVE;
+                        }else condition &= ~NEGATIVE;
 
                         states->set_condition(condition);       //set conditions
-                        trace_file(tracefile, 0, index);
+                        trace_file(tracefile, 0, (uint16_t)index);
                         trace_file(tracefile, 0, regs[PC]);
                         regs[PC] += 2;
                         for (i = 0; i < 8; ++i) {
@@ -3006,18 +3004,18 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                             break;
                         }
 
-                        condition = states->get_condition() & ^(CARRY | V_OVERFLOW);    //get condition bit
+                        condition = states->get_condition() & ~(CARRY | V_OVERFLOW);    //get condition bit
                         if (!(program[program[index].data].data))           //check for zero
                         {
                             condition |= ZERO;
-                        } else condition &= ^ZERO;
+                        } else condition &= ~ZERO;
                         if ((int16_t)program[program[index].data].data < 0)          //check for negative
                         {
                             condition |= NEGATIVE;
-                        }else condition &= ^NEGATIVE;
+                        }else condition &= ~NEGATIVE;
 
                         states->set_condition(condition);       //set conditions
-                        trace_file(tracefile, 0, index);
+                        trace_file(tracefile, 0, (uint16_t)index);
                         trace_file(tracefile, 0, regs[PC]);
                         trace_file(tracefile, 0, program[index].data);
                         

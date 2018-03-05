@@ -211,7 +211,7 @@ int main(int argc, char* argv[])
 
     for(j = 0; j <= i; ++j)
     {
-        cout << prog_mem[j].disposition << prog_mem[j].data << prog_mem[++j].data << endl;
+        cout << prog_mem[j].disposition << prog_mem[j].data << " " << prog_mem[++j].data << endl;
     }
 
     start= findstart(prog_mem, prog_size);       //get start point
@@ -249,7 +249,7 @@ int main(int argc, char* argv[])
         to_run = prog_mem[gps[PC]].data;    //get instruction from memory
         trace_file(trace, 2, gps[PC]);      //write to trace file
         gps[PC] += 2;
-        to_interpret = interpreter(to_run, &firstbit, new_command, trace);
+        to_interpret = interpreter((uint16_t)to_run, &firstbit, new_command, trace);
 
         to_interpret = new_command->instruction(gps, &status_reg, prog_mem);
     }

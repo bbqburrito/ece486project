@@ -286,8 +286,8 @@ class trapIntMiscCond: public command
 
 int findstart(i_cache * prog_mem, int prog_length);
 long line_reader(char * filename, char *& disposition, int & filepos);
-int trace_file(char * filename, int type, int address);
-int interpreter(int to_interpret, int * firstbit, command *& new_command, char * tracefile);
+int trace_file(char * filename, int type, uint16_t address);
+int interpreter(uint16_t to_interpret, int * firstbit, command *& new_command, char * tracefile);
 
 
 
