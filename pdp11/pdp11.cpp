@@ -155,7 +155,7 @@ int findstart(i_cache *prog_mem, int prog_length) {
 //as an octal. returns an int to indicate outcome.
 //takes a char to indicate filename, an int to indicate
 //the type write, and an int to indicate the address write
-int trace_file(char *filename, int type, int address) {
+int trace_file(char *filename, int type, uint16_t address) {
     char make_address[100];
     ofstream outfile;
     int i;
@@ -186,7 +186,7 @@ int trace_file(char *filename, int type, int address) {
 //pointer to assign to command class object by upcasting. returns an int representing
 //the function code of passed command. parses command, then creates an object of 
 //class type and stores in new_command pointer
-int interpreter(int to_interpret, int * firstbit, command *& new_command, char * tracefile)
+int interpreter(uint16_t to_interpret, int * firstbit, command *& new_command, char * tracefile)
 {
     //int i;
     string instruction;
@@ -1043,12 +1043,12 @@ void command::disp()
 }
 
 
-int command::instruction(int *regs, CPSR *states, i_cache *program)
+int command::instruction(uint16_t *regs, CPSR *states, i_cache *program)
 {
     return 0;
 }
 
-int command::instructionB(int *regs, CPSR *states, i_cache * program)
+int command::instructionB(uint16_t *regs, CPSR *states, i_cache * program)
 {
     return 0;
 }
@@ -1079,7 +1079,7 @@ void extended::disp()
     cout << "source: " << source << endl;
 }
 
-int extended::instruction(int *regs, CPSR *states, i_cache * program)
+int extended::instruction(uint16_t *regs, CPSR *states, i_cache * program)
 {
     cout << "function_code: " << function_code << ": ";
     switch(function_code)
@@ -1139,7 +1139,7 @@ void trapIntMiscCond::disp()
     cout << "trap code: " << trap_code << endl;
 }
 
-int trapIntMiscCond::instruction(int *regs, CPSR *states, i_cache *program)
+int trapIntMiscCond::instruction(uint16_t *regs, CPSR *states, i_cache *program)
 {
     //int outcome = -1;
 
@@ -1269,7 +1269,7 @@ void jump_sub::disp()
     cout << "parameters: " << parameters << endl;
 }
 
-int jump_sub::instruction(int *regs, CPSR *states, i_cache *program)
+int jump_sub::instruction(uint16_t *regs, CPSR *states, i_cache *program)
 {
 
     cout << "function_code: " << function_code << ": ";
@@ -1319,7 +1319,7 @@ void branch::disp()
     cout << "offset: " << offset << endl;
 }
 
-int branch::instruction(int *regs, CPSR *states, i_cache *program)
+int branch::instruction(uint16_t *regs, CPSR *states, i_cache *program)
 {
 
     cout << "function_code: " << function_code << ": ";
@@ -1431,12 +1431,13 @@ void single_operand::disp()
     cout << "destination: " << destination << endl;
 }
 
-int single_operand::instruction(int *regs, CPSR *states, i_cache *program)
+int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
 {
     int i;
     int outcome = -1;
-    int deferred = 0;
-    int index = 0;
+    int deferred = 0;   //temp for deferred addressing
+    int index = 0;      //temp for index addressing
+    int condition;      //temp for condition codes
 
     cout << "function_code: " << function_code << ": ";
 
@@ -1444,6 +1445,8 @@ int single_operand::instruction(int *regs, CPSR *states, i_cache *program)
     {
         case CLR:
             {
+                {
+                    cout << "unaligned 
                 cout << "CLR" << endl;
                 switch (destination_mode) {
                     case 0: {           //register:
@@ -1460,6 +1463,11 @@ int single_operand::instruction(int *regs, CPSR *states, i_cache *program)
                     case 1: {           //register deferred:
                                         //set memory location pointed to by
                                         //register to 0
+                        if(regs[destination] % 2)
+                        {
+                            cout << "unaligned reference\n";
+                            break;
+                        }
                         program[regs[destination]].data = 0;
                         program[regs[destination] + 1].data = 0;
                         states->set_condition(4);
@@ -1475,6 +1483,11 @@ int single_operand::instruction(int *regs, CPSR *states, i_cache *program)
                     case 2: {           //autoincrement:
                                         //set memory location pointed to by
                                         //register to 0, then increment register
+                        if(regs[destination] % 2)
+                        {
+                            cout << "unaligned reference\n";
+                            break;
+                        }
                         program[regs[destination]].data = 0;
                         program[regs[destination] + 1].data = 0;
                         trace_file(tracefile, 1, regs[destination]);    //write data write to trace file
@@ -1493,7 +1506,12 @@ int single_operand::instruction(int *regs, CPSR *states, i_cache *program)
                                     //memory at location pointed to by
                                     //register, then increment register
                     {
-                        deferred = (((program[regs[destination] + 1].data << 8) & 0xFF00) + (program[regs[destination]].data & 0xFF)) & 0xFFFF;      //get address as 16 bit value
+                        deferred = program[regs[destination]].data;
+                        if((deferred % 2) || (regs[destination] % 2))
+                        {
+                            cout << "unaligned reference\n";
+                            break;
+                        }
                         
                         program[deferred].data = 0;
                         program[deferred + 1].data = 0;
@@ -1515,6 +1533,12 @@ int single_operand::instruction(int *regs, CPSR *states, i_cache *program)
                                     //register to 0
                     {
                         regs[destination] -= 2;
+                        if(regs[destination] % 2)
+                        {
+                            cout << "unaligned reference\n";
+                            regs[destination] += 2;
+                            break;
+                        }
                         program[regs[destination]].data = 0;
                         program[regs[destination] + 1].data = 0;
                         states->set_condition(4);
@@ -1532,7 +1556,13 @@ int single_operand::instruction(int *regs, CPSR *states, i_cache *program)
                                     //memory location pointed to by register
                                     //to 0
                         regs[destination] -= 2;
-                        deferred = (((program[regs[destination] + 1].data << 8) & 0xFF00) + (program[regs[destination]].data & 0xFF)) & 0xFFFF;      //get address as 16 bit value
+                        deferred = program[regs[destination]].data;
+                        if((deferred % 2) || (regs[destination] % 2))
+                        {
+                            cout << "unaligned reference\n";
+                            regs[destination] += 2;
+                            break;
+                        }
                         program[deferred].data = 0;
                         program[deferred + 1].data = 0;
                         trace_file(tracefile, 0, regs[destination]);
@@ -1550,9 +1580,19 @@ int single_operand::instruction(int *regs, CPSR *states, i_cache *program)
                                     //set memory pointed to by register plus
                                     //index, which is located just after instruction,
                                     //to 0
-                        index = ((((program[regs[PC] + 1].data << 8) & 0xFF00) + (program[regs[PC]].data & 0xFF) + (regs[destination] & 0xFFFF)) & 0xFFFF);
-                        program[index].data = 0;        //MSB
-                        program[index + 1].data = 0;    //LSB
+                        if (destination == PC)
+                            index = regs[PC] + 2 + program[regs[PC]].data;
+                        else index = regs[destination] + program[regs[PC]].data;
+                        if(index % 2)
+                        {
+                            cout << "unaligned reference\n";
+                            regs[PC] += 2;
+                            break;
+                        }
+
+
+                        program[index].data = 0;        
+                        program[index + 1].data = 0;    
                         trace_file(tracefile, 0, regs[PC]);
                         trace_file(tracefile, 1, index);
                         regs[PC] += 2;
@@ -1569,13 +1609,22 @@ int single_operand::instruction(int *regs, CPSR *states, i_cache *program)
                                     //set memory pointed to by memory pointed to
                                     //by register plus index, which is located just after
                                     //instruction, to 0
-                        index = ((((program[regs[PC] + 1].data << 8) & 0xFF00) + (program[regs[PC]].data & 0xFF) + (regs[destination] & 0xFFFF)) & 0xFFFF);     //get pointer
+                        if (destination == PC)
+                            index = regs[PC] + 2 + program[regs[PC]].data;
+                        else index = regs[destination] + program[regs[PC]].data;
+                        if((index % 2) || (program[index].data % 2))
+                        {
+                            cout << "unaligned reference\n";
+                            regs[PC] += 2;
+                            break;
+                        }
+
+
                         trace_file(tracefile, 0, index);
-                        trace_file(tracefile, 0, program[index].data);
-                        index = ((program[index].data & 0xFF) + ((program[index + 1].data << 8) & 0xFF00) & 0xFFFF);     //get index
-                        program[index].data = 0;
-                        program[index + 1].data = 0;
-                        trace_file(tracefile, 1, index);
+                        trace_file(tracefile, 0, regs[PC]);
+                        program[program[index].data].data = 0;
+                        program[program[index].data + 1].data = 0;
+                        trace_file(tracefile, 1, program[index].data);
                         regs[PC] += 2;
                         states->set_condition(4);
                         for(i = 0; i < 8; ++i)
@@ -1607,10 +1656,8 @@ int single_operand::instruction(int *regs, CPSR *states, i_cache *program)
                 switch (destination_mode) {
                     case 0: {           //register:
                                         //flip register bits
-                        regs[destination] &= 0xFFFF;  //ensure 16 bit value
                         regs[destination] ^= 0xFFFF;     //flip bits
-                        regs[destination] &= 0xFFFF;  //capture 16 bits
-                        states->set_condition(((regs[destination] >> 16) & 8) | (!(regs[destination] | 0) & 4) | 1);
+                        states->set_condition(((regs[destination] & 16) << 3)  | (!(regs[destination]) << 2) | 1);
                         for(i = 0; i < 8; ++i)
                         {
                             cout << regs[i] << ' ';
@@ -1621,13 +1668,14 @@ int single_operand::instruction(int *regs, CPSR *states, i_cache *program)
                     case 1: {           //register deferred:
                                         //flip bits at memory location 
                                         //pointed to by register
-                        program[regs[destination]].data &= 0xFF; //ensure 8 bit value
-                        program[regs[destination] + 1].data &= 0xFF; //ensure 8 bit value
-                        program[regs[destination]].data ^= 0xFF;   //flip bits
-                        program[regs[destination] + 1].data ^= 0xFF;   //flip bits
-                        program[regs[destination]].data &= 0xFF;    //capture 8 bits
-                        program[regs[destination] + 1].data &= 0xFF;    //capture 8 bits
-                        states->set_condition(((program[regs[destination] + 1].data >> 8) & 8) | (!(program[regs[destination]].data | program[regs[destination] + 1].data | 0) & 4) | 1);
+                        if(regs[destination] % 2)
+                        {
+                            cout << "unaligned reference\n";
+                            break;
+                        }
+                        program[regs[destination]].data ^= 0xFFFF;   //flip bits
+                        program[regs[destination] + 1].data ^= 0xFFFF;   //flip bits
+                        states->set_condition(((program[regs[destinaion]].data & 16) << 3)  | (!(program[regs[destination]].data) << 2) | 1);
                         trace_file(tracefile, 1, regs[destination]);   //write data write to trace file
                         outcome = 1;
                         for(i = 0; i < 8; ++i)
@@ -1640,17 +1688,16 @@ int single_operand::instruction(int *regs, CPSR *states, i_cache *program)
                     case 2: {           //autoincrement:
                                         //flip bits at memory location pointed to by
                                         //register, then increment register
-                        program[regs[destination]].data &= 0xFF;
-                        program[regs[destination] + 1].data &= 0xFF;
-                        program[regs[destination]].data ^= 0xFF;
-                        program[regs[destination] + 1].data ^= 0xFF;
-                        program[regs[destination]].data &= 0xFF;
-                        program[regs[destination] + 1].data &= 0xFF;
+                        if(regs[destination] % 2)
+                        {
+                            cout << "unaligned reference\n";
+                            break;
+                        }
+                        program[regs[destination]].data ^= 0xFFFF;
+                        program[regs[destination] + 1].data ^= 0xFFFF;
                         trace_file(tracefile, 1, regs[destination]);    //write data write to trace file
                         regs[destination] += 2;
-                        states->set_condition(((program[regs[destination] + 1].data >> 8) & 8)  |
-                                                      (!(program[regs[destination]].data | program[regs[destination]].data + 1
-                        | 0) & 4) | 1);
+                        states->set_condition(((program[regs[destination]].data & 16) << 3)  | (!(program[regs[destination]].data) << 2) | 1);
                         outcome = 1;
                         for(i = 0; i < 8; ++i)
                         {
@@ -1664,17 +1711,18 @@ int single_operand::instruction(int *regs, CPSR *states, i_cache *program)
                                     //memory at location pointed to by
                                     //register, then increment register
                     {
-                        deferred = (((program[regs[destination] + 1].data << 8) & 0xFF00) + (program[regs[destination]].data & 0xFF)) & 0xFFFF;      //get address as 16 bit value
-                        program[deferred].data &= 0xFF;
-                        program[deferred + 1].data &= 0xFF;
-                        program[deferred].data ^= 0xFF;
-                        program[deferred + 1].data ^= 0xFF;
-                        program[deferred].data &= 0xFF;
-                        program[deferred + 1].data &= 0xFF;
+                        deferred = program[regs[destination]].data;
+                        if((deferred % 2) || (regs[destination] % 2))
+                        {
+                            cout << "unaligned reference\n";
+                            break;
+                        }
+                        program[deferred].data ^= 0xFFFF;
+                        program[deferred + 1].data ^= 0xFFFF;
                         trace_file(tracefile, 0, regs[destination]);
                         trace_file(tracefile, 1, deferred);
                         regs[destination] += 2;
-                        states->set_condition(((program[deferred + 1].data >> 8) & 8)  | (!(program[deferred].data | program[deferred + 1].data  | 0) & 4) | 1);
+                        states->set_condition(((program[deferred].data & 16) << 3)  | (!(program[deferred].data) << 2) | 1);
                         outcome = 1;
                         for(i = 0; i < 8; ++i)
                         {
@@ -1689,11 +1737,15 @@ int single_operand::instruction(int *regs, CPSR *states, i_cache *program)
                                     //register to 0
                     {
                         regs[destination] -= 2;
-                        program[regs[destination]].data ^= 0xFF;
-                        program[regs[destination] + 1].data ^= 0xFF;
-                        program[regs[destination]].data &= 0xFF;
-                        program[regs[destination] + 1].data &= 0xFF;
-                        states->set_condition(((program[regs[destination] + 1].data >> 8) & 8)  | (!(program[regs[destination]].data | program[regs[destination] + 1].data  | 0) & 4) | 1);
+                        if(regs[destination] % 2)
+                        {
+                            cout << "unaligned reference\n";
+                            regs[destination] += 2;
+                            break;
+                        }
+                        program[regs[destination]].data ^= 0xFFFF;
+                        program[regs[destination] + 1].data ^= 0xFFFF;
+                        states->set_condition(((program[regs[destination]].data & 16) << 3)  | (!(program[regs[destination]].data) << 2) | 1);
                         trace_file(tracefile, 1, regs[destination]);
                         for(i = 0; i < 8; ++i)
                         {
@@ -1708,16 +1760,18 @@ int single_operand::instruction(int *regs, CPSR *states, i_cache *program)
                                     //memory location pointed to by register
                                     //to 0
                         regs[destination] -= 2;
-                        deferred = (((program[regs[destination] + 1].data << 8) & 0xFF00) + (program[regs[destination]].data & 0xFF)) & 0xFFFF;      //get address as 16 bit value
-                        program[deferred].data &= 0xFF;
-                        program[deferred + 1].data &= 0xFF;
-                        program[deferred].data ^= 0xFF;
-                        program[deferred + 1].data ^= 0xFF;
-                        program[deferred].data &= 0xFF;
-                        program[deferred + 1].data &= 0xFF;
+                        deferred = program[regs[destination]].data;
+                        if((deferred % 2) || (regs[destination] % 2))
+                        {
+                            cout << "unaligned reference\n";
+                            regs[destination] += 2;
+                            break;
+                        }
+                        program[deferred].data ^= 0xFFFF;
+                        program[deferred + 1].data ^= 0xFFFF;
                         trace_file(tracefile, 0, regs[destination]);
                         trace_file(tracefile, 1, deferred);
-                        states->set_condition((((program[deferred + 1].data + 1) >> 8) & 8)  | (!(program[deferred].data | program[deferred + 1].data | 0) & 4) | 1);
+                        states->set_condition(((program[deferred].data & 16) << 3)  | (!(program[deferred].data) << 2) | 1);
                         outcome = 1;
                         for(i = 0; i < 8; ++i)
                         {
@@ -1729,13 +1783,17 @@ int single_operand::instruction(int *regs, CPSR *states, i_cache *program)
                     case 6: {       //index:
                                     //set memory pointed to by register plus
                                     //index, which is located just after instruction
-                        index = ((((program[regs[PC] + 1].data << 8) & 0xFF00) + (program[regs[PC]].data & 0xFF) + (regs[destination] & 0xFFFF)) & 0xFFFF);
-                        program[index].data &= 0xFF;
-                        program[index + 1].data &= 0xFF;
-                        program[index].data ^= 0xFF;
-                        program[index + 1].data ^= 0xFF;
-                        program[index].data &= 0xFF;
-                        program[index + 1].data &= 0xFF;
+                        if (destination == PC)
+                            index = regs[PC] + 2 + program[regs[PC]].data;
+                        else index = regs[destination] + program[regs[PC]].data;
+                        if(index % 2)
+                        {
+                            cout << "unaligned reference\n";
+                            regs[PC] += 2;
+                            break;
+                        }
+                        program[index].data ^= 0xFFFF;
+                        program[index + 1].data ^= 0xFFFF;
                         trace_file(tracefile, 1, index);
                         trace_file(tracefile, 0, regs[PC]);
                         regs[PC] += 2;
@@ -1744,7 +1802,7 @@ int single_operand::instruction(int *regs, CPSR *states, i_cache *program)
                             cout << regs[i] << ' ';
                         }
                         cout << endl;
-                        states->set_condition(((program[index + 1].data >> 8) & 8)  | (!(program[index].data | program[index + 1].data | 0) & 4) | 1);
+                        states->set_condition(((program[index + 1].data & 16) << 3)  | (!(program[index].data) << 2) | 1);
                         outcome = 1;
                         break;
                     }
@@ -1752,19 +1810,23 @@ int single_operand::instruction(int *regs, CPSR *states, i_cache *program)
                                     //set memory pointed to by memory pointed to
                                     //by register plus index, which is located just after
                                     //instruction, to 0
-                        index = ((((program[regs[PC] + 1].data << 8) & 0xFF00) + (program[regs[PC]].data & 0xFF) + (regs[destination] & 0xFFFF)) & 0xFFFF);     //get pointer
-                        trace_file(tracefile, 0, index);
-                        trace_file(tracefile, 0, program[index].data);
-                        index = ((program[index].data & 0xFF) + ((program[index + 1].data << 8) & 0xFF00) & 0xFFFF);     //get index
-                        program[index].data &= 0xFF;
-                        program[index + 1].data &= 0xFF;
-                        program[index].data ^= 0xFF;
-                        program[index + 1].data ^= 0xFF;
-                        program[index].data &= 0xFF;
-                        program[index + 1].data &= 0xFF;
-                        trace_file(tracefile, 1, index);
+                        if (destination == PC)
+                            index = regs[PC] + 2 + program[regs[PC]].data;
+                        else index = regs[destination] + program[regs[PC]].data;
+                        if((index % 2) || (program[index].data % 2))
+                        {
+                            cout << "unaligned reference\n";
+                            regs[PC] += 2;
+                            break;
+                        }
+                        program[program[index].data].data ^= 0xFFFF;
+                        program[program[index].data + 1].data ^= 0xFFFF;
+                    
                         regs[PC] += 2;
-                        states->set_condition((((program[index + 1].data + 1) >> 8) & 8)  | (!(program[index].data | program[index + 1].data | 0) & 4) | 1);
+                        states->set_condition(((program[program[index + 1].data].data & 16) << 3)  | (!(program[program[index].data].data) << 2) | 1);
+                        trace_file(tracefile, 0, regs[PC]);
+                        trace_file(tracefile, 0, index);
+                        trace_file(tracefile, 1, program[index].data);
                         for(i = 0; i < 8; ++i)
                         {
                             cout << regs[i] << ' ';
@@ -1790,6 +1852,291 @@ int single_operand::instruction(int *regs, CPSR *states, i_cache *program)
         case INC:
             {
                 cout << "INC" << endl;
+                switch (destination_mode) {
+                    case 0: {           //register:
+                        //add 1 to signed value
+                        condition = states->get_condition() & 1;
+                        if ((regs[destination]) == 0077777)        //check for overflow
+                        {
+                            condition |= V_OVERFLOW;
+                        } else condition &= ^V_OVERFLOW;
+                        regs[destination] += 1;
+                        if (!(regs[destination]))           //check for zero
+                        {
+                            condition |= ZERO;
+                        } else condition &= ^ZERO;
+                        if ((int16_t)regs[destination] < 0)          //check for negative
+                        {
+                            condition |= NEGATIVE;
+                        } else condition &= ^NEGATIVE;
+                        states->set_condition(condition);       //set conditions
+                        for (i = 0; i < 8; ++i) {
+                            cout << regs[i] << ' ';
+                        }
+                        cout << endl;
+                        break;
+                    }
+                    case 1: {           //register deferred:
+                        //increment at memory location
+                        //pointed to by register
+                        if(regs[destination] % 2)
+                        {
+                            cout << "unaligned reference\n";
+                            break;
+                        }
+                        condition = states->get_condition() & CARRY;    //get CARRY condition bit
+                        program[regs[destination]].data += 1;
+                        if (program[regs[destinaton] + 1].data == 0077777)        //increment and check for overflow
+                        {
+                            condition |= V_OVERFLOW;
+                        } else condition &= ^V_OVERFLOW;
+                        program[regs[destination] + 1].data += 1;
+                        if (!(program[regs[destination]].data))           //check for zero
+                        {
+                            condition |= ZERO;
+                        } else condition &= ^ZERO;
+                        if ((int16_t)program[regs[destination]].data < 0)          //check for negative
+                        {
+                            condition |= NEGATIVE;
+                        } else condition &= ^NEGATIVE;
+                        states->set_condition(condition);       //set conditions
+                        trace_file(tracefile, 1, regs[destination]);   //write data write to trace file
+                        outcome = 1;
+                        for (i = 0; i < 8; ++i) {
+                            cout << regs[i] << ' ';
+                        }
+                        cout << endl;
+                        break;
+                    }
+                    case 2: {           //autoincrement:
+                        //increment at memory location pointed to by
+                        //register, then increment register
+                        if(regs[destination] % 2)
+                        {
+                            cout << "unaligned reference\n";
+                            break;
+                        }
+                        condition = states->get_condition() & 1;
+                        if (program[regs[destination]].data == 0077777)        //check for overflow
+                        {
+                            condition |= V_OVERFLOW;
+                        } else condition &= ^V_OVERFLOW;
+                        program[regs[destination]].data += 1;
+                        program[regs[destination] + 1].data += 1;
+                        if (!(program[regs[destination]].data))           //check for zero
+                        {
+                            condition |= ZERO;
+                        } else condition &= ^ZERO;
+                        if ((int16_t)program[regs[destination]].data < 0)          //check for negative
+                        {
+                            condition |= NEGATIVE;
+                        } else condition &= ^NEGATIVE;
+                        states->set_condition(condition);       //set conditions
+                        trace_file(tracefile, 1, regs[destination]i);   //write data write to trace file
+                        regs[destination] += 2;
+                        outcome = 1;
+                        for (i = 0; i < 8; ++i) {
+                            cout << regs[i] << ' ';
+                        }
+                        cout << endl;
+                        break;
+                    }
+                    case 3:         //autoincrement deferred:
+                        //set memory location pointed to by
+                        //memory at location pointed to by
+                        //register, then increment register
+                    {
+                        deferred = program[regs[destination]].data;
+                        if((deferred % 2) || (regs[destination] % 2))
+                        {
+                            cout << "unaligned reference\n";
+                            break;
+                        }
+                        condition = states->get_condition() & 1;
+                        if (program[deferred].data == 0077777)        //increment and check for overflow
+                        {
+                            condition |= V_OVERFLOW;
+                        } else condition &= ^V_OVERFLOW;
+                        program[deferred].data += 1;
+                        program[deferred + 1].data += 1;
+                        if (!(program[deferred].data))           //check for zero
+                        {
+                            condition |= ZERO;
+                        } else condition &= ^ZERO;
+                        if ((int16_t)program[deferred].data < 0)          //check for negative
+                        {
+                            condition |= NEGATIVE;
+                        } else condition &= ^NEGATIVE;
+                        states->set_condition(condition);       //set conditions
+                        trace_file(tracefile, 0, regs[destination]);
+                        trace_file(tracefile, 1, deferred);
+                        regs[destination] += 2;
+                        outcome = 1;
+                        for (i = 0; i < 8; ++i) {
+                            cout << regs[i] << ' ';
+                        }
+                        cout << endl;
+                        break;
+                    }
+                    case 4:         //autodecrement:
+                        //decrement register, then
+                        //set memory location pointed to by
+                        //register to 0
+                    {
+                        regs[destination] -= 2;
+                        if(regs[destination] % 2)
+                        {
+                            cout << "unaligned reference\n";
+                            regs[destination] += 2;
+                            break;
+                        }
+                        condition = states->get_condition() & 1;
+                        program[regs[destination] + 1].data += 1;
+                        if (program[regs[destination]].data == 0077777)        //check for overflow
+                        {
+                            condition |= V_OVERFLOW;
+                        } else condition &= ^V_OVERFLOW;
+                        program[regs[destination]].data += 1;
+                        if (!(program[regs[destination]].data))           //check for zero
+                        {
+                            condition |= ZERO;
+                        } else condition &= ^ZERO;
+                        if ((int16_t)program[regs[destination]].data < 0)          //check for negative
+                        {
+                            condition |= NEGATIVE;
+                        } else condition &= ^NEGATIVE;
+                        states->set_condition(condition);       //set conditions
+                        trace_file(tracefile, 1, regs[destination]);   //write data write to trace file
+                        for (i = 0; i < 8; ++i) {
+                            cout << regs[i] << ' ';
+                        }
+                        cout << endl;
+                        break;
+                    }
+                    case 5: {       //autodecrement deferred:
+                        //decrement register, then
+                        //set memory location pointed to by
+                        //memory location pointed to by register
+                        //to 0
+                        regs[destination] -= 2;
+                        deferred = program[regs[destination]].data;
+                        if((deferred % 2) || (regs[destination] % 2))
+                        {
+                            cout << "unaligned reference\n";
+                            regs[destination] += 2;
+                            break;
+                        }
+                        condition = states->get_condition() & 1;
+                        program[deferred + 1].data += 1;
+                        if (program[deferred].data == 0077777)        //check for overflow
+                        {
+                            condition |= V_OVERFLOW;
+                        } else condition &= ^V_OVERFLOW;
+                        program[deferred].data += 1;
+                        if (!(program[deferred].data))           //check for zero
+                        {
+                            condition |= ZERO;
+                        } else condition &= ^ZERO;
+                        if ((int16_t)program[deferred].data < 0)          //check for negative
+                        {
+                            condition |= NEGATIVE;
+                        } else condition &= ^NEGATIVE;
+                        states->set_condition(condition);       //set conditions
+                        trace_file(tracefile, 0, regs[destination]);
+                        trace_file(tracefile, 1, deferred);
+                        for (i = 0; i < 8; ++i) {
+                            cout << regs[i] << ' ';
+                        }
+                        cout << endl;
+                        break;
+                    }
+                    case 6: {       //index:
+                        //set memory pointed to by register plus
+                        //index, which is located just after instruction
+                        if (destination == PC)
+                            index = regs[PC] + 2 + program[regs[PC]].data;
+                        else index = regs[destination] + program[regs[PC]].data;
+                        if(index % 2)
+                        {
+                            cout << "unaligned reference\n";
+                            regs[PC] += 2;
+                            break;
+                        }
+                        condition = states->get_condition() & 1;
+                        program[index + 1].data += 1;
+                        if (program[index].data == 0077777)        //check for overflow
+                        {
+                            condition |= V_OVERFLOW;
+                        } else condition &= ^V_OVERFLOW;
+                        program[index].data += 1;
+                        if (!(program[index].data))           //check for zero
+                        {
+                            condition |= ZERO;
+                        } else conditon &= ^ZERO;
+                        if ((int16_t)program[index].data < 0)          //check for negative
+                        {
+                            condition |= NEGATIVE;
+                        } else condition &= ^NEGATIVE;
+                        states->set_condition(condition);       //set conditions
+                        trace_file(tracefile, 1, index);
+                        trace_file(tracefile, 0, regs[PC]);
+                        regs[PC] += 2;
+                        for (i = 0; i < 8; ++i) {
+                            cout << regs[i] << ' ';
+                        }
+                        cout << endl;
+                        outcome = 1;
+                        break;
+                    }
+                    case 7: {       //index deferred:
+                        //set memory pointed to by memory pointed to
+                        //by register plus index, which is located just after
+                        //instruction, to 0
+                        if (destination == PC)
+                            index = regs[PC] + 2 + program[regs[PC]].data;
+                        else index = regs[destination] + program[regs[PC]].data;
+                        if((index % 2) || (program[index].data % 2))
+                        {
+                            cout << "unaligned reference\n";
+                            regs[PC] += 2;
+                            break;
+                        }
+
+                        condition = states->get_condition() & 1;    //increment
+                        program[program[index].data + 1].data += 1;
+                        if (program[program[index].data].data == 0077777)        //check for overflow
+                        {
+                            condition |= V_OVERFLOW;
+                        } else condition &= V_OVERFLOW;
+                        program[program[index].data].data += 1;     //increment
+                        if (!(program[program[index].data].data))           //check for zero
+                        {
+                            condition |= ZERO;
+                        } else condition &= ^ZERO;
+                        if ((int16_t)program[program[index].data].data < 0)          //check for negative
+                        {
+                            condition |= NEGATIVE;
+                        } else condition &= ^NEGATIVE;
+                        states->set_condition(condition);       //set conditions
+                        trace_file(tracefile, 0, index);
+                        trace_file(tracefile, 0, regs[PC]);
+                        trace_file(tracefile, 1, program[index].data);
+                        
+                        regs[PC] += 2;
+
+                        for (i = 0; i < 8; ++i) {
+                            cout << regs[i] << ' ';
+                        }
+                        cout << endl;
+
+                        outcome = 1;
+                        break;
+                    }
+                    default: {
+                        cout << "invalid destination mode" << endl;
+                        break;
+                    }
+                }
                 break;
             }
         case INCB:
@@ -1800,6 +2147,291 @@ int single_operand::instruction(int *regs, CPSR *states, i_cache *program)
         case DEC:
             {
                 cout << "DEC" << endl;
+                switch (destination_mode) {
+                    case 0: {           //register:
+                        //add 1 to signed value
+                        condition = states->get_condition() & 1;
+                        if ((regs[destination]) == 0100000)        //check for overflow
+                        {
+                            condition |= V_OVERFLOW;
+                        } else condition &= ^V_OVERFLOW;
+                        regs[destination] -= 1;
+                        if (!(regs[destination]))           //check for zero
+                        {
+                            condition |= ZERO;
+                        } else condition &= ^ZERO;
+                        if ((int16_t)regs[destination] < 0)          //check for negative
+                        {
+                            condition |= NEGATIVE;
+                        } else condition &= ^NEGATIVE;
+                        states->set_condition(condition);       //set conditions
+                        for (i = 0; i < 8; ++i) {
+                            cout << regs[i] << ' ';
+                        }
+                        cout << endl;
+                        break;
+                    }
+                    case 1: {           //register deferred:
+                        //increment at memory location
+                        //pointed to by register
+                        if(regs[destination] % 2)
+                        {
+                            cout << "unaligned reference\n";
+                            break;
+                        }
+                        condition = states->get_condition() & CARRY;    //get CARRY condition bit
+                        program[regs[destination]].data -= 1;
+                        if (program[regs[destinaton] + 1].data == 0100000)        //increment and check for overflow
+                        {
+                            condition |= V_OVERFLOW;
+                        } else condition &= ^V_OVERFLOW;
+                        program[regs[destination] + 1].data -= 1;
+                        if (!(program[regs[destination]].data))           //check for zero
+                        {
+                            condition |= ZERO;
+                        } else condition &= ^ZERO;
+                        if ((int16_t)program[regs[destination]].data < 0)          //check for negative
+                        {
+                            condition |= NEGATIVE;
+                        } else condition &= ^NEGATIVE;
+                        states->set_condition(condition);       //set conditions
+                        trace_file(tracefile, 1, regs[destination]);   //write data write to trace file
+                        outcome = 1;
+                        for (i = 0; i < 8; ++i) {
+                            cout << regs[i] << ' ';
+                        }
+                        cout << endl;
+                        break;
+                    }
+                    case 2: {           //autoincrement:
+                        //increment at memory location pointed to by
+                        //register, then increment register
+                        if(regs[destination] % 2)
+                        {
+                            cout << "unaligned reference\n";
+                            break;
+                        }
+                        condition = states->get_condition() & 1;
+                        if (program[regs[destination]].data == 0100000)        //check for overflow
+                        {
+                            condition |= V_OVERFLOW;
+                        } else condition &= ^V_OVERFLOW;
+                        program[regs[destination]].data -= 1;
+                        program[regs[destination] + 1].data -= 1;
+                        if (!(program[regs[destination]].data))           //check for zero
+                        {
+                            condition |= ZERO;
+                        } else condition &= ^ZERO;
+                        if ((int16_t)program[regs[destination]].data < 0)          //check for negative
+                        {
+                            condition |= NEGATIVE;
+                        } else condition &= ^NEGATIVE;
+                        states->set_condition(condition);       //set conditions
+                        trace_file(tracefile, 1, regs[destination]i);   //write data write to trace file
+                        regs[destination] += 2;
+                        outcome = 1;
+                        for (i = 0; i < 8; ++i) {
+                            cout << regs[i] << ' ';
+                        }
+                        cout << endl;
+                        break;
+                    }
+                    case 3:         //autoincrement deferred:
+                        //set memory location pointed to by
+                        //memory at location pointed to by
+                        //register, then increment register
+                    {
+                        deferred = program[regs[destination]].data;
+                        if((deferred % 2) || (regs[destination] % 2))
+                        {
+                            cout << "unaligned reference\n";
+                            break;
+                        }
+                        condition = states->get_condition() & 1;
+                        if (program[deferred].data == 0100000)        //increment and check for overflow
+                        {
+                            condition |= V_OVERFLOW;
+                        } else condition &= ^V_OVERFLOW;
+                        program[deferred].data -= 1;
+                        program[deferred + 1].data -= 1;
+                        if (!(program[deferred].data))           //check for zero
+                        {
+                            condition |= ZERO;
+                        } else condition &= ^ZERO;
+                        if ((int16_t)program[deferred].data < 0)          //check for negative
+                        {
+                            condition |= NEGATIVE;
+                        } else condition &= ^NEGATIVE;
+                        states->set_condition(condition);       //set conditions
+                        trace_file(tracefile, 0, regs[destination]);
+                        trace_file(tracefile, 1, deferred);
+                        regs[destination] += 2;
+                        outcome = 1;
+                        for (i = 0; i < 8; ++i) {
+                            cout << regs[i] << ' ';
+                        }
+                        cout << endl;
+                        break;
+                    }
+                    case 4:         //autodecrement:
+                        //decrement register, then
+                        //set memory location pointed to by
+                        //register to 0
+                    {
+                        regs[destination] -= 2;
+                        if(regs[destination] % 2)
+                        {
+                            cout << "unaligned reference\n";
+                            regs[destination] += 2;
+                            break;
+                        }
+                        condition = states->get_condition() & 1;
+                        program[regs[destination] + 1].data -= 1;
+                        if (program[regs[destination]].data == 0100000)        //check for overflow
+                        {
+                            condition |= V_OVERFLOW;
+                        } else condition &= ^V_OVERFLOW;
+                        program[regs[destination]].data -= 1;
+                        if (!(program[regs[destination]].data))           //check for zero
+                        {
+                            condition |= ZERO;
+                        } else condition &= ^ZERO;
+                        if ((int16_t)program[regs[destination]].data < 0)          //check for negative
+                        {
+                            condition |= NEGATIVE;
+                        } else condition &= ^NEGATIVE;
+                        states->set_condition(condition);       //set conditions
+                        trace_file(tracefile, 1, regs[destination]);   //write data write to trace file
+                        for (i = 0; i < 8; ++i) {
+                            cout << regs[i] << ' ';
+                        }
+                        cout << endl;
+                        break;
+                    }
+                    case 5: {       //autodecrement deferred:
+                        //decrement register, then
+                        //set memory location pointed to by
+                        //memory location pointed to by register
+                        //to 0
+                        regs[destination] -= 2;
+                        deferred = program[regs[destination]].data;
+                        if((deferred % 2) || (regs[destination] % 2))
+                        {
+                            cout << "unaligned reference\n";
+                            regs[destination] += 2;
+                            break;
+                        }
+                        condition = states->get_condition() & 1;
+                        program[deferred + 1].data -= 1;
+                        if (program[deferred].data == 0100000)        //check for overflow
+                        {
+                            condition |= V_OVERFLOW;
+                        } else condition &= ^V_OVERFLOW;
+                        program[deferred].data -= 1;
+                        if (!(program[deferred].data))           //check for zero
+                        {
+                            condition |= ZERO;
+                        } else condition &= ^ZERO;
+                        if ((int16_t)program[deferred].data < 0)          //check for negative
+                        {
+                            condition |= NEGATIVE;
+                        } else condition &= ^NEGATIVE;
+                        states->set_condition(condition);       //set conditions
+                        trace_file(tracefile, 0, regs[destination]);
+                        trace_file(tracefile, 1, deferred);
+                        for (i = 0; i < 8; ++i) {
+                            cout << regs[i] << ' ';
+                        }
+                        cout << endl;
+                        break;
+                    }
+                    case 6: {       //index:
+                        //set memory pointed to by register plus
+                        //index, which is located just after instruction
+                        if (destination == PC)
+                            index = regs[PC] + 2 + program[regs[PC]].data;
+                        else index = regs[destination] + program[regs[PC]].data;
+                        if(index % 2)
+                        {
+                            cout << "unaligned reference\n";
+                            regs[PC] += 2;
+                            break;
+                        }
+                        condition = states->get_condition() & 1;
+                        program[index + 1].data -= 1;
+                        if (program[index].data == 0100000)        //check for overflow
+                        {
+                            condition |= V_OVERFLOW;
+                        } else condition &= ^V_OVERFLOW;
+                        program[index].data -= 1;
+                        if (!(program[index].data))           //check for zero
+                        {
+                            condition |= ZERO;
+                        } else condition &= ^ZERO;
+                        if ((int16_t)program[index].data < 0)          //check for negative
+                        {
+                            condition |= NEGATIVE;
+                        } else condition &= ^NEGATIVE;
+                        states->set_condition(condition);       //set conditions
+                        trace_file(tracefile, 1, index);
+                        trace_file(tracefile, 0, regs[PC]);
+                        regs[PC] += 2;
+                        for (i = 0; i < 8; ++i) {
+                            cout << regs[i] << ' ';
+                        }
+                        cout << endl;
+                        outcome = 1;
+                        break;
+                    }
+                    case 7: {       //index deferred:
+                        //set memory pointed to by memory pointed to
+                        //by register plus index, which is located just after
+                        //instruction, to 0
+                        if (destination == PC)
+                            index = regs[PC] + 2 + program[regs[PC]].data;
+                        else index = regs[destination] + program[regs[PC]].data;
+                        if((index % 2) || (program[index].data % 2))
+                        {
+                            cout << "unaligned reference\n";
+                            regs[PC] += 2;
+                            break;
+                        }
+
+                        condition = states->get_condition() & 1;    //increment
+                        program[program[index].data + 1].data -= 1;
+                        if (program[program[index].data].data == 0100000)        //check for overflow
+                        {
+                            condition |= V_OVERFLOW;
+                        } else condition &= ^V_OVERFLOW
+                        program[program[index].data].data -= 1;     //increment
+                        if (!(program[program[index].data].data))           //check for zero
+                        {
+                            condition |= ZERO;
+                        } else condition &= ^ZERO;
+                        if ((int16_t)program[program[index].data].data < 0)          //check for negative
+                        {
+                            condition |= NEGATIVE;
+                        } else condition &= ^NEGATIVE;
+                        states->set_condition(condition);       //set conditions
+                        trace_file(tracefile, 0, index);
+                        trace_file(tracefile, 0, regs[PC]);
+                        trace_file(tracefile, 1, program[index].data);
+                        
+                        regs[PC] += 2;
+
+                        for (i = 0; i < 8; ++i) {
+                            cout << regs[i] << ' ';
+                        }
+                        cout << endl;
+
+                        outcome = 1;
+                        break;
+                    }
+                    default: {
+                        cout << "invalid destination mode" << endl;
+                        break;
+                    }
+                }
                 break;
             }
         case DECB:
@@ -1810,6 +2442,345 @@ int single_operand::instruction(int *regs, CPSR *states, i_cache *program)
         case NEG:
             {
                 cout << "NEG" << endl;
+                switch (destination_mode) {
+                    case 0: {           //register:
+                        //invert signed value
+                        condition = states->get_condition();
+                        regs[destination] &= 0xFFFF;
+                        regs[destination] += 1;
+                        if ((regs[destination]) == 0100000)        //check for overflow
+                        {
+                            condition |= V_OVERFLOW;
+                        } else condition &= ^V_OVERFLOW;
+                        if (!(regs[destination]))           //check for zero
+                        {
+                            condition |= ZERO;
+                        } else condition &= ^ZERO;
+                        if ((int16_t)regs[destination] < 0)          //check for negative
+                        {
+                            condition |= NEGATIVE;
+                        } else condition &= ^NEGATIVE;
+                        if (!regs[destination])
+                        {
+                            condition |= CARRY;
+                        } else condition &= ^CARRY;
+
+                        states->set_condition(condition);       //set conditions
+                        for (i = 0; i < 8; ++i) {
+                            cout << regs[i] << ' ';
+                        }
+                        cout << endl;
+                        break;
+                    }
+                    case 1: {           //register deferred:
+                        //increment at memory location
+                        //pointed to by register
+                        if(regs[destination] % 2)
+                        {
+                            cout << "unaligned reference\n";
+                            break;
+                        }
+                        condition = states->get_condition();    //get condition bit
+                        program[regs[destination]].data ^= 0xFFFF;
+                        program[regs[destination]].data += 1;
+                        program[regs[destination] + 1].data ^= 0xFFFF;
+                        program[regs[destination] + 1].data += 1;
+                        if (program[regs[destinaton]].data == 0100000)        //increment and check for overflow
+                        {
+                            condition |= V_OVERFLOW;
+                        } else condition &= ^V_OVERFLOW;
+                        if (!(program[regs[destination]].data))           //check for zero
+                        {
+                            condition |= ZERO;
+                        } else condition &= ^ZERO;
+                        if ((int16_t)program[regs[destination]].data < 0)          //check for negative
+                        {
+                            condition |= NEGATIVE;
+                        }else condition &= ^NEGATIVE;
+                        if (!(program[regs[destination]].data))
+                        {
+                            condition |= CARRY;
+                        } else condition &= ^CARRY;
+
+                        states->set_condition(condition);       //set conditions
+                        trace_file(tracefile, 1, regs[destination]);   //write data write to trace file
+                        outcome = 1;
+                        for (i = 0; i < 8; ++i) {
+                            cout << regs[i] << ' ';
+                        }
+                        cout << endl;
+                        break;
+                    }
+                    case 2: {           //autoincrement:
+                        //increment at memory location pointed to by
+                        //register, then increment register
+                        if(regs[destination] % 2)
+                        {
+                            cout << "unaligned reference\n";
+                            break;
+                        }
+                        condition = states->get_condition();    //get condition bit
+                        program[regs[destination]].data ^= 0xFFFF;
+                        program[regs[destination]].data += 1;
+                        program[regs[destination] + 1].data ^= 0xFFFF;
+                        program[regs[destination] + 1].data += 1;
+                        if (program[regs[destinaton]].data == 0100000)        //increment and check for overflow
+                        {
+                            condition |= V_OVERFLOW;
+                        } else condition &= ^V_OVERFLOW;
+                        if (!(program[regs[destination]].data))           //check for zero
+                        {
+                            condition |= ZERO;
+                        } else condition &= ^ZERO;
+                        if ((int16_t)program[regs[destination]].data < 0)          //check for negative
+                        {
+                            condition |= NEGATIVE;
+                        }else condition &= ^NEGATIVE;
+                        if (!(program[regs[destination]].data))
+                        {
+                            condition |= CARRY;
+                        } else condition &= ^CARRY;
+
+                        trace_file(tracefile, 1, regs[destination]);   //write data write to trace file
+                        regs[destination] += 2;
+                        outcome = 1;
+                        for (i = 0; i < 8; ++i) {
+                            cout << regs[i] << ' ';
+                        }
+                        cout << endl;
+                        break;
+                    }
+                    case 3:         //autoincrement deferred:
+                        //set memory location pointed to by
+                        //memory at location pointed to by
+                        //register, then increment register
+                    {
+                        deferred = program[regs[destination]].data;
+                        if((deferred % 2) || (regs[destination] % 2))
+                        {
+                            cout << "unaligned reference\n";
+                            break;
+                        }
+                        condition = states->get_condition();    //get condition bit
+                        program[deferred].data ^= 0xFFFF;
+                        program[deferred].data += 1;
+                        program[deferred + 1].data ^= 0xFFFF;
+                        program[deferred + 1].data += 1;
+                        if (program[deferred].data == 0100000)        //increment and check for overflow
+                        {
+                            condition |= V_OVERFLOW;
+                        } else condition &= ^V_OVERFLOW;
+                        if (!(program[deferred].data))           //check for zero
+                        {
+                            condition |= ZERO;
+                        } else condition &= ^ZERO;
+                        if ((int16_t)program[deferred].data < 0)          //check for negative
+                        {
+                            condition |= NEGATIVE;
+                        }else condition &= ^NEGATIVE;
+                        if (!(program[deferred].data))
+                        {
+                            condition |= CARRY;
+                        } else condition &= ^CARRY;
+
+                        states->set_condition(condition);       //set conditions
+                        trace_file(tracefile, 0, regs[destination]);
+                        trace_file(tracefile, 1, deferred);
+                        regs[destination] += 2;
+                        outcome = 1;
+                        for (i = 0; i < 8; ++i) {
+                            cout << regs[i] << ' ';
+                        }
+                        cout << endl;
+                        break;
+                    }
+                    case 4:         //autodecrement:
+                        //decrement register, then
+                        //set memory location pointed to by
+                        //register to 0
+                    {
+                        regs[destination] -= 2;
+                        if(regs[destination] % 2)
+                        {
+                            cout << "unaligned reference\n";
+                            regs[destination] += 2;
+                            break;
+                        }
+                        condition = states->get_condition();    //get condition bit
+                        program[regs[destination]].data ^= 0xFFFF;
+                        program[regs[destination]].data += 1;
+                        program[regs[destination] + 1].data ^= 0xFFFF;
+                        program[regs[destination] + 1].data += 1;
+                        if (program[regs[destination]].data == 0100000)        //increment and check for overflow
+                        {
+                            condition |= V_OVERFLOW;
+                        } else condition &= ^V_OVERFLOW;
+                        if (!(program[regs[destination]].data))           //check for zero
+                        {
+                            condition |= ZERO;
+                        } else condition &= ^ZERO;
+                        if ((int16_t)program[regs[destination]].data < 0)          //check for negative
+                        {
+                            condition |= NEGATIVE;
+                        }else condition &= ^NEGATIVE;
+                        if (!(program[regs[destination]].data))
+                        {
+                            condition |= CARRY;
+                        } else condition &= ^CARRY;
+
+                        states->set_condition(condition);       //set conditions
+                        trace_file(tracefile, 1, regs[destination]);   //write data write to trace file
+                        for (i = 0; i < 8; ++i) {
+                            cout << regs[i] << ' ';
+                        }
+                        cout << endl;
+                        break;
+                    }
+                    case 5: {       //autodecrement deferred:
+                        //decrement register, then
+                        //set memory location pointed to by
+                        //memory location pointed to by register
+                        //to 0
+                        regs[destination] -= 2;
+                        deferred = program[regs[destination]].data;
+                        if((deferred % 2) || (regs[destination] % 2))
+                        {
+                            cout << "unaligned reference\n";
+                            regs[destination] += 2;
+                            break;
+                        }
+                        condition = states->get_condition();    //get condition bit
+                        program[deferred].data ^= 0xFFFF;
+                        program[deferred].data += 1;
+                        program[deferred + 1].data ^= 0xFFFF;
+                        program[deferred + 1].data += 1;
+                        if (program[deferred].data == 0100000)        //increment and check for overflow
+                        {
+                            condition |= V_OVERFLOW;
+                        } else condition &= ^V_OVERFLOW;
+                        if (!(program[deferred].data))           //check for zero
+                        {
+                            condition |= ZERO;
+                        } else condition &= ^ZERO;
+                        if ((int16_t)program[deferred].data < 0)          //check for negative
+                        {
+                            condition |= NEGATIVE;
+                        }else condition &= ^NEGATIVE;
+                        if (!(program[deferred].data))
+                        {
+                            condition |= CARRY;
+                        } else condition &= ^CARRY;
+
+                        states->set_condition(condition);       //set conditions
+                        trace_file(tracefile, 0, regs[destination]);
+                        trace_file(tracefile, 1, deferred);
+                        for (i = 0; i < 8; ++i) {
+                            cout << regs[i] << ' ';
+                        }
+                        cout << endl;
+                        break;
+                    }
+                    case 6: {       //index:
+                        //set memory pointed to by register plus
+                        //index, which is located just after instruction
+                        if (destination == PC)
+                            index = regs[PC] + 2 + program[regs[PC]].data;
+                        else index = regs[destination] + program[regs[PC]].data;
+                        if(index % 2)
+                        {
+                            cout << "unaligned reference\n";
+                            regs[PC] += 2;
+                            break;
+                        }
+                        condition = states->get_condition();    //get condition bit
+                        program[index].data ^= 0xFFFF;
+                        program[index].data += 1;
+                        program[index + 1].data ^= 0xFFFF;
+                        program[index + 1].data += 1;
+                        if (program[index].data == 0100000)        //increment and check for overflow
+                        {
+                            condition |= V_OVERFLOW;
+                        } else condition &= ^V_OVERFLOW;
+                        if (!(program[index].data))           //check for zero
+                        {
+                            condition |= ZERO;
+                        } else condition &= ^ZERO;
+                        if ((int16_t)program[index].data < 0)          //check for negative
+                        {
+                            condition |= NEGATIVE;
+                        }else condition &= ^NEGATIVE;
+                        if (!(program[index].data))
+                        {
+                            condition |= CARRY;
+                        } else condition &= ^CARRY;
+
+                        states->set_condition(condition);       //set conditions
+                        trace_file(tracefile, 1, index);
+                        trace_file(tracefile, 0, regs[PC]);
+                        regs[PC] += 2;
+                        for (i = 0; i < 8; ++i) {
+                            cout << regs[i] << ' ';
+                        }
+                        cout << endl;
+                        outcome = 1;
+                        break;
+                    }
+                    case 7: {       //index deferred:
+                        //set memory pointed to by memory pointed to
+                        //by register plus index, which is located just after
+                        //instruction, to 0
+                        if (destination == PC)
+                            index = regs[PC] + 2 + program[regs[PC]].data;
+                        else index = regs[destination] + program[regs[PC]].data;
+                        if((index % 2) || (program[index].data % 2))
+                        {
+                            cout << "unaligned reference\n";
+                            regs[PC] += 2;
+                            break;
+                        }
+
+                        condition = states->get_condition();    //get condition bit
+                        program[program[index].data].data ^= 0xFFFF;
+                        program[program[index].data].data += 1;
+                        program[program[index].data + 1].data ^= 0xFFFF;
+                        program[program[index].data + 1].data += 1;
+                        if (program[program[index].data].data == 0100000)        //increment and check for overflow
+                        {
+                            condition |= V_OVERFLOW;
+                        } else condition &= ^V_OVERFLOW;
+                        if (!(program[program[index].data].data))           //check for zero
+                        {
+                            condition |= ZERO;
+                        } else condition &= ^ZERO;
+                        if ((int16_t)program[program[index].data].data < 0)          //check for negative
+                        {
+                            condition |= NEGATIVE;
+                        }else condition &= ^NEGATIVE;
+                        if (!(program[program[index].data].data))
+                        {
+                            condition |= CARRY;
+                        } else condition &= ^CARRY;
+
+                        states->set_condition(condition);       //set conditions
+                        trace_file(tracefile, 0, index);
+                        trace_file(tracefile, 0, regs[PC]);
+                        trace_file(tracefile, 1, program[index].data);
+                        
+                        regs[PC] += 2;
+
+                        for (i = 0; i < 8; ++i) {
+                            cout << regs[i] << ' ';
+                        }
+                        cout << endl;
+
+                        outcome = 1;
+                        break;
+                    }
+                    default: {
+                        cout << "invalid destination mode" << endl;
+                        break;
+                    }
+                }
                 break;
             }
         case NEGB:
@@ -1820,6 +2791,251 @@ int single_operand::instruction(int *regs, CPSR *states, i_cache *program)
         case TST:
             {
                 cout << "TST" << endl;
+                switch (destination_mode) {
+                    case 0: {           //register:
+                        // signed value
+                        condition = states->get_condition() & ^(V_OVERFLOW | CARRY);
+                        if (!(regs[destination]))           //check for zero
+                        {
+                            condition |= ZERO;
+                        } else condition &= ^ZERO;
+                        if ((int16_t)regs[destination] < 0)          //check for negative
+                        {
+                            condition |= NEGATIVE;
+                        } else condition &= ^NEGATIVE;
+
+                        states->set_condition(condition);       //set conditions
+                        for (i = 0; i < 8; ++i) {
+                            cout << regs[i] << ' ';
+                        }
+                        cout << endl;
+                        break;
+                    }
+                    case 1: {           //register deferred:
+                        //look at memory location
+                        //pointed to by register
+                        if(regs[destination] % 2)
+                        {
+                            cout << "unaligned reference\n";
+                            break;
+                        }
+                        condition = states->get_condition() & ^(V_OVERFLOW | CARRY);    //get condition bit
+                        if (!(program[regs[destination]].data))           //check for zero
+                        {
+                            condition |= ZERO;
+                        } else condition &= ^ZERO;
+                        if ((int16_t)program[regs[destination]].data < 0)          //check for negative
+                        {
+                            condition |= NEGATIVE;
+                        }else condition &= ^NEGATIVE;
+
+                        states->set_condition(condition);       //set conditions
+                        trace_file(tracefile, 0, regs[destination]);   //write data write to trace file
+                        outcome = 1;
+                        for (i = 0; i < 8; ++i) {
+                            cout << regs[i] << ' ';
+                        }
+                        cout << endl;
+                        break;
+                    }
+                    case 2: {           //autoincrement:
+                        //increment at memory location pointed to by
+                        //register, then increment register
+                        if(regs[destination] % 2)
+                        {
+                            cout << "unaligned reference\n";
+                            break;
+                        }
+                        condition = states->get_condition() & ^(CARRY | V_OVERFLOW);    //get condition bit
+                        if (!(program[regs[destination]].data))           //check for zero
+                        {
+                            condition |= ZERO;
+                        } else condition &= ^ZERO;
+                        if ((int16_t)program[regs[destination]].data < 0)          //check for negative
+                        {
+                            condition |= NEGATIVE;
+                        }else condition &= ^NEGATIVE;
+
+                        trace_file(tracefile, 0, regs[destination]);   //write data write to trace file
+                        regs[destination] += 2;
+                        outcome = 1;
+                        for (i = 0; i < 8; ++i) {
+                            cout << regs[i] << ' ';
+                        }
+                        cout << endl;
+                        break;
+                    }
+                    case 3:         //autoincrement deferred:
+                        //set memory location pointed to by
+                        //memory at location pointed to by
+                        //register, then increment register
+                    {
+                        deferred = program[regs[destination]].data;
+                        if((deferred % 2) || (regs[destination] % 2))
+                        {
+                            cout << "unaligned reference\n";
+                            break;
+                        }
+                        condition = states->get_condition() & ^(V_OVERFLOW | CARRY);    //get condition bit
+                        if (!(program[deferred].data))           //check for zero
+                        {
+                            condition |= ZERO;
+                        } else condition &= ^ZERO;
+                        if ((int16_t)program[deferred].data < 0)          //check for negative
+                        {
+                            condition |= NEGATIVE;
+                        }else condition &= ^NEGATIVE;
+
+                        states->set_condition(condition);       //set conditions
+                        trace_file(tracefile, 0, regs[destination]);
+                        trace_file(tracefile, 0, deferred);
+                        regs[destination] += 2;
+                        outcome = 1;
+                        for (i = 0; i < 8; ++i) {
+                            cout << regs[i] << ' ';
+                        }
+                        cout << endl;
+                        break;
+                    }
+                    case 4:         //autodecrement:
+                        //decrement register, then
+                        //set memory location pointed to by
+                        //register to 0
+                    {
+                        regs[destination] -= 2;
+                        if(regs[destination] % 2)
+                        {
+                            cout << "unaligned reference\n";
+                            regs[destination] += 2;
+                            break;
+                        }
+                        condition = states->get_condition() & ^(CARRY | V_OVERFLOW);    //get condition bit
+                        if (!(program[regs[destination]].data))           //check for zero
+                        {
+                            condition |= ZERO;
+                        } else condition &= ^ZERO;
+                        if ((int16_t)program[regs[destination]].data < 0)          //check for negative
+                        {
+                            condition |= NEGATIVE;
+                        }else condition &= ^NEGATIVE;
+
+                        states->set_condition(condition);       //set conditions
+                        trace_file(tracefile, 0, regs[destination]);   //write data write to trace file
+                        for (i = 0; i < 8; ++i) {
+                            cout << regs[i] << ' ';
+                        }
+                        cout << endl;
+                        break;
+                    }
+                    case 5: {       //autodecrement deferred:
+                        //decrement register, then
+                        //set memory location pointed to by
+                        //memory location pointed to by register
+                        //to 0
+                        regs[destination] -= 2;
+                        deferred = program[regs[destination]].data;
+                        if((deferred % 2) || (regs[destination] % 2))
+                        {
+                            cout << "unaligned reference\n";
+                            regs[destination] += 2;
+                            break;
+                        }
+                        condition = states->get_condition() & ^(CARRY | V_OVERFLOW);    //get condition bit
+                        if (!(program[deferred].data))           //check for zero
+                        {
+                            condition |= ZERO;
+                        } else condition &= ^ZERO;
+                        if ((int16_t)program[deferred].data < 0)          //check for negative
+                        {
+                            condition |= NEGATIVE;
+                        }else condition &= ^NEGATIVE;
+
+                        states->set_condition(condition);       //set conditions
+                        trace_file(tracefile, 0, regs[destination]);
+                        trace_file(tracefile, 0, deferred);
+                        for (i = 0; i < 8; ++i) {
+                            cout << regs[i] << ' ';
+                        }
+                        cout << endl;
+                        break;
+                    }
+                    case 6: {       //index:
+                        //set memory pointed to by register plus
+                        //index, which is located just after instruction
+                        if (destination == PC)
+                            index = regs[PC] + 2 + program[regs[PC]].data;
+                        else index = regs[destination] + program[regs[PC]].data;
+                        if(index % 2)
+                        {
+                            cout << "unaligned reference\n";
+                            regs[PC] += 2;
+                            break;
+                        }
+                        condition = states->get_condition() & ^(CARRY | V_OVERFLOW);    //get condition bit
+                        if (!(program[index].data))           //check for zero
+                        {
+                            condition |= ZERO;
+                        } else condition &= ^ZERO;
+                        if ((int16_t)program[index].data < 0)          //check for negative
+                        {
+                            condition |= NEGATIVE;
+                        }else condition &= ^NEGATIVE;
+
+                        states->set_condition(condition);       //set conditions
+                        trace_file(tracefile, 0, index);
+                        trace_file(tracefile, 0, regs[PC]);
+                        regs[PC] += 2;
+                        for (i = 0; i < 8; ++i) {
+                            cout << regs[i] << ' ';
+                        }
+                        cout << endl;
+                        outcome = 1;
+                        break;
+                    }
+                    case 7: {       //index deferred:
+                        //set memory pointed to by memory pointed to
+                        //by register plus index, which is located just after
+                        //instruction, to 0
+                        if (destination == PC)
+                            index = regs[PC] + 2 + program[regs[PC]].data;
+                        else index = regs[destination] + program[regs[PC]].data;
+                        if((index % 2) || (program[index].data % 2))
+                        {
+                            cout << "unaligned reference\n";
+                            regs[PC] += 2;
+                            break;
+                        }
+
+                        condition = states->get_condition() & ^(CARRY | V_OVERFLOW);    //get condition bit
+                        if (!(program[program[index].data].data))           //check for zero
+                        {
+                            condition |= ZERO;
+                        } else condition &= ^ZERO;
+                        if ((int16_t)program[program[index].data].data < 0)          //check for negative
+                        {
+                            condition |= NEGATIVE;
+                        }else condition &= ^NEGATIVE;
+
+                        states->set_condition(condition);       //set conditions
+                        trace_file(tracefile, 0, index);
+                        trace_file(tracefile, 0, regs[PC]);
+                        trace_file(tracefile, 0, program[index].data);
+                        
+                        regs[PC] += 2;
+
+                        for (i = 0; i < 8; ++i) {
+                            cout << regs[i] << ' ';
+                        }
+                        cout << endl;
+
+                        outcome = 1;
+                        break;
+                    }
+                    default: {
+                        cout << "invalid destination mode" << endl;
+                        break;
+                    }
+                }
                 break;
             }
         case TSTB:
@@ -1934,7 +3150,7 @@ void double_operand::disp()
     cout << "destination: " << destination << endl;
 }
 
-int double_operand::instruction(int *regs, CPSR *states, i_cache *program)
+int double_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
 {
     cout << "function_code: " << function_code << ": ";
 

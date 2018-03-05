@@ -18,7 +18,8 @@ int main(int argc, char* argv[])
     i_cache prog_mem[I_SIZE];
     //int memory[MEM_SIZE];             //data memory and program memory same,
                                         //so no separate data memory required.
-    int gps[8];
+    uint16_t gps[8];
+    uint16_t to_run;
     CPSR status_reg;
     int firstbit;
     int make_instruction;
@@ -37,7 +38,6 @@ int main(int argc, char* argv[])
     ifstream mkfile;
     time_t timer;
     struct tm * timeinfo;
-    int to_run;
 
     static struct option const long_options[] =
             {
@@ -197,8 +197,8 @@ int main(int argc, char* argv[])
     while((to_interpret != -1) && (i < I_SIZE))
     {
         prog_mem[i].disposition = *disposition;
-        prog_mem[i].data = (to_interpret & 0xFF);     //low bytes stored at even-numbered memory locations 
-        prog_mem[++i].data = (to_interpret & 0xFF00) >> 8;    //high bytes stored at odd-numbered memory locations
+        prog_mem[i].data = uint16_t(to_interpret);     //low bytes stored at even-numbered memory locations 
+        prog_mem[++i].data = uint16_t(to_interpret);    //high bytes stored at odd-numbered memory locations
         prog_mem[i].disposition = *disposition;
         ++i;
 
@@ -211,7 +211,7 @@ int main(int argc, char* argv[])
 
     for(j = 0; j <= i; ++j)
     {
-        cout << prog_mem[j].disposition << (prog_mem[j].data + (prog_mem[++j].data << 8)) << endl;
+        cout << prog_mem[j].disposition << prog_mem[j].data << prog_mem[++j].data << endl;
     }
 
     start= findstart(prog_mem, prog_size);       //get start point
@@ -223,7 +223,7 @@ int main(int argc, char* argv[])
         cout << "mem[" << i << "] = " << prog_mem[i].data << endl;
     }
 
-    gps[PC] = start * 2;
+    gps[PC] = uint16_t(start) * 2;
 
     gps[2] = 70;
     gps[4] = 60;
@@ -246,7 +246,7 @@ int main(int argc, char* argv[])
 
     while(gps[PC] < prog_size)
     {
-        to_run = prog_mem[gps[PC]].data + (prog_mem[gps[PC] + 1].data << 8);    //get instruction from memory
+        to_run = prog_mem[gps[PC]].data;    //get instruction from memory
         trace_file(trace, 2, gps[PC]);      //write to trace file
         gps[PC] += 2;
         to_interpret = interpreter(to_run, &firstbit, new_command, trace);

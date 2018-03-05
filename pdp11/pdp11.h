@@ -6,6 +6,7 @@
 #include <cmath>
 #include <ctime>
 #include <getopt.h>
+#include <cstdint>
 
 
 const int CLR = 2560;   //005000
@@ -91,13 +92,18 @@ const int I_SIZE = 65536;
 const int MEM_SIZE = 65536;
 const int PC = 7;
 const int SP = 6;
+const int T_DEBUG = 16;
+const int NEGATIVE = 8;
+const int ZERO = 4;
+const int V_OVERFLOW = 2;
+const int CARRY = 1;
 
 
 
 struct i_cache {
 
     i_cache();
-    int data;
+    uint16_t data;
     char disposition;
 };
 
@@ -133,8 +139,8 @@ class command {
         command (const command &to_copy);
 
         virtual void disp();
-        virtual int instruction(int *regs, CPSR * states, i_cache *program);
-        virtual int instructionB(int *regs, CPSR * states, i_cache *program);
+        virtual int instruction(uint16_t *regs, CPSR * states, i_cache *program);
+        virtual int instructionB(uint16_t *regs, CPSR * states, i_cache *program);
 
 
 
@@ -158,8 +164,8 @@ class double_operand: public command
         double_operand(const double_operand &to_copy);
 
         void disp();
-        int instruction(int *regs, CPSR * states, i_cache *program);
-        //int instructionB(int *regs, CPSR * states, i_cache *program);
+        int instruction(uint16_t *regs, CPSR * states, i_cache *program);
+        //int instructionB(uint16_t *regs, CPSR * states, i_cache *program);
 
 
 
@@ -182,8 +188,8 @@ class single_operand: public command
         ~single_operand();
         single_operand(const single_operand &to_copy);
         void disp();
-        int instruction(int *regs, CPSR *states, i_cache *program);
-        //int instructionB(int *regs, CPSR * states, i_cache *program);
+        int instruction(uint16_t *regs, CPSR *states, i_cache *program);
+        //int instructionB(uint16_t *regs, CPSR * states, i_cache *program);
 
 
     protected:
@@ -203,8 +209,8 @@ class extended: public command
         ~extended();
         extended(const extended &to_copy);
         void disp();
-        int instruction(int *regs, CPSR * states, i_cache *program);
-        //int instructionB(int *regs, CPSR * states, i_cache *program);
+        int instruction(uint16_t *regs, CPSR * states, i_cache *program);
+        //int instructionB(uint16_t *regs, CPSR * states, i_cache *program);
 
 
     protected:
@@ -224,8 +230,8 @@ class branch: public command
         ~branch();
         branch(const branch &to_copy);
         void disp();
-        int instruction(int *regs, CPSR * states, i_cache *program);
-        //int instructionB(int *regs, CPSR * states, i_cache *program);
+        int instruction(uint16_t *regs, CPSR * states, i_cache *program);
+        //int instructionB(uint16_t *regs, CPSR * states, i_cache *program);
 
 
     protected:
@@ -244,8 +250,8 @@ class jump_sub: public command
         ~jump_sub();
         jump_sub(const jump_sub &to_copy);
         void disp();
-        int instruction(int *regs, CPSR * states, i_cache *program);
-        //int instructionB(int *regs, CPSR * states, i_cache *program);
+        int instruction(uint16_t *regs, CPSR * states, i_cache *program);
+        //int instructionB(uint16_t *regs, CPSR * states, i_cache *program);
 
 
     protected:
@@ -267,8 +273,8 @@ class trapIntMiscCond: public command
         ~trapIntMiscCond();
         trapIntMiscCond(const trapIntMiscCond &to_copy);
         void disp();
-        int instruction(int *regs, CPSR * states, i_cache *program);
-        //int instructionB(int *regs, CPSR * states, i_cache *program);
+        int instruction(uint16_t *regs, CPSR * states, i_cache *program);
+        //int instructionB(uint16_t *regs, CPSR * states, i_cache *program);
 
 
     protected:
