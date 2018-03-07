@@ -158,8 +158,7 @@ class double_operand: public command
     public:
         double_operand();
         double_operand(int to_data);
-        double_operand(int to_data, char to_disposition, char * tracefile, int to_function_code, int to_source_mode,
-                       int to_source, int to_destination_mode, int to_destination);
+        double_operand(int to_data, char to_disposition, char * tracefile, int to_function_code, int to_source_mode,int to_source, int to_destination_mode, int to_destination);
         ~double_operand();
         double_operand(const double_operand &to_copy);
 

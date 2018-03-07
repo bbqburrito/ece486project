@@ -85,7 +85,7 @@ int main(int argc, char* argv[])
                 break;
 
             case 'u':
-                /* We provide the -u feature unconditionally.  */
+                 We provide the -u feature unconditionally.  */
                 /*break;
 
             case 'v':
@@ -211,7 +211,8 @@ int main(int argc, char* argv[])
 
     for(j = 0; j <= i; ++j)
     {
-        cout << prog_mem[j].disposition << prog_mem[j].data << " " << prog_mem[++j].data << endl;
+        cout << prog_mem[j].disposition << prog_mem[j].data << " " << prog_mem[j + 1].data << endl;
+        ++j;
     }
 
     start= findstart(prog_mem, prog_size);       //get start point
