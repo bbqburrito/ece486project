@@ -1271,6 +1271,9 @@ void jump_sub::disp()
 
 int jump_sub::instruction(uint16_t *regs, CPSR *states, i_cache *program)
 {
+    int i;
+    int index;
+    int deferred;
 
     cout << "function_code: " << function_code << ": ";
    switch(function_code)
@@ -1279,11 +1282,368 @@ int jump_sub::instruction(uint16_t *regs, CPSR *states, i_cache *program)
             {
                 
                 cout << "JMP" << endl;
+
+                switch(destination_code) {
+                    case 0: { //register mode illegal
+                                cout << "illegal instruction\n";
+                                break;
+                            }
+
+                    case 1: { //register deferred:
+                                //jump to address in register
+                                if(regs[destination] % 2)
+                                {
+                                    cout << "boundary error\n";
+                                    break;
+                                }
+                                regs[PC] = regs[destination];
+                                for(i = 0; i < 8; ++i)
+                                {
+                                    cout << regs[i] << ' ';
+                                }
+                                cout << endl;
+                                break;
+                            }
+                    case 2: {   //autoincrement:
+                                //jump to memory location pointed to 
+                                //by memory location in register then 
+                                //increment register
+                                if((program[regs[destination]].data % 2) || (regs[destination] % 2))
+                                {
+                                    cout << "boundary error\n";
+                                    break;
+                                }
+                                regs[PC] = program[regs[destination]].data;
+                                trace_file(tracefile, 0, regs[destination]);
+                                regs[destination] += 2;
+                                for(i = 0; i < 8; ++i)
+                                {
+                                    cout << regs[i] << ' ';
+                                }
+                                cout << endl;
+                                break;
+                            }
+                    case 3: {   //autoincrement deferred:
+                                //jump to memory location pointed to by
+                                //memory at location pointed to by register,
+                                //then increment register
+                                deferred = program[regs[destination]].data;
+                                if((deferred % 2) || (regs[destination] % 2) || (program[deferred].data % 2))
+                                {
+                                    cout << "unaligned reference\n";
+                                    break;
+                                }
+
+                                regs[PC] = program[deferred].data;
+                                trace_file(tracefile, 0, regs[destination]);
+                                trace_file(tracefile, 0, deferred);
+                                regs[destination] += 2;
+                                for(i = 0; i < 8; ++i)
+                                {
+                                    cout << regs[i] << ' ';
+                                }
+                                cout << endl;
+                                break;
+                            }
+                    case 4: {   //autodecrement:
+                                //decrement register, then jump
+                                //to memory location pointed to 
+                                //by register
+                                if((program[regs[destination]].data % 2) || (regs[destination] % 2))
+                                {
+                                    cout << "boundary error\n";
+                                    break;
+                                }
+                                regs[destination] -= 2;
+                                regs[PC] = program[regs[destination]].data;
+                                trace_file(tracefile, 0, regs[destination]);
+                                for(i = 0; i < 8; ++i)
+                                {
+                                    cout << regs[i] << ' ';
+                                }
+                                cout << endl;
+                                break;
+                            }
+                    case 5: {   //autodecrement deferred:
+                                //decrement register, then jump to
+                                //memory location pointed to by memory
+                                //location pointed to by register
+                                regs[destination] -= 2;
+                                deferred = program[regs[destination]].data;
+                                if((deferred % 2) || (regs[destination] % 2) || (program[deferred].data % 2))
+                                {
+                                    cout << "boundary error\n";
+                                    break;
+                                }
+
+                                regs[PC] = program[deferred].data;
+                                trace_file(tracefile, 0, regs[destination]);
+                                trace_file(tracefile, 0, deferred);
+                                for(i = 0; i < 8; ++i)
+                                {
+                                    cout << regs[i] << ' ';
+                                }
+                                cout << endl;
+                                break;
+                            }
+                    case 6: {   //index: jump to 
+                                //memory location pointed to by register 
+                                //plus index, which is located just after
+                                //instruction
+                                if(destination == PC)
+                                    index = regs[PC] + 2 + program[regs[PC]].data;
+                                else index = regs[destination] + program[regs[PC]].data;
+                                if(index % 2)
+                                {
+                                    cout << "boundary error\n";
+                                    regs[PC] += 2;
+                                    break;
+                                }
+
+                                regs[PC] = program[index].data;
+                                trace_file(tracefile, 0, regs[PC]);
+                                trace_file(tracefile, 0, index);
+                                for (i = 0; i < 8; ++i)
+                                {
+                                    cout << regs[i] << ' ';
+                                }
+                                cout << endl;
+                                break;
+                            }
+                    case 7: {   //index deferred:
+                                //jump to memory location pointed to by 
+                                //memory pointed to by register plus 
+                                //index, which is located just after
+                                //instruction
+
+                                if(destination == PC)
+                                    index = regs[PC] + 2 + program[regs[PC]].data;
+                                else index = regs[destination] + program[regs[PC]].data;
+                                if((index % 2) || (program[index].data % 2))
+                                {
+                                    cout << "boundary error\n";
+                                    regs[PC] += 2;
+                                    break;
+                                }
+
+                                regs[PC] = program[program[index].data].data;
+                                trace_file(tracefile, 0, regs[PC]);
+                                trace_file(tracefile, 0, index);
+                                trace_file(tracefile, 0, program[index].data);
+                                for (i = 0; i < 8; ++i)
+                                {
+                                    cout << regs[i] << ' ';
+                                }
+                                cout << endl;
+                                break;
+                            }
+                    default:
+                            {
+                                cout << "illegal instruction\n";
+                                break;
+                            }
+                }
+
                 break;
             }
         case JSR:
             {
                 cout << "JSR" << endl;
+                switch(destination_code) {
+                    case 0: {   //register mode
+                                //not legal
+                                cout << "Illegal instruction\n";
+                                break;
+                            }
+                    case 1: {   //register deferred:
+                                //push linkage register contents 
+                                //to stack, replace with location following 
+                                //instruction, jump to address pointed to
+                                //destination register
+                                if(regs[destination] % 2)
+                                {
+                                    cout << "boundary error\n";
+                                    regs[PC] += 2;
+                                    break;
+                                }
+                                program[regs[SP]].data = regs[linkage_reg];
+                                regs[SP] += 2;
+                                regs[linkage_reg] = regs[PC];
+                                regs[PC] = regs[destination];
+                                trace_file(tracefile, 0, regs[SP]);
+                                for(i = 0; i < 8; ++i)
+                                {
+                                    cout << regs[i] << ' ';
+                                }
+                                cout << endl;
+                                break;
+                            }
+                    case 2: {   //autoincrement:
+                                //push linkage register contents to stack,
+                                //replace with location following 
+                                //the instruction, jump to address pointed
+                                //to by destination register, then
+                                //increment register
+                                if(regs[destination] % 2)
+                                {
+                                    cout << "boundary error\n";
+                                    break;
+                                }
+                                program[regs[SP]].data = regs[linkage_reg];
+                                regs[SP] += 2;
+                                regs[linkage_reg] = regs[PC];
+                                regs[PC] = regs[destination];
+                                trace_file(tracefile, 0, regs[SP]);
+                                regs[destination] += 2;
+                                for(i = 0; i < 8; ++i)
+                                {
+                                    cout << regs[i] << ' ';
+                                }
+                                cout << endl;
+                                break;
+                            }
+                    case 3: {   //autoincrement deferred:
+                                //push linkage register contents to stack,
+                                //replace with location following the 
+                                //instruction, jump to address pointed to
+                                //by address pointed to by destination
+                                //register, then increment register
+                                deferred = program[regs[destination]].data;
+                                if((deferred % 2) || (regs[destination] % 2))
+                                {
+                                    cout << "boundary error\n";
+                                    break;
+                                }
+                                program[regs[SP]].data = regs[linkage_reg];
+                                regs[SP] += 2;
+                                regs[linkage_reg] = regs[PC];
+                                regs[PC] = program[regs[destination]].data;
+                                trace_file(tracefile, 0, regs[SP]);
+                                trace_file(tracefile, 0, regs[destination]);
+                                regs[destination] += 2;
+                                for(i = 0; i < 8; ++i)
+                                {
+                                    cout << regs[i] << ' ';
+                                }
+                                cout << endl;
+                                break;
+                            }
+                    case 4: {   //autodecrement:
+                                //decrement destination register,
+                                //push linkage register contents to stack,
+                                //replace with location following instruction
+                                //jump to address pointed to by destination
+                                //register
+                                if(regs[destination] % 2)
+                                {
+                                    cout << "boundary error\n";
+                                    break;
+                                }
+                                regs[destination] -= 2;
+                                program[regs[SP]].data = regs[linkage_reg];
+                                regs[SP] += 2;
+                                regs[linkage_reg] = regs[PC];
+                                regs[PC] = regs[destination];
+                                trace_file(tracefile, 0, regs[SP]);
+                                for(i = 0; i < 8; ++i)
+                                {
+                                    cout << regs[i] << ' ';
+                                }
+                                cout << endl;
+                                break;
+                            }
+                    case 5: {   //autodecrement deferred:
+                                //decrement destination register,
+                                //push linkage register contents to stack,
+                                //replace with location following the 
+                                //instruction, jump to address pointed to
+                                //by address pointed to by destination
+                                //register
+                                deferred = program[regs[destination]].data;
+                                if((deferred % 2) || (regs[destination] % 2))
+                                {
+                                    cout << "boundary error\n";
+                                    break;
+                                }
+                                regs[destination] -= 2;
+                                program[regs[SP]].data = regs[linkage_reg];
+                                regs[SP] += 2;
+                                regs[linkage_reg] = regs[PC];
+                                regs[PC] = program[regs[destination]].data;
+                                trace_file(tracefile, 0, regs[SP]);
+                                trace_file(tracefile, 0, regs[destination]);
+                                for(i = 0; i < 8; ++i)
+                                {
+                                    cout << regs[i] << ' ';
+                                }
+                                cout << endl;
+                                break;
+                            }
+                    case 6: {   //index: push linkage register contents to 
+                                //stack, replace with location following
+                                //location following PC, jump to address
+                                //pointed to by register plus index
+                                if(destination == PC)
+                                    index = regs[PC] + 2 + program[regs[PC]].data;
+                                else index = regs[destination] + program[regs[PC]].data;
+                                if(index % 2)
+                                {
+                                    cout << "boundary error\n";
+                                    regs[PC] += 2;
+                                    break;
+                                }
+
+                                program[regs[SP]].data = regs[linkage_reg];
+                                regs[SP] += 2;
+                                regs[linkage_reg] = regs[PC];
+                                regs[PC] = program[index].data;
+                                trace_file(tracefile, 0, regs[PC]);
+                                trace_file(tracefile, 0, (regs[SP] - 2));
+                                trace_file(tracefile, 0, index);
+                                for(i = 0; i < 8; ++i)
+                                {
+                                    cout << regs[i] << ' ';
+                                }
+                                cout << endl;
+                                break;
+                            }
+                    case 7: {   //index deferred: push linkage register contents to 
+                                //stack, replace with location following
+                                //location following PC, jump to address
+                                //pointed to by address pointed to by 
+                                //register plus index
+                                if(destination == PC)
+                                    index = regs[PC] + 2 + program[regs[PC]].data;
+                                else index = regs[destination] + program[regs[PC]].data;
+                                if(index % 2)
+                                {
+                                    cout << "boundary error\n";
+                                    regs[PC] += 2;
+                                    break;
+                                }
+
+                                program[regs[SP]].data = regs[linkage_reg];
+                                regs[SP] += 2;
+                                regs[linkage_reg] = regs[PC];
+                                regs[PC] = program[program[index].data].data;
+                                trace_file(tracefile, 0, regs[PC]);
+                                trace_file(tracefile, 0, (regs[SP] - 2));
+                                trace_file(tracefile, 0, index);
+                                trace_file(tracefile, 0, program[index].data);
+                                for(i = 0; i < 8; ++i)
+                                {
+                                    cout << regs[i] << ' ';
+                                }
+                                cout << endl;
+                                break;
+                            }
+                    default: {
+                                 cout << "Illegal instruction\n";
+                                 break;
+                             }
+                }
+
+
                 break;
             }
         case RTS:
