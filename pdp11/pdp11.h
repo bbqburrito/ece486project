@@ -168,6 +168,8 @@ class double_operand: public command
         
         int make_dest(uint16_t *regs, i_cache *program);
         int make_source(uint16_t *regs, i_cache *program);
+        int move(uint16_t *regs, CPSR *states, i_cache *program);
+        int compare(uint16_t *regs, CPSR *states, i_cache *program);
 
 
 
