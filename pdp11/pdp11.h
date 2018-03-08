@@ -165,6 +165,10 @@ class double_operand: public command
         void disp();
         int instruction(uint16_t *regs, CPSR * states, i_cache *program);
         //int instructionB(uint16_t *regs, CPSR * states, i_cache *program);
+        
+        int make_dest(uint16_t *regs, i_cache *program);
+        int make_source(uint16_t *regs, i_cache *program);
+
 
 
 

@@ -1463,7 +1463,6 @@ int jump_sub::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                                 if(regs[destination] % 2)
                                 {
                                     cout << "boundary error\n";
-                                    regs[PC] += 2;
                                     break;
                                 }
                                 program[regs[SP]].data = regs[linkage_reg];
@@ -1649,6 +1648,24 @@ int jump_sub::instruction(uint16_t *regs, CPSR *states, i_cache *program)
         case RTS:
             {
                 cout << "RTS" << endl;
+
+                //register mode
+                //load contents of register to PC                        
+                //pop from stack to register
+                if(regs[linkage_reg] % 2)
+                {
+                    cout << "boundary error\n";
+                    break;
+                }
+                regs[PC] = regs[linkage_reg];
+                regs[linkage_reg] = program[regs[SP]].data;
+                regs[SP] += 2;
+                trace_file(tracefile, 0, regs[SP]);
+                for (i = 0; i < 8; ++i)
+                {
+                    cout << regs[i] << ' ';
+                }
+                cout << endl;
                 break;
             }
         default:
@@ -1681,6 +1698,7 @@ void branch::disp()
 
 int branch::instruction(uint16_t *regs, CPSR *states, i_cache *program)
 {
+    int condition = 0;
 
     cout << "function_code: " << function_code << ": ";
    switch(function_code)
@@ -1689,76 +1707,177 @@ int branch::instruction(uint16_t *regs, CPSR *states, i_cache *program)
             {
                 cout << "BR" << endl;
 
+                regs[PC] += (2 * (int8_t)offset - 2);
+
                 break;
             }
         case BNE:
             {
                 cout << "BNE" << endl;
+
+                condition = states->get_condition() & ZERO;
+                if(!condition)
+                {
+                    regs[PC] += (2 * (int8_t)offset - 2);
+                }
                 break;
             }
         case BEQ:
             {
                 cout << "BEQ" << endl;
+
+                condition = states->get_condition() & ZERO;
+                if(condition)
+                {
+                    regs[PC] += (2 * (int8_t)offset - 2);
+                }
                 break;
             }
         case BPL:
             {
                 cout << "BPL" << endl;
+
+                condition = states->get_condition() & NEGATIVE;
+                if(!condition)
+                {
+                    regs[PC] += (2 * (int8_t)offset - 2);
+                }
                 break;
             }
         case BMI:
             {
                 cout << "BMI" << endl;
+
+                condition = states->get_condition() & NEGATIVE;
+                if(condition)
+                {
+                    regs[PC] += (2 * (int8_t)offset - 2);
+                }
                 break;
             }
         case BVC:
             {
                 cout << "BVC" << endl;
+
+                condition = states->get_condition() & V_OVERFLOW;
+                if(!condition)
+                {
+                    regs[PC] += (2 * (int8_t)offset - 2);
+                }
                 break;
             }
         case BVS:
             {
                 cout << "BVS" << endl;
+
+                condition = states->get_condition() & V_OVERFLOW;
+                if(condition)
+                {
+                    regs[PC] += (2 * (int8_t)offset - 2);
+                }
                 break;
             }
         case BCC:
             {
                 cout << "BCC" << endl;
                 break;
+
+                condition = states->get_condition() & CARRY;
+                if(!condition)
+                {
+                    regs[PC] += (2 * (int8_t)offset - 2);
+                }
             }
         case BCS:
             {
                 cout << "BCS" << endl;
+
+                condition = states->get_condition() & CARRY;
+                if(condition)
+                {
+                    regs[PC] += (2 * (int8_t)offset - 2);
+                }
                 break;
             }
         case BGE:
-            {
+            {   //branch if xnor N and V bits
                 cout << "BGE" << endl;
-                break;
+ 
+                //xor N and V condition bits
+                condition = states->get_condition() & V_OVERFLOW;
+                condition ^= (states->get_condition() & NEGATIVE);
+                if(!condition)
+                {
+                    regs[PC] += (2 * (int8_t)offset - 2);
+                }
+               break;
             }
         case BLT:
-            {
+            {   //branch if xor N and V bits
                 cout << "BLT" << endl;
+
+                //xor N and V condition bits
+                condition = states->get_condition() & V_OVERFLOW;
+                condition ^= (states->get_condition() & NEGATIVE);
+                if(condition)
+                {
+                    regs[PC] += (2 * (int8_t)offset - 2);
+                }
                 break;
             }
         case BGT:
-            {
+            {   //branch if xnor N and V bits or Z bit
+
                 cout << "BGT" << endl;
+ 
+                //xor N and V condition bits
+                condition = states->get_condition() & V_OVERFLOW;
+                condition ^= (states->get_condition() & NEGATIVE);
+                condition |= (states->get_condition() & ZERO);
+                if(!condition)
+                {
+                    regs[PC] += (2 * (int8_t)offset - 2);
+                }
                 break;
             }
         case BLE:
             {
                 cout << "BLE" << endl;
+ 
+                //xor N and V condition bits
+                condition = states->get_condition() & V_OVERFLOW;
+                condition ^= (states->get_condition() & NEGATIVE);
+                condition |= (states->get_condition() & ZERO);
+                if(condition)
+                {
+                    regs[PC] += (2 * (int8_t)offset - 2);
+                }
                 break;
             }
         case BHI:
-            {
+            {   //branch if C & Z both zero
                 cout << "BHI" << endl;
+ 
+                condition = (states->get_condition() & CARRY);
+                condition |= (states->get_condition() & ZERO);
+                if(!condition)
+                {
+                    regs[PC] += (2 * (int8_t)offset - 2);
+                }
+                break;
+ 
                 break;
             }
         case BLOS:
-            {
+            {   //branch if C | Z set
                 cout << "BLOS" << endl;
+  
+                condition = (states->get_condition() & CARRY);
+                condition |= (states->get_condition() & ZERO);
+                if(condition)
+                {
+                    regs[PC] += (2 * (int8_t)offset - 2);
+                }
                 break;
             }
         default:
@@ -6287,8 +6406,556 @@ void double_operand::disp()
     cout << "destination: " << destination << endl;
 }
 
+int double_operand::make_dest(uint16_t *regs, i_cache *program)
+{
+    int index = 0;
+
+    switch(destination_mode)
+    {
+        case 0:
+            {   //register
+                return (int) destination;
+                break;
+            }
+
+        case 1:
+            {   //register deferred
+                //memory read for BIT and CMP
+                //memory write for all others
+                switch(function_code) {
+                    case BIT: {
+                        trace_file(tracefile, 0, regs[destination]);
+                        break;
+                    }
+                    case BITB: {
+                        trace_file(tracefile, 0, regs[destination]);
+                        break;
+                    }
+                    case CMP: {
+                        trace_file(tracefile, 0, regs[destination]);
+                        break;
+                    }
+                    case CMPB: {
+                        trace_file(tracefile, 0, regs[destination]);
+                        break;
+                    }
+                    default: {
+                        trace_file(tracefile, 1, regs[destination]);
+                        break;
+                    }
+                }
+                return (int)program[regs[destination]].data;
+                break;
+            }
+
+
+        case 2:
+            {   //register deferred
+                //memory read for BIT and CMP
+                //memory write for all others
+                switch(function_code) {
+                    case BIT: {
+                        trace_file(tracefile, 0, regs[destination]);
+                        break;
+                    }
+                    case BITB: {
+                        trace_file(tracefile, 0, regs[destination]);
+                        break;
+                    }
+                    case CMP: {
+                        trace_file(tracefile, 0, regs[destination]);
+                        break;
+                    }
+                    case CMPB: {
+                        trace_file(tracefile, 0, regs[destination]);
+                        break;
+                    }
+                    default: {
+                        trace_file(tracefile, 1, regs[destination]);
+                        break;
+                    }
+                }
+                return (int)program[regs[destination]].data;
+                break;
+            }
+
+
+        case 3: {   //register deferred
+            //memory read for BIT and CMP
+            //memory write for all others
+            switch (function_code) {
+                case BIT: {
+                    trace_file(tracefile, 0, regs[destination]);
+                    trace_file(tracefile, 0, program[regs[destination]].data);
+                    break;
+                }
+                case BITB: {
+                    trace_file(tracefile, 0, regs[destination]);
+                    trace_file(tracefile, 0, program[regs[destination]].data);
+                    break;
+                }
+                case CMP: {
+                    trace_file(tracefile, 0, regs[destination]);
+                    trace_file(tracefile, 0, program[regs[destination]].data);
+                    break;
+                }
+                case CMPB: {
+                    trace_file(tracefile, 0, regs[destination]);
+                    trace_file(tracefile, 0, program[regs[destination]].data);
+                    break;
+                }
+                default: {
+                    trace_file(tracefile, 0, regs[destination]);
+                    trace_file(tracefile, 1, program[regs[destination]].data);
+                    break;
+                }
+            }
+            return (int) program[program[regs[destination]].data].data;
+            break;
+        }
+
+
+        case 4: {   //register deferred
+                    //memory read for BIT and CMP
+                    //memory write for all others
+                switch (function_code) {
+                    case BIT: {
+                        trace_file(tracefile, 0, regs[destination]);
+                        break;
+                    }
+                    case BITB: {
+                        trace_file(tracefile, 0, regs[destination]);
+                        break;
+                    }
+                    case CMP: {
+                        trace_file(tracefile, 0, regs[destination]);
+                        break;
+                    }
+                    case CMPB: {
+                        trace_file(tracefile, 0, regs[destination]);
+                        break;
+                    }
+                    default: {
+                        trace_file(tracefile, 1, regs[destination]);
+                        break;
+                    }
+                }
+            return (int) program[regs[destination]].data;
+            break;
+        }
+        case 5: {   //register deferred
+                    //memory read for BIT and CMP
+                    //memory write for all others
+            switch (function_code) {
+                case BIT: {
+                    trace_file(tracefile, 0, regs[destination]);
+                    trace_file(tracefile, 0, program[regs[destination]].data);
+                    break;
+                }
+                case BITB: {
+                    trace_file(tracefile, 0, regs[destination]);
+                    trace_file(tracefile, 0, program[regs[destination]].data);
+                    break;
+                }
+                case CMP: {
+                    trace_file(tracefile, 0, regs[destination]);
+                    trace_file(tracefile, 0, program[regs[destination]].data);
+                    break;
+                }
+                case CMPB: {
+                    trace_file(tracefile, 0, regs[destination]);
+                    trace_file(tracefile, 0, program[regs[destination]].data);
+                    break;
+                }
+                default: {
+                    trace_file(tracefile, 0, regs[destination]);
+                    trace_file(tracefile, 1, program[regs[destination]].data);
+                    break;
+                }
+            }
+            return (int) program[program[regs[destination]].data].data;
+            break;
+        }
+
+        case 6: {   //register deferred
+                        //memory read for BIT and CMP
+                        //memory write for all others
+            if (destination == PC)
+                index = regs[PC] + 2 + program[regs[PC]].data;
+            else index = regs[destination] + program[regs[PC]].data;
+            if ((regs[destination] % 2) || (index % 2)) {
+                cout << "boundary error\n";
+                return -1;
+            }
+
+            switch (function_code) {
+                case BIT: {
+                    trace_file(tracefile, 0, regs[PC]);
+                    trace_file(tracefile, 0, (uint16_t) index);
+                    break;
+                }
+                case BITB: {
+                    trace_file(tracefile, 0, regs[destination]);
+                    trace_file(tracefile, 0, (uint16_t) index);
+                    break;
+                }
+                case CMP: {
+                    trace_file(tracefile, 0, regs[destination]);
+                    trace_file(tracefile, 0, (uint16_t) index);
+                    break;
+                }
+                case CMPB: {
+                    trace_file(tracefile, 0, regs[destination]);
+                    trace_file(tracefile, 0, (uint16_t) index);
+                    break;
+                }
+                default: {
+                    trace_file(tracefile, 0, regs[destination]);
+                    trace_file(tracefile, 1, (uint16_t) index);
+                    break;
+                }
+            }
+            return (int) program[index].data;
+            break;
+        }
+
+        case 7: {   //register deferred
+                        //memory read for BIT and CMP
+                        //memory write for all others
+            if (destination == PC)
+                index = regs[PC] + 2 + program[regs[PC]].data;
+            else index = regs[destination] + program[regs[PC]].data;
+            if ((regs[destination] % 2) || (index % 2) || (program[index].data % 2)) {
+                cout << "boundary error\n";
+                return -1;
+            }
+            index = program[index].data;
+            switch (function_code) {
+                case BIT: {
+                    trace_file(tracefile, 0, regs[PC]);
+                    trace_file(tracefile, 0, (uint16_t) index);
+                    trace_file(tracefile, 0, program[index].data);
+                    break;
+                }
+                case BITB: {
+                    trace_file(tracefile, 0, regs[destination]);
+                    trace_file(tracefile, 0, (uint16_t) index);
+                    trace_file(tracefile, 0, program[index].data);
+                    break;
+                }
+                case CMP: {
+                    trace_file(tracefile, 0, regs[destination]);
+                    trace_file(tracefile, 0, (uint16_t) index);
+                    trace_file(tracefile, 0, program[index].data);
+                    break;
+                }
+                case CMPB: {
+                    trace_file(tracefile, 0, regs[destination]);
+                    trace_file(tracefile, 0, (uint16_t) index);
+                    trace_file(tracefile, 0, program[index].data);
+                    break;
+                }
+                default: {
+                    trace_file(tracefile, 0, regs[destination]);
+                    trace_file(tracefile, 0, (uint16_t) index);
+                    trace_file(tracefile, 1, program[index].data);
+                    break;
+                }
+            }
+
+            return (int) program[index].data;
+            break;
+        }
+        default: {
+            cout << "invalid source mode\n";
+            return -1;
+            break;
+        }
+    }
+
+    return -1;
+}
+
+
+//decode source mode
+int double_operand::make_source(uint16_t *regs, i_cache *program)
+{
+    int index = 0;
+
+    switch(source_mode)
+    {
+        case 0:
+            {   //register
+                return (int) source;
+                break;
+            }
+
+        case 1:
+            {   //register deferred
+                //memory read for BIT and CMP
+                //memory write for all others
+                switch(function_code) {
+                    case BIT: {
+                        trace_file(tracefile, 0, regs[source]);
+                        break;
+                    }
+                    case BITB: {
+                        trace_file(tracefile, 0, regs[source]);
+                        break;
+                    }
+                    case CMP: {
+                        trace_file(tracefile, 0, regs[source]);
+                        break;
+                    }
+                    case CMPB: {
+                        trace_file(tracefile, 0, regs[source]);
+                        break;
+                    }
+                    default: {
+                        trace_file(tracefile, 0, regs[source]);
+                        break;
+                    }
+                }
+                return (int)program[regs[source]].data;
+                break;
+            }
+
+
+        case 2:
+            {   //register deferred
+                //memory read for BIT and CMP
+                //memory write for all others
+                switch(function_code) {
+                    case BIT: {
+                        trace_file(tracefile, 0, regs[source]);
+                        break;
+                    }
+                    case BITB: {
+                        trace_file(tracefile, 0, regs[source]);
+                        break;
+                    }
+                    case CMP: {
+                        trace_file(tracefile, 0, regs[source]);
+                        break;
+                    }
+                    case CMPB: {
+                        trace_file(tracefile, 0, regs[source]);
+                        break;
+                    }
+                    default: {
+                        trace_file(tracefile, 0, regs[source]);
+                        break;
+                    }
+                }
+                return (int)program[regs[source]].data;
+                break;
+            }
+
+
+        case 3: {   //register deferred
+            //memory read for BIT and CMP
+            //memory write for all others
+            switch (function_code) {
+                case BIT: {
+                    trace_file(tracefile, 0, regs[source]);
+                    trace_file(tracefile, 0, program[regs[source]].data);
+                    break;
+                }
+                case BITB: {
+                    trace_file(tracefile, 0, regs[source]);
+                    trace_file(tracefile, 0, program[regs[source]].data);
+                    break;
+                }
+                case CMP: {
+                    trace_file(tracefile, 0, regs[source]);
+                    trace_file(tracefile, 0, program[regs[source]].data);
+                    break;
+                }
+                case CMPB: {
+                    trace_file(tracefile, 0, regs[source]);
+                    trace_file(tracefile, 0, program[regs[source]].data);
+                    break;
+                }
+                default: {
+                    trace_file(tracefile, 0, regs[source]);
+                    trace_file(tracefile, 0, program[regs[source]].data);
+                    break;
+                }
+            }
+            return (int) program[program[regs[source]].data].data;
+            break;
+        }
+
+
+        case 4: {   //register deferred
+                    //memory read for BIT and CMP
+                    //memory write for all others
+                switch (function_code) {
+                    case BIT: {
+                        trace_file(tracefile, 0, regs[source]);
+                        break;
+                    }
+                    case BITB: {
+                        trace_file(tracefile, 0, regs[source]);
+                        break;
+                    }
+                    case CMP: {
+                        trace_file(tracefile, 0, regs[source]);
+                        break;
+                    }
+                    case CMPB: {
+                        trace_file(tracefile, 0, regs[source]);
+                        break;
+                    }
+                    default: {
+                        trace_file(tracefile, 0, regs[source]);
+                        break;
+                    }
+                }
+            return (int) program[regs[source]].data;
+            break;
+        }
+        case 5: {   //register deferred
+                    //memory read for BIT and CMP
+                    //memory write for all others
+            switch (function_code) {
+                case BIT: {
+                    trace_file(tracefile, 0, regs[source]);
+                    trace_file(tracefile, 0, program[regs[source]].data);
+                    break;
+                }
+                case BITB: {
+                    trace_file(tracefile, 0, regs[source]);
+                    trace_file(tracefile, 0, program[regs[source]].data);
+                    break;
+                }
+                case CMP: {
+                    trace_file(tracefile, 0, regs[source]);
+                    trace_file(tracefile, 0, program[regs[source]].data);
+                    break;
+                }
+                case CMPB: {
+                    trace_file(tracefile, 0, regs[source]);
+                    trace_file(tracefile, 0, program[regs[source]].data);
+                    break;
+                }
+                default: {
+                    trace_file(tracefile, 0, regs[source]);
+                    trace_file(tracefile, 0, program[regs[source]].data);
+                    break;
+                }
+            }
+            return (int) program[program[regs[source]].data].data;
+            break;
+        }
+
+        case 6: {   //register deferred
+                        //memory read for BIT and CMP
+                        //memory write for all others
+            if (source == PC)
+                index = regs[PC] + 2 + program[regs[PC]].data;
+            else index = regs[source] + program[regs[PC]].data;
+            if ((regs[source] % 2) || (index % 2)) {
+                cout << "boundary error\n";
+                return -1;
+            }
+
+            switch (function_code) {
+                case BIT: {
+                    trace_file(tracefile, 0, regs[PC]);
+                    trace_file(tracefile, 0, (uint16_t) index);
+                    break;
+                }
+                case BITB: {
+                    trace_file(tracefile, 0, regs[source]);
+                    trace_file(tracefile, 0, (uint16_t) index);
+                    break;
+                }
+                case CMP: {
+                    trace_file(tracefile, 0, regs[source]);
+                    trace_file(tracefile, 0, (uint16_t) index);
+                    break;
+                }
+                case CMPB: {
+                    trace_file(tracefile, 0, regs[source]);
+                    trace_file(tracefile, 0, (uint16_t) index);
+                    break;
+                }
+                default: {
+                    trace_file(tracefile, 0, regs[source]);
+                    trace_file(tracefile, 0, (uint16_t) index);
+                    break;
+                }
+            }
+            return (int) program[index].data;
+            break;
+        }
+
+        case 7: {   //register deferred
+                        //memory read for BIT and CMP
+                        //memory write for all others
+            if (source == PC)
+                index = regs[PC] + 2 + program[regs[PC]].data;
+            else index = regs[source] + program[regs[PC]].data;
+            if ((regs[source] % 2) || (index % 2) || (program[index].data % 2)) {
+                cout << "boundary error\n";
+                return -1;
+            }
+            index = program[index].data;
+            switch (function_code) {
+                case BIT: {
+                    trace_file(tracefile, 0, regs[PC]);
+                    trace_file(tracefile, 0, (uint16_t) index);
+                    trace_file(tracefile, 0, program[index].data);
+                    break;
+                }
+                case BITB: {
+                    trace_file(tracefile, 0, regs[source]);
+                    trace_file(tracefile, 0, (uint16_t) index);
+                    trace_file(tracefile, 0, program[index].data);
+                    break;
+                }
+                case CMP: {
+                    trace_file(tracefile, 0, regs[source]);
+                    trace_file(tracefile, 0, (uint16_t) index);
+                    trace_file(tracefile, 0, program[index].data);
+                    break;
+                }
+                case CMPB: {
+                    trace_file(tracefile, 0, regs[source]);
+                    trace_file(tracefile, 0, (uint16_t) index);
+                    trace_file(tracefile, 0, program[index].data);
+                    break;
+                }
+                default: {
+                    trace_file(tracefile, 0, regs[source]);
+                    trace_file(tracefile, 0, (uint16_t) index);
+                    trace_file(tracefile, 0, program[index].data);
+                    break;
+                }
+            }
+
+            return (int) program[index].data;
+            break;
+        }
+        default: {
+            cout << "invalid source mode\n";
+            return -1;
+            break;
+        }
+    }
+
+    return -1;
+}
+
+
+
+
 int double_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
 {
+    int source;
+    int destination;
+    int result;
     cout << "function_code: " << function_code << ": ";
 
     switch(function_code)
@@ -6296,6 +6963,10 @@ int double_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
         case MOV:
             {
                 cout << "MOV" << endl;
+                source = make_source(regs, program);
+                destination = make_dest(regs, program);
+                destination = source;
+
                 break;
             }
         case MOVB:
