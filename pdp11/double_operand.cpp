@@ -31,10 +31,9 @@ int double_operand::compare(uint16_t *regs, CPSR *states, i_cache *program)
     int source_op = make_source(regs, program);
     int sign_source = (uint16_t)source_op >> 15;
     int condition = 0;
-    uint32_t result;
+    uint16_t result;
 
-
-
+    //perform action for different register modes
     switch(destination_mode)
     {
         case 0:
@@ -45,11 +44,11 @@ int double_operand::compare(uint16_t *regs, CPSR *states, i_cache *program)
                 {
                     condition |= ZERO;
                 }
-                if(result < 0)
+                if((int16_t)result < 0)
                     condition |= NEGATIVE;
-                if(!((sign_source) ^ !(regs[destination] >> 15)) && (sign_source != (result >> 15)))
+                if(!((sign_source) ^ (regs[destination] >> 15)) && (sign_source != (result >> 15)))
                         condition |= V_OVERFLOW;
-                if(source_op < regs[destination])
+                if((int16_t)source_op < (int16_t)regs[destination])
                     condition |= CARRY;
 
                 states->set_condition(condition);
@@ -72,11 +71,11 @@ int double_operand::compare(uint16_t *regs, CPSR *states, i_cache *program)
                 {
                     condition |= ZERO;
                 }
-                if(result < 0)
+                if((int16_t)result < 0)
                     condition |= NEGATIVE;
-                if(!((sign_source) ^ !(program[regs[destination]].data >> 15)) && (sign_source != (result >> 15)))
+                if(!((sign_source) ^ (program[regs[destination]].data >> 15)) && (sign_source != (result >> 15)))
                         condition |= V_OVERFLOW;
-                if(source_op < program[regs[destination]].data)
+                if((int16_t)source_op < (int16_t)program[regs[destination]].data)
                     condition |= CARRY;
 
                 states->set_condition(condition);
@@ -87,30 +86,32 @@ int double_operand::compare(uint16_t *regs, CPSR *states, i_cache *program)
 
 
         case 2:
-            {   //autoincrement
-                if(regs[destination] % 2)
+            {   //autoincrement:
+                 if(regs[destination] % 2)
                 {
                     cout << "boundary error\n";
                     return -1;
                 }
-                program[regs[destination]].data = source_op;
-  
-                condition = states->get_condition() & CARRY;
-                if(!program[regs[destination]].data)
+
+                result = (uint16_t)source_op + ~program[regs[destination]].data + 1;
+
+                if(!result)
                 {
                     condition |= ZERO;
                 }
-                if(((int) program[regs[destination]].data) < 0)
+                if((int16_t)result < 0)
                     condition |= NEGATIVE;
-                condition &= ~V_OVERFLOW;
-                states->set_condition(condition);
+                if(!((sign_source) ^ (program[regs[destination]].data >> 15)) && (sign_source != (result >> 15)))
+                        condition |= V_OVERFLOW;
+                if((int16_t)source_op < (int16_t)program[regs[destination]].data)
+                    condition |= CARRY;
 
-                program[regs[destination] + 1].data = source_op;
-                trace_file(tracefile, 1, regs[destination]);
+                states->set_condition(condition);
                 regs[destination] += 2;
-                return (int)program[regs[destination]].data;
+
+                return (int) program[regs[destination]].data;
                 break;
-       }
+            }
 
 
        case 3: {   //autoincrement deferred
@@ -119,80 +120,87 @@ int double_operand::compare(uint16_t *regs, CPSR *states, i_cache *program)
                     cout << "boundary error\n";
                     return -1;
                 }
-                program[program[regs[destination]].data].data = source_op;
-                program[program[regs[destination]].data + 1].data = source_op; 
+ 
+                result = (uint16_t)source_op + ~program[program[regs[destination]].data].data + 1;
 
-                condition = states->get_condition() & CARRY;
-                if(!program[program[regs[destination]].data].data)
+                if(!result)
                 {
                     condition |= ZERO;
                 }
-                if(((int) program[program[regs[destination]].data].data) < 0)
+                if((int16_t)result < 0)
                     condition |= NEGATIVE;
-                condition &= ~V_OVERFLOW;
-                states->set_condition(condition);
+                if(!((sign_source) ^ (program[program[regs[destination]].data].data >> 15)) && (sign_source != (result >> 15)))
+                        condition |= V_OVERFLOW;
+                if((int16_t)source_op < (int16_t)program[regs[destination]].data)
+                    condition |= CARRY;
 
- 
-                trace_file(tracefile, 0, regs[destination]);
-                trace_file(tracefile, 1, program[regs[destination]].data);
+                states->set_condition(condition);
                 regs[destination] += 2;
-                return (int)program[program[regs[destination]].data].data;
+
+                return (int) program[program[regs[destination]].data].data;
                 break;
-        }
+            }
+
 
         case 4: {   //autodecrement
-                if(regs[destination] % 2)
+
+                regs[destination] -= 2;
+                  if(regs[destination] % 2)
                 {
                     cout << "boundary error\n";
                     return -1;
                 }
-                regs[destination] -= 2;
-                program[regs[destination]].data = source_op;
-                program[regs[destination] + 1].data = source_op; 
 
-                condition = states->get_condition() & CARRY;
-                if(!program[regs[destination]].data)
+                result = (uint16_t)source_op + ~program[regs[destination]].data + 1;
+
+                if(!result)
                 {
                     condition |= ZERO;
                 }
-                if(((int) program[regs[destination]].data) < 0)
+                if((int16_t)result < 0)
                     condition |= NEGATIVE;
-                condition &= ~V_OVERFLOW;
+                if(!((sign_source) ^ (program[regs[destination]].data >> 15)) && (sign_source != (result >> 15)))
+                        condition |= V_OVERFLOW;
+                if((int16_t)source_op < (int16_t)program[regs[destination]].data)
+                    condition |= CARRY;
+
                 states->set_condition(condition);
- 
-                trace_file(tracefile, 1, regs[destination]);
-                return (int)program[regs[destination]].data;
+
+                return (int) program[regs[destination]].data;
                 break;
-        }
+            }
+
+
         case 5: {   //autodecrement deferred
-                if((regs[destination] % 2) || (program[regs[destination]].data % 2))
+                regs[destination] -= 2;
+                 if((regs[destination] % 2) || (program[regs[destination]].data % 2))
                 {
                     cout << "boundary error\n";
                     return -1;
                 }
-                regs[destination] -= 2;
-                program[program[regs[destination]].data].data = source_op;
-                program[program[regs[destination]].data + 1].data = source_op;
+ 
+                result = (uint16_t)source_op + ~program[program[regs[destination]].data].data + 1;
 
-                condition = states->get_condition() & CARRY;
-                if(!program[program[regs[destination]].data].data)
+                if(!result)
                 {
                     condition |= ZERO;
                 }
-                if(((int) program[program[regs[destination]].data].data) < 0)
+                if((int16_t)result < 0)
                     condition |= NEGATIVE;
-                condition &= ~V_OVERFLOW;
+                if(!((sign_source) ^ (program[program[regs[destination]].data].data >> 15)) && (sign_source != (result >> 15)))
+                        condition |= V_OVERFLOW;
+                if((int16_t)source_op < (int16_t)program[regs[destination]].data)
+                    condition |= CARRY;
+
                 states->set_condition(condition);
 
-                trace_file(tracefile, 0, regs[destination]);
-                trace_file(tracefile, 1, program[regs[destination]].data);
-                return (int)program[program[regs[destination]].data].data;
+                return (int) program[program[regs[destination]].data].data;
                 break;
-        }
+            }
 
-        case 6: {   //register deferred
-                        //memory read for BIT and CMP
-                        //memory write for all others
+
+
+        case 6: {   //index
             if (destination == PC)
                 index = regs[PC] + 2 + program[regs[PC]].data;
             else index = regs[destination] + program[regs[PC]].data;
@@ -201,56 +209,65 @@ int double_operand::compare(uint16_t *regs, CPSR *states, i_cache *program)
                 return -1;
             }
 
-            program[index].data = source_op;
-            program[index + 1].data = source_op;
- 
-            condition = states->get_condition() & CARRY;
-            if(!program[index].data)
-            {
-                condition |= ZERO;
-            }
-            if(((int) program[index].data) < 0)
-                condition |= NEGATIVE;
-            condition &= ~V_OVERFLOW;
-            states->set_condition(condition);
+                result = (uint16_t)source_op + ~program[index].data + 1;
 
-            trace_file(tracefile, 0, regs[PC]);
-            trace_file(tracefile, 1, (uint16_t) index);
-            break;
-        }
+                if(!result)
+                {
+                    condition |= ZERO;
+                }
+                if((int16_t)result < 0)
+                    condition |= NEGATIVE;
+                if(!((sign_source) ^ (program[regs[destination]].data >> 15)) && (sign_source != (result >> 15)))
+                        condition |= V_OVERFLOW;
+
+                if((int16_t)source_op < (int16_t)program[index].data)
+                    condition |= CARRY;
+
+                states->set_condition(condition);
+                trace_file(tracefile, 0, regs[PC]);
+                trace_file(tracefile, 0, (uint16_t) index);
+                regs[PC] += 2;
+
+                return (int) program[index].data;
+                break;
+            }
+
 
         case 7: {   //register deferred
-                        //memory read for BIT and CMP
-                        //memory write for all others
-            if (destination == PC)
+             if (destination == PC)
                 index = regs[PC] + 2 + program[regs[PC]].data;
             else index = regs[destination] + program[regs[PC]].data;
-            if ((regs[destination] % 2) || (index % 2) || (program[index].data % 2)) {
+            if ((regs[destination] % 2) || (index % 2) || (program[index].data % 2)) 
+            {
                 cout << "boundary error\n";
                 return -1;
             }
-            index = program[index].data;
 
-            program[program[index].data].data = source_op;
-            program[program[index].data + 1].data = source_op;
-  
-            condition = states->get_condition() & CARRY;
-            if(!program[program[index].data].data)
-            {
-                condition |= ZERO;
+                result = (uint16_t)source_op + ~program[program[index].data].data + 1;
+
+                if(!result)
+                {
+                    condition |= ZERO;
+                }
+                if((int16_t)result < 0)
+                    condition |= NEGATIVE;
+                if(!((sign_source) ^ (program[program[index].data].data >> 15)) && (sign_source != (result >> 15)))
+                        condition |= V_OVERFLOW;
+
+                if((int16_t)source_op < (int16_t)program[program[index].data].data)
+                    condition |= CARRY;
+
+                states->set_condition(condition);
+                trace_file(tracefile, 0, regs[PC]);
+                trace_file(tracefile, 0, (uint16_t) index);
+                trace_file(tracefile, 0, program[index].data);
+                regs[PC] += 2;
+
+                return (int) program[program[index].data].data;
+                break;
             }
-            if(((int) program[program[index].data].data) < 0)
-                condition |= NEGATIVE;
-            condition &= ~V_OVERFLOW;
-            states->set_condition(condition);
 
-            trace_file(tracefile, 0, regs[PC]);
-            trace_file(tracefile, 0, (uint16_t) index);
-            trace_file(tracefile, 1, program[index].data);
 
-            return (int) program[program[index].data].data;
-            break;
-        }
         default: {
             cout << "invalid destination mode\n";
             return -1;
@@ -306,7 +323,7 @@ int double_operand::move(uint16_t *regs, CPSR *states, i_cache *program)
                 {
                     condition |= ZERO;
                 }
-                if(((int) program[regs[destination]].data) < 0)
+                if(((int16_t) program[regs[destination]].data) < 0)
                     condition |= NEGATIVE;
                 condition &= ~V_OVERFLOW;
                 states->set_condition(condition);
@@ -332,7 +349,7 @@ int double_operand::move(uint16_t *regs, CPSR *states, i_cache *program)
                 {
                     condition |= ZERO;
                 }
-                if(((int) program[regs[destination]].data) < 0)
+                if(((int16_t) program[regs[destination]].data) < 0)
                     condition |= NEGATIVE;
                 condition &= ~V_OVERFLOW;
                 states->set_condition(condition);
@@ -359,7 +376,7 @@ int double_operand::move(uint16_t *regs, CPSR *states, i_cache *program)
                 {
                     condition |= ZERO;
                 }
-                if(((int) program[program[regs[destination]].data].data) < 0)
+                if(((int16_t) program[program[regs[destination]].data].data) < 0)
                     condition |= NEGATIVE;
                 condition &= ~V_OVERFLOW;
                 states->set_condition(condition);
@@ -387,7 +404,7 @@ int double_operand::move(uint16_t *regs, CPSR *states, i_cache *program)
                 {
                     condition |= ZERO;
                 }
-                if(((int) program[regs[destination]].data) < 0)
+                if(((int16_t) program[regs[destination]].data) < 0)
                     condition |= NEGATIVE;
                 condition &= ~V_OVERFLOW;
                 states->set_condition(condition);
@@ -411,7 +428,7 @@ int double_operand::move(uint16_t *regs, CPSR *states, i_cache *program)
                 {
                     condition |= ZERO;
                 }
-                if(((int) program[program[regs[destination]].data].data) < 0)
+                if(((int16_t) program[program[regs[destination]].data].data) < 0)
                     condition |= NEGATIVE;
                 condition &= ~V_OVERFLOW;
                 states->set_condition(condition);
@@ -441,13 +458,14 @@ int double_operand::move(uint16_t *regs, CPSR *states, i_cache *program)
             {
                 condition |= ZERO;
             }
-            if(((int) program[index].data) < 0)
+            if(((int16_t) program[index].data) < 0)
                 condition |= NEGATIVE;
             condition &= ~V_OVERFLOW;
             states->set_condition(condition);
 
             trace_file(tracefile, 0, regs[PC]);
             trace_file(tracefile, 1, (uint16_t) index);
+            regs[PC] += 2;
             break;
         }
 
@@ -469,9 +487,9 @@ int double_operand::move(uint16_t *regs, CPSR *states, i_cache *program)
             condition = states->get_condition() & CARRY;
             if(!program[program[index].data].data)
             {
-                condition |= ZERO;
+condition |= ZERO;
             }
-            if(((int) program[program[index].data].data) < 0)
+            if(((int16_t) program[program[index].data].data) < 0)
                 condition |= NEGATIVE;
             condition &= ~V_OVERFLOW;
             states->set_condition(condition);
@@ -479,6 +497,7 @@ int double_operand::move(uint16_t *regs, CPSR *states, i_cache *program)
             trace_file(tracefile, 0, regs[PC]);
             trace_file(tracefile, 0, (uint16_t) index);
             trace_file(tracefile, 1, program[index].data);
+            regs[PC] += 2;
 
             return (int) program[program[index].data].data;
             break;
@@ -511,28 +530,7 @@ int double_operand::make_source(uint16_t *regs, i_cache *program)
             {   //register deferred
                 //memory read for BIT and CMP
                 //memory write for all others
-                switch(function_code) {
-                    case BIT: {
-                        trace_file(tracefile, 0, regs[source]);
-                        break;
-                    }
-                    case BITB: {
-                        trace_file(tracefile, 0, regs[source]);
-                        break;
-                    }
-                    case CMP: {
-                        trace_file(tracefile, 0, regs[source]);
-                        break;
-                    }
-                    case CMPB: {
-                        trace_file(tracefile, 0, regs[source]);
-                        break;
-                    }
-                    default: {
-                        trace_file(tracefile, 0, regs[source]);
-                        break;
-                    }
-                }
+                trace_file(tracefile, 0, regs[source]);
                 return (int)program[regs[source]].data;
                 break;
             }
@@ -542,28 +540,7 @@ int double_operand::make_source(uint16_t *regs, i_cache *program)
             {   //register deferred
                 //memory read for BIT and CMP
                 //memory write for all others
-                switch(function_code) {
-                    case BIT: {
-                        trace_file(tracefile, 0, regs[source]);
-                        break;
-                    }
-                    case BITB: {
-                        trace_file(tracefile, 0, regs[source]);
-                        break;
-                    }
-                    case CMP: {
-                        trace_file(tracefile, 0, regs[source]);
-                        break;
-                    }
-                    case CMPB: {
-                        trace_file(tracefile, 0, regs[source]);
-                        break;
-                    }
-                    default: {
-                        trace_file(tracefile, 0, regs[source]);
-                        break;
-                    }
-                }
+                trace_file(tracefile, 0, regs[source]);
                 return (int)program[regs[source]].data;
                 break;
             }
@@ -572,33 +549,8 @@ int double_operand::make_source(uint16_t *regs, i_cache *program)
         case 3: {   //register deferred
             //memory read for BIT and CMP
             //memory write for all others
-            switch (function_code) {
-                case BIT: {
-                    trace_file(tracefile, 0, regs[source]);
-                    trace_file(tracefile, 0, program[regs[source]].data);
-                    break;
-                }
-                case BITB: {
-                    trace_file(tracefile, 0, regs[source]);
-                    trace_file(tracefile, 0, program[regs[source]].data);
-                    break;
-                }
-                case CMP: {
-                    trace_file(tracefile, 0, regs[source]);
-                    trace_file(tracefile, 0, program[regs[source]].data);
-                    break;
-                }
-                case CMPB: {
-                    trace_file(tracefile, 0, regs[source]);
-                    trace_file(tracefile, 0, program[regs[source]].data);
-                    break;
-                }
-                default: {
-                    trace_file(tracefile, 0, regs[source]);
-                    trace_file(tracefile, 0, program[regs[source]].data);
-                    break;
-                }
-            }
+            trace_file(tracefile, 0, regs[source]);
+            trace_file(tracefile, 0, program[regs[source]].data);
             return (int) program[program[regs[source]].data].data;
             break;
         }
@@ -607,61 +559,15 @@ int double_operand::make_source(uint16_t *regs, i_cache *program)
         case 4: {   //register deferred
                     //memory read for BIT and CMP
                     //memory write for all others
-                switch (function_code) {
-                    case BIT: {
-                        trace_file(tracefile, 0, regs[source]);
-                        break;
-                    }
-                    case BITB: {
-                        trace_file(tracefile, 0, regs[source]);
-                        break;
-                    }
-                    case CMP: {
-                        trace_file(tracefile, 0, regs[source]);
-                        break;
-                    }
-                    case CMPB: {
-                        trace_file(tracefile, 0, regs[source]);
-                        break;
-                    }
-                    default: {
-                        trace_file(tracefile, 0, regs[source]);
-                        break;
-                    }
-                }
+            trace_file(tracefile, 0, regs[source]);
             return (int) program[regs[source]].data;
             break;
         }
         case 5: {   //register deferred
                     //memory read for BIT and CMP
                     //memory write for all others
-            switch (function_code) {
-                case BIT: {
-                    trace_file(tracefile, 0, regs[source]);
-                    trace_file(tracefile, 0, program[regs[source]].data);
-                    break;
-                }
-                case BITB: {
-                    trace_file(tracefile, 0, regs[source]);
-                    trace_file(tracefile, 0, program[regs[source]].data);
-                    break;
-                }
-                case CMP: {
-                    trace_file(tracefile, 0, regs[source]);
-                    trace_file(tracefile, 0, program[regs[source]].data);
-                    break;
-                }
-                case CMPB: {
-                    trace_file(tracefile, 0, regs[source]);
-                    trace_file(tracefile, 0, program[regs[source]].data);
-                    break;
-                }
-                default: {
-                    trace_file(tracefile, 0, regs[source]);
-                    trace_file(tracefile, 0, program[regs[source]].data);
-                    break;
-                }
-            }
+            trace_file(tracefile, 0, regs[source]);
+            trace_file(tracefile, 0, program[regs[source]].data);
             return (int) program[program[regs[source]].data].data;
             break;
         }
@@ -677,33 +583,9 @@ int double_operand::make_source(uint16_t *regs, i_cache *program)
                 return -1;
             }
 
-            switch (function_code) {
-                case BIT: {
-                    trace_file(tracefile, 0, regs[PC]);
-                    trace_file(tracefile, 0, (uint16_t) index);
-                    break;
-                }
-                case BITB: {
-                    trace_file(tracefile, 0, regs[PC]);
-                    trace_file(tracefile, 0, (uint16_t) index);
-                    break;
-                }
-                case CMP: {
-                    trace_file(tracefile, 0, regs[PC]);
-                    trace_file(tracefile, 0, (uint16_t) index);
-                    break;
-                }
-                case CMPB: {
-                    trace_file(tracefile, 0, regs[PC]);
-                    trace_file(tracefile, 0, (uint16_t) index);
-                    break;
-                }
-                default: {
-                    trace_file(tracefile, 0, regs[PC]);
-                    trace_file(tracefile, 0, (uint16_t) index);
-                    break;
-                }
-            }
+            trace_file(tracefile, 0, regs[PC]);
+            trace_file(tracefile, 0, (uint16_t) index);
+            regs[PC] += 2;
             return (int) program[index].data;
             break;
         }
@@ -719,38 +601,10 @@ int double_operand::make_source(uint16_t *regs, i_cache *program)
                 return -1;
             }
             index = program[index].data;
-            switch (function_code) {
-                case BIT: {
-                    trace_file(tracefile, 0, regs[PC]);
-                    trace_file(tracefile, 0, (uint16_t) index);
-                    trace_file(tracefile, 0, program[index].data);
-                    break;
-                }
-                case BITB: {
-                    trace_file(tracefile, 0, regs[PC]);
-                    trace_file(tracefile, 0, (uint16_t) index);
-                    trace_file(tracefile, 0, program[index].data);
-                    break;
-                }
-                case CMP: {
-                    trace_file(tracefile, 0, regs[PC]);
-                    trace_file(tracefile, 0, (uint16_t) index);
-                    trace_file(tracefile, 0, program[index].data);
-                    break;
-                }
-                case CMPB: {
-                    trace_file(tracefile, 0, regs[PC]);
-                    trace_file(tracefile, 0, (uint16_t) index);
-                    trace_file(tracefile, 0, program[index].data);
-                    break;
-                }
-                default: {
-                    trace_file(tracefile, 0, regs[PC]);
-                    trace_file(tracefile, 0, (uint16_t) index);
-                    trace_file(tracefile, 0, program[index].data);
-                    break;
-                }
-            }
+            trace_file(tracefile, 0, regs[PC]);
+            trace_file(tracefile, 0, (uint16_t) index);
+            trace_file(tracefile, 0, program[index].data);
+            regs[PC] += 2;
 
             return (int) program[index].data;
             break;
@@ -770,8 +624,6 @@ int double_operand::make_source(uint16_t *regs, i_cache *program)
 
 int double_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
 {
-    int source;
-    int destination;
     int result = -1;
     cout << "function_code: " << function_code << ": ";
 
@@ -844,5 +696,5 @@ int double_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                 break;
             }
     }
-    return 0;
+    return result;
 }

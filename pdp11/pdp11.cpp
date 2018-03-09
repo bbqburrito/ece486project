@@ -2134,7 +2134,7 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                     case 0: {           //register:
                                         //flip register bits
                         regs[destination] ^= 0xFFFF;     //flip bits
-                        states->set_condition(((regs[destination] & 16) << 3)  | (!(regs[destination]) << 2) | 1);
+                        states->set_condition(((regs[destination] >> 15) << 3)  | (!(regs[destination]) << 2) | 1);
                         for(i = 0; i < 8; ++i)
                         {
                             cout << regs[i] << ' ';
@@ -2152,7 +2152,7 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         }
                         program[regs[destination]].data ^= 0xFFFF;   //flip bits
                         program[regs[destination] + 1].data ^= 0xFFFF;   //flip bits
-                        states->set_condition(((program[regs[destination]].data & 16) << 3)  | (!(program[regs[destination]].data) << 2) | 1);
+                        states->set_condition(((program[regs[destination]].data >> 15) << 3)  | (!(program[regs[destination]].data) << 2) | 1);
                         trace_file(tracefile, 1, regs[destination]);   //write data write to trace file
                         outcome = 1;
                         for(i = 0; i < 8; ++i)
@@ -2174,7 +2174,7 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         program[regs[destination] + 1].data ^= 0xFFFF;
                         trace_file(tracefile, 1, regs[destination]);    //write data write to trace file
                         regs[destination] += 2;
-                        states->set_condition(((program[regs[destination]].data & 16) << 3)  | (!(program[regs[destination]].data) << 2) | 1);
+                        states->set_condition(((program[regs[destination]].data >> 15) << 3)  | (!(program[regs[destination]].data) << 2) | 1);
                         outcome = 1;
                         for(i = 0; i < 8; ++i)
                         {
@@ -2199,7 +2199,7 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         trace_file(tracefile, 0, regs[destination]);
                         trace_file(tracefile, 1, (uint16_t)deferred);
                         regs[destination] += 2;
-                        states->set_condition(((program[deferred].data & 16) << 3)  | (!(program[deferred].data) << 2) | 1);
+                        states->set_condition(((program[deferred].data >> 15) << 3)  | (!(program[deferred].data) << 2) | 1);
                         outcome = 1;
                         for(i = 0; i < 8; ++i)
                         {
@@ -2222,7 +2222,7 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         }
                         program[regs[destination]].data ^= 0xFFFF;
                         program[regs[destination] + 1].data ^= 0xFFFF;
-                        states->set_condition(((program[regs[destination]].data & 16) << 3)  | (!(program[regs[destination]].data) << 2) | 1);
+                        states->set_condition(((program[regs[destination]].data >> 15) << 3)  | (!(program[regs[destination]].data) << 2) | 1);
                         trace_file(tracefile, 1, regs[destination]);
                         for(i = 0; i < 8; ++i)
                         {
@@ -2248,7 +2248,7 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         program[deferred + 1].data ^= 0xFFFF;
                         trace_file(tracefile, 0, regs[destination]);
                         trace_file(tracefile, 1, (uint16_t)deferred);
-                        states->set_condition(((program[deferred].data & 16) << 3)  | (!(program[deferred].data) << 2) | 1);
+                        states->set_condition(((program[deferred].data >> 15) << 3)  | (!(program[deferred].data) << 2) | 1);
                         outcome = 1;
                         for(i = 0; i < 8; ++i)
                         {
@@ -2279,7 +2279,7 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                             cout << regs[i] << ' ';
                         }
                         cout << endl;
-                        states->set_condition(((program[index + 1].data & 16) << 3)  | (!(program[index].data) << 2) | 1);
+                        states->set_condition(((program[index + 1].data >> 15) << 3)  | (!(program[index].data) << 2) | 1);
                         outcome = 1;
                         break;
                     }
@@ -2300,7 +2300,7 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         program[program[index].data + 1].data ^= 0xFFFF;
                     
                         regs[PC] += 2;
-                        states->set_condition(((program[program[index + 1].data].data & 16) << 3)  | (!(program[program[index].data].data) << 2) | 1);
+                        states->set_condition(((program[program[index].data].data >> 15) << 3)  | (!(program[program[index].data].data) << 2) | 1);
                         trace_file(tracefile, 0, regs[PC]);
                         trace_file(tracefile, 0, (uint16_t)index);
                         trace_file(tracefile, 1, program[index].data);
@@ -2367,7 +2367,7 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         {
                             condition |= V_OVERFLOW;
                         } else condition &= ~V_OVERFLOW;
-                        program[regs[destination] + 1].data += 1;
+                        program[regs[destination] + 1].data = program[regs[destination]].data;
                         if (!(program[regs[destination]].data))           //check for zero
                         {
                             condition |= ZERO;
@@ -2626,7 +2626,7 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                 cout << "DEC" << endl;
                 switch (destination_mode) {
                     case 0: {           //register:
-                        //add 1 to signed value
+                        //subtract 1 from signed value
                         condition = states->get_condition() & 1;
                         if ((regs[destination]) == 0100000)        //check for overflow
                         {
@@ -2681,7 +2681,7 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         break;
                     }
                     case 2: {           //autoincrement:
-                        //increment at memory location pointed to by
+                        //decrement at memory location pointed to by
                         //register, then increment register
                         if(regs[destination] % 2)
                         {
@@ -2753,7 +2753,7 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                     case 4:         //autodecrement:
                         //decrement register, then
                         //set memory location pointed to by
-                        //register to 0
+                        //register
                     {
                         regs[destination] -= 2;
                         if(regs[destination] % 2)
@@ -3437,7 +3437,7 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         break;
                     }
                     case 6: {       //index:
-                        //set memory pointed to by register plus
+                        //get memory pointed to by register plus
                         //index, which is located just after instruction
                         if (destination == PC)
                             index = regs[PC] + 2 + program[regs[PC]].data;
@@ -3470,9 +3470,9 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         break;
                     }
                     case 7: {       //index deferred:
-                        //set memory pointed to by memory pointed to
+                        //get memory pointed to by memory pointed to
                         //by register plus index, which is located just after
-                        //instruction, to 0
+                        //instruction
                         if (destination == PC)
                             index = regs[PC] + 2 + program[regs[PC]].data;
                         else index = regs[destination] + program[regs[PC]].data;
@@ -3593,7 +3593,7 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         break;
                     }
                     case 2: {           //autoincrement:
-                        //increment at memory location pointed to by
+                        //shift left at memory location pointed to by
                         //register, then increment register
 
                         if(regs[destination] % 2)
@@ -3677,12 +3677,13 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                     case 4:         //autodecrement:
                         //decrement register, then
                         //set memory location pointed to by
-                        //register to 0
+                        //register
                     {
                         regs[destination] -= 2;
                         if(regs[destination] % 2)
                         {
                             cout << "unaligned reference\n";
+                            regs[destination] += 2;
                             break;
                         }
 
@@ -3708,7 +3709,6 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
 
 
                         trace_file(tracefile, 1, regs[destination]);   //write data write to trace file
-                        regs[destination] += 2;
                         outcome = 1;
                         for (i = 0; i < 8; ++i) {
                             cout << regs[i] << ' ';
@@ -3721,13 +3721,13 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         //decrement register, then
                         //set memory location pointed to by
                         //memory location pointed to by register
-                        //to 0
                         regs[destination] -= 2;
 
                         deferred = program[regs[destination]].data;
                         if((deferred % 2) || (regs[destination] % 2))
                         {
                             cout << "unaligned reference\n";
+                            regs[destination] += 2;
                             break;
                         }
                         condition = program[deferred].data & CARRY;    //move bit 0 to C condition code
@@ -4019,12 +4019,13 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                     case 4:         //autodecrement:
                         //decrement register, then
                         //set memory location pointed to by
-                        //register to 0
+                        //register
                     {
                         regs[destination] -= 2;
                         if(regs[destination] % 2)
                         {
                             cout << "unaligned reference\n";
+                            regs[destination] += 2;
                             break;
                         }
 
@@ -4062,13 +4063,14 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         //decrement register, then
                         //set memory location pointed to by
                         //memory location pointed to by register
-                        //to 0
+
                         regs[destination] -= 2;
 
                         deferred = program[regs[destination]].data;
                         if((deferred % 2) || (regs[destination] % 2))
                         {
                             cout << "unaligned reference\n";
+                            regs[destination] += 2;
                             break;
                         }
                         condition = (program[deferred].data >> 15) & CARRY;    //move bit 0 to C condition code
@@ -4145,7 +4147,7 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                     case 7: {       //index deferred:
                         //set memory pointed to by memory pointed to
                         //by register plus index, which is located just after
-                        //instruction, to 0
+                        //instruction
                         if (destination == PC)
                             index = regs[PC] + 2 + program[regs[PC]].data;
                         else index = regs[destination] + program[regs[PC]].data;
@@ -4209,10 +4211,10 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
  
                 switch (destination_mode) {
                     case 0: {           //register:
-                        // arithmetic shift left 16 bit
+                        // rotate right 1 bit
                         condition = regs[destination] & CARRY;    //move bit 0 to C condition code
                         regs[destination] = regs[destination] >> 1; //shift right
-                        regs[destination] |= ((states->get_condition() & CARRY) << 15);     //move carry bit to bit 15
+                        regs[destination] |= ((condition & CARRY) << 15);     //move carry bit to bit 15
                         
                         if (!(regs[destination]))           //check for zero
                         {
@@ -4239,7 +4241,7 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                     case 1: {           //register deferred:
                         //look at memory location
                         //pointed to by register:
-                        // arithmetic shift left 16 bit
+                        //rotate right 1 bit
                         if(regs[destination] % 2)
                         {
                             cout << "unaligned reference\n";
@@ -4248,7 +4250,7 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
 
                         condition = program[regs[destination]].data & CARRY;    //move bit 0 to C condition code
                         program[regs[destination]].data = program[regs[destination]].data >> 1; //shift right
-                        program[regs[destination]].data |= ((states->get_condition() & CARRY) << 15);     //move carry bit to bit 15
+                        program[regs[destination]].data |= ((condition & CARRY) << 15);     //move carry bit to bit 15
                         program[regs[destination] + 1].data = program[regs[destination]].data;
                         
                         if (!(program[regs[destination]].data))           //check for zero
@@ -4276,8 +4278,8 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         break;
                     }
                     case 2: {           //autoincrement:
-                        //increment at memory location pointed to by
-                        //register, then increment register
+                        //set memory location pointed to by
+                        //register
 
                         if(regs[destination] % 2)
                         {
@@ -4287,7 +4289,7 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
 
                         condition = program[regs[destination]].data & CARRY;    //move bit 0 to C condition code
                         program[regs[destination]].data = program[regs[destination]].data >> 1; //shift right
-                        program[regs[deferred]].data |= ((states->get_condition() & CARRY) << 15);     //move carry bit to bit 15
+                        program[regs[deferred]].data |= ((condition & CARRY) << 15);     //move carry bit to bit 15
                         program[regs[destination] + 1].data = program[regs[destination]].data;
                         
                         if (!(program[regs[destination]].data))           //check for zero
@@ -4329,7 +4331,7 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         }
                         condition = program[deferred].data & CARRY;    //move bit 0 to C condition code
                         program[deferred].data = program[deferred].data >> 1; //shift right
-                        program[regs[deferred]].data |= ((states->get_condition() & CARRY) << 15);     //move carry bit to bit 15
+                        program[regs[deferred]].data |= ((condition & CARRY) << 15);     //move carry bit to bit 15
                         program[deferred + 1].data = program[deferred].data;
                         if (!(program[deferred].data))           //check for zero
                         {
@@ -4360,18 +4362,19 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                     case 4:         //autodecrement:
                         //decrement register, then
                         //set memory location pointed to by
-                        //register to 0
+                        //register
                     {
                         regs[destination] -= 2;
                         if(regs[destination] % 2)
                         {
                             cout << "unaligned reference\n";
+                            regs[destination] += 2;
                             break;
                         }
 
                         condition = program[regs[destination]].data & CARRY;    //move bit 0 to C condition code
                         program[regs[destination]].data = program[regs[destination]].data >> 1; //shift right
-                        program[regs[destination]].data |= ((states->get_condition() & CARRY) << 15);     //move carry bit to bit 15
+                        program[regs[destination]].data |= ((condition & CARRY) << 15);     //move carry bit to bit 15
                         program[regs[destination] + 1].data = program[regs[destination]].data;
                         
                         if (!(program[regs[destination]].data))           //check for zero
@@ -4404,18 +4407,19 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         //decrement register, then
                         //set memory location pointed to by
                         //memory location pointed to by register
-                        //to 0
+                
                         regs[destination] -= 2;
 
                         deferred = program[regs[destination]].data;
                         if((deferred % 2) || (regs[destination] % 2))
                         {
                             cout << "unaligned reference\n";
+                            regs[destination] += 2;
                             break;
                         }
                         condition = program[deferred].data & CARRY;    //move bit 0 to C condition code
                         program[deferred].data = program[deferred].data >> 1; //shift right
-                        program[deferred].data |= ((states->get_condition() & CARRY) << 15);     //move carry bit to bit 15
+                        program[deferred].data |= ((condition & CARRY) << 15);     //move carry bit to bit 15
                         program[deferred + 1].data = program[deferred].data;
                         if (!(program[deferred].data))           //check for zero
                         {
@@ -4457,7 +4461,7 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
 
                         condition = program[index].data & CARRY;    //move bit 0 to C condition code
                         program[index].data = program[index].data >> 1; //shift right
-                        program[index].data |= ((states->get_condition() & CARRY) << 15);     //move carry bit to bit 15
+                        program[index].data |= ((condition & CARRY) << 15);     //move carry bit to bit 15
                         program[index + 1].data = program[index].data;
                         if (!(program[index].data))           //check for zero
                         {
@@ -4489,7 +4493,7 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                     case 7: {       //index deferred:
                         //set memory pointed to by memory pointed to
                         //by register plus index, which is located just after
-                        //instruction, to 0
+                        //instruction
                         if (destination == PC)
                             index = regs[PC] + 2 + program[regs[PC]].data;
                         else index = regs[destination] + program[regs[PC]].data;
@@ -4502,7 +4506,7 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
 
                         condition = program[index].data & CARRY;    //move bit 0 to C condition code
                         program[program[index].data].data = program[program[index].data].data >> 1; //shift right
-                        program[program[index].data].data |= (states->get_condition() & CARRY) << 15;     //move carry bit to bit 15
+                        program[program[index].data].data |= (condition & CARRY) << 15;     //move carry bit to bit 15
                         program[program[index].data + 1].data = program[program[index].data].data;
                         if (!(program[program[index].data].data))           //check for zero
                         {
@@ -4554,10 +4558,10 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
  
                 switch (destination_mode) {
                     case 0: {           //register:
-                        // arithmetic shift left 16 bit
+                        // rotate left 1 bit
                         condition = (regs[destination] >> 15) & CARRY;    //move bit 15 to C condition code
                         regs[destination] = regs[destination] << 1; //shift left
-                        regs[destination] |= (states->get_condition() & CARRY); //move carry bit to bit 0
+                        regs[destination] |= (condition & CARRY); //move carry bit to bit 0
                         
                         if (!(regs[destination]))           //check for zero
                         {
@@ -4593,7 +4597,7 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
 
                         condition = (program[regs[destination]].data >> 15) & CARRY;    //move bit 15 to C condition code
                         program[regs[destination]].data = program[regs[destination]].data << 1; //shift right
-                        program[regs[destination]].data |= (states->get_condition() & CARRY);   //move carry bit to bit 0
+                        program[regs[destination]].data |= (condition & CARRY);   //move carry bit to bit 0
                         program[regs[destination] + 1].data = program[regs[destination]].data;  //store high byte
                         
                         if (!(program[regs[destination]].data))           //check for zero
@@ -4632,7 +4636,7 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
 
                         condition = (program[regs[destination]].data >> 15) & CARRY;    //move bit 15 to C condition code
                         program[regs[destination]].data = program[regs[destination]].data >> 1; //shift right
-                        program[regs[destination]].data |= (states->get_condition() & CARRY);   //move carry bit to bit 0
+                        program[regs[destination]].data |= (condition & CARRY);   //move carry bit to bit 0
                         program[regs[destination] + 1].data = program[regs[destination]].data;  //store high byte
                         
                         if (!(program[regs[destination]].data))           //check for zero
@@ -4663,7 +4667,7 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                     case 3:         //autoincrement deferred:
                         //set memory location pointed to by
                         //memory at location pointed to by
-                        //register, then increment register
+                        //register, 
                     {
 
                         deferred = program[regs[destination]].data;
@@ -4674,7 +4678,7 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         }
                         condition = (program[deferred].data >> 15) & CARRY;    //move bit 15 to C condition code
                         program[deferred].data = program[deferred].data << 1; //shift left
-                        program[deferred].data |= (states->get_condition() & CARRY);   //move carry bit to bit 0
+                        program[deferred].data |= (condition & CARRY);   //move carry bit to bit 0
                         program[deferred + 1].data = program[deferred].data;
                         if (!(program[deferred].data))           //check for zero
                         {
@@ -4705,18 +4709,19 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                     case 4:         //autodecrement:
                         //decrement register, then
                         //set memory location pointed to by
-                        //register to 0
+                        //register
                     {
                         regs[destination] -= 2;
                         if(regs[destination] % 2)
                         {
                             cout << "unaligned reference\n";
+                            regs[destination] += 2;
                             break;
                         }
 
                         condition = (program[regs[destination]].data >> 15) & CARRY;    //move bit 15 to C condition code
                         program[regs[destination]].data = program[regs[destination]].data << 1; //shift left
-                        program[regs[destination]].data |= (states->get_condition() & CARRY);   //move carry bit to bit 0
+                        program[regs[destination]].data |= (condition & CARRY);   //move carry bit to bit 0
                         program[regs[destination] + 1].data = program[regs[destination]].data;
                         
                         if (!(program[regs[destination]].data))           //check for zero
@@ -4749,18 +4754,19 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         //decrement register, then
                         //set memory location pointed to by
                         //memory location pointed to by register
-                        //to 0
+                    
                         regs[destination] -= 2;
 
                         deferred = program[regs[destination]].data;
                         if((deferred % 2) || (regs[destination] % 2))
                         {
                             cout << "unaligned reference\n";
+                            regs[destination] += 2;
                             break;
                         }
                         condition = (program[deferred].data >> 15) & CARRY;    //move bit 0 to C condition code
                         program[deferred].data = program[deferred].data << 1; //shift left
-                        program[deferred].data |= (states->get_condition() & CARRY);   //move carry bit to bit 0
+                        program[deferred].data |= (condition & CARRY);   //move carry bit to bit 0
                         program[deferred + 1].data = program[deferred].data;
                         if (!(program[deferred].data))           //check for zero
                         {
@@ -4802,7 +4808,7 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
 
                         condition = (program[index].data >> 15) & CARRY;    //move bit 0 to C condition code
                         program[index].data = program[index].data << 1; //shift left
-                        program[index].data |= (states->get_condition() & CARRY);   //move carry bit to bit 0
+                        program[index].data |= (condition & CARRY);   //move carry bit to bit 0
                         program[index + 1].data = program[index].data;
                         if (!(program[index].data))           //check for zero
                         {
@@ -4834,7 +4840,7 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                     case 7: {       //index deferred:
                         //set memory pointed to by memory pointed to
                         //by register plus index, which is located just after
-                        //instruction, to 0
+                        //instruction
                         if (destination == PC)
                             index = regs[PC] + 2 + program[regs[PC]].data;
                         else index = regs[destination] + program[regs[PC]].data;
@@ -4847,7 +4853,7 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
 
                         condition = (program[index].data >> 15) & CARRY;    //move bit 0 to C condition code
                         program[program[index].data].data = program[program[index].data].data << 1; //shift left
-                        program[program[index].data].data |= (states->get_condition() & CARRY);   //move carry bit to bit 0
+                        program[program[index].data].data |= (condition & CARRY);   //move carry bit to bit 0
                         program[program[index].data + 1].data = program[program[index].data].data;
                         if (!(program[program[index].data].data))           //check for zero
                         {
@@ -4902,12 +4908,12 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                     case 0: {           //register:
                         // swap bytes
                         condition = (regs[destination] << 8) & 0xFF00;    //use condition as swap variable to store low order byte
-                        regs[destination] = (regs[destination] >> 8) & condition; //swap bytes 
+                        regs[destination] = ((regs[destination] >> 8) & 0xFF) | condition; //swap bytes 
                         regs[destination + 1] = regs[destination];
 
-                        condition = 0;
+                        condition = 0;                          //reset condition variable
                         
-                        if (!(regs[destination] & 0xFF))           //check for zero
+                        if (!(regs[destination]))           //check for zero
                         {
                             condition |= ZERO;
                         } else condition &= ~ZERO;
@@ -4936,12 +4942,12 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         }
 
                         condition = (program[regs[destination]].data << 8) & 0xFF00;    //use condition as swap variable to store low order byte
-                        program[regs[destination]].data = (program[regs[destination]].data >> 8) & condition; //swap bytes 
+                        program[regs[destination]].data = ((program[regs[destination]].data >> 8) & 0xFF) | condition; //swap bytes 
                         program[regs[destination + 1]].data = program[regs[destination]].data;
 
                         condition = 0;
                         
-                        if (!(program[regs[destination]].data & 0xFF))           //check if low byte zero
+                        if (!(program[regs[destination]].data))           //check if low byte zero
                         {
                             condition |= ZERO;
                         } else condition &= ~ZERO;
@@ -4972,12 +4978,12 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         }
 
                         condition = (program[regs[destination]].data << 8) & 0xFF00;    //use condition as swap variable to store low order byte
-                        program[regs[destination]].data = (program[regs[destination]].data >> 8) & condition; //swap bytes 
+                        program[regs[destination]].data = ((program[regs[destination]].data >> 8) & 0xFF) | condition; //swap bytes 
                         program[regs[destination + 1]].data = program[regs[destination]].data;
 
                         condition = 0;
                         
-                        if (!(program[regs[destination]].data & 0xFF))           //check if low byte zero
+                        if (!(program[regs[destination]].data))           //check if low byte zero
                         {
                             condition |= ZERO;
                         } else condition &= ~ZERO;
@@ -5011,12 +5017,12 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         }
 
                         condition = (program[deferred].data << 8) & 0xFF00;    //use condition as swap variable to store low order byte
-                        program[deferred].data = (program[deferred].data >> 8) & condition; //swap bytes 
+                        program[deferred].data = ((program[deferred].data >> 8) & 0xFF) | condition; //swap bytes 
                         program[deferred + 1].data = program[deferred].data;
 
                         condition = 0;
                         
-                        if (!(program[deferred].data & 0xFF))           //check if low byte zero
+                        if (!(program[deferred].data))           //check if low byte zero
                         {
                             condition |= ZERO;
                         } else condition &= ~ZERO;
@@ -5046,16 +5052,17 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         if(regs[destination] % 2)
                         {
                             cout << "unaligned reference\n";
+                            regs[destination] += 2;
                             break;
                         }
 
                         condition = (program[regs[destination]].data << 8) & 0xFF00;    //use condition as swap variable to store low order byte
-                        program[regs[destination]].data = (program[regs[destination]].data >> 8) & condition; //swap bytes 
+                        program[regs[destination]].data = ((program[regs[destination]].data >> 8) & 0xFF) | condition; //swap bytes 
                         program[regs[destination + 1]].data = program[regs[destination]].data;
 
                         condition = 0;
                         
-                        if (!(program[regs[destination]].data & 0xFF))           //check if low byte zero
+                        if (!(program[regs[destination]].data))           //check if low byte zero
                         {
                             condition |= ZERO;
                         } else condition &= ~ZERO;
@@ -5087,16 +5094,17 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         if((deferred % 2) || (regs[destination] % 2))
                         {
                             cout << "unaligned reference\n";
+                            regs[destination] += 2;
                             break;
                         }
 
                         condition = (program[deferred].data << 8) & 0xFF00;    //use condition as swap variable to store low order byte
-                        program[deferred].data = (program[deferred].data >> 8) & condition; //swap bytes 
+                        program[deferred].data = ((program[deferred].data >> 8) & 0xFF) | condition; //swap bytes 
                         program[deferred + 1].data = program[deferred].data;
 
                         condition = 0;
                         
-                        if (!(program[deferred].data & 0xFF))           //check if low byte zero
+                        if (!(program[deferred].data))           //check if low byte zero
                         {
                             condition |= ZERO;
                         } else condition &= ~ZERO;
@@ -5131,12 +5139,12 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         }
 
                         condition = (program[index].data << 8) & 0xFF00;    //use condition as swap variable to store low order byte
-                        program[index].data = (program[index].data >> 8) & condition; //swap bytes 
+                        program[index].data = ((program[index].data >> 8) & 0xFF) | condition; //swap bytes 
                         program[index + 1].data = program[index].data;
 
                         condition = 0;
                         
-                        if (!(program[index].data & 0xFF))           //check if low byte zero
+                        if (!(program[index].data))           //check if low byte zero
                         {
                             condition |= ZERO;
                         } else condition &= ~ZERO;
@@ -5174,12 +5182,12 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         }
 
                         condition = (program[program[index].data].data << 8) & 0xFF00;    //use condition as swap variable to store low order byte
-                        program[program[index].data].data = (program[program[index].data].data >> 8) & condition; //swap bytes 
+                        program[program[index].data].data = ((program[program[index].data].data >> 8) & 0xFF) | condition; //swap bytes 
                         program[program[index].data + 1].data = program[program[index].data].data;
 
                         condition = 0;
                         
-                        if (!(program[program[index].data].data & 0xFF))           //check if low byte zero
+                        if (!(program[program[index].data].data))           //check if low byte zero
                         {
                             condition |= ZERO;
                         } else condition &= ~ZERO;
@@ -5221,22 +5229,22 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         // add carry
 
                         condition = states->get_condition() & CARRY;    //get carry bit
-                        if((regs[destination] == 0x7FFF) && condition)
+ 
+                        if((regs[destination] == 0xFFFF) && (condition))
                         {
-                            condition |= V_OVERFLOW;
-                        } else {
-                            condition &= ~V_OVERFLOW;
-                        }
-
-                        if((regs[destination] == 0xFFFF) && (condition & CARRY))
-                        {
-                            regs[destination] += (condition & CARRY);
                             condition |= CARRY;
                         } else {
-                            regs[destination] += (condition & CARRY);
                             condition &= ~CARRY;
                         }
 
+                       if((regs[destination] == 0x7FFF) && condition)
+                        {
+                            regs[destination] += (condition);
+                            condition |= V_OVERFLOW;
+                        } else {
+                            regs[destination] += (condition);
+                            condition &= ~V_OVERFLOW;
+                        }
                         regs[destination + 1] = regs[destination];
 
                         if (!(regs[destination]))           //check for zero
@@ -5269,22 +5277,22 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         }
 
                         condition = states->get_condition() & CARRY;    //get carry bit
-                        if((program[regs[destination]].data == 0x7FFF) && condition)
+ 
+                        if((program[regs[destination]].data == 0xFFFF) && (condition))
                         {
-                            condition |= V_OVERFLOW;
-                        } else {
-                            condition &= ~V_OVERFLOW;
-                        }
-
-                        if((program[regs[destination]].data == 0xFFFF) && (condition & CARRY))
-                        {
-                            program[regs[destination]].data += (condition & CARRY);
                             condition |= CARRY;
                         } else {
-                            program[regs[destination]].data += (condition & CARRY);
                             condition &= ~CARRY;
                         }
 
+                       if((program[regs[destination]].data == 0x7FFF) && condition)
+                        {
+                            program[regs[destination]].data += (condition);
+                            condition |= V_OVERFLOW;
+                        } else {
+                            program[regs[destination]].data += (condition);
+                            condition &= ~V_OVERFLOW;
+                        }
                         program[regs[destination] + 1].data = program[regs[destination]].data;
 
                         if (!program[regs[destination]].data)           //check for zero
@@ -5318,22 +5326,22 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         }
 
                         condition = states->get_condition() & CARRY;    //get carry bit
-                        if((program[regs[destination]].data == 0x7FFF) && condition)
+ 
+                        if((program[regs[destination]].data == 0xFFFF) && (condition))
                         {
-                            condition |= V_OVERFLOW;
-                        } else {
-                            condition &= ~V_OVERFLOW;
-                        }
-
-                        if((program[regs[destination]].data == 0xFFFF) && (condition & CARRY))
-                        {
-                            program[regs[destination]].data += (condition & CARRY);
                             condition |= CARRY;
                         } else {
-                            program[regs[destination]].data += (condition & CARRY);
                             condition &= ~CARRY;
                         }
 
+                       if((program[regs[destination]].data == 0x7FFF) && condition)
+                        {
+                            program[regs[destination]].data += condition;
+                            condition |= V_OVERFLOW;
+                        } else {
+                            program[regs[destination]].data += condition;
+                            condition &= ~V_OVERFLOW;
+                        }
                         program[regs[destination] + 1].data = program[regs[destination]].data;
 
                         if (!program[regs[destination]].data)           //check for zero
@@ -5371,22 +5379,22 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         }
 
                         condition = states->get_condition() & CARRY;    //get carry bit
-                        if((program[deferred].data == 0x7FFF) && condition)
+ 
+                        if((program[deferred].data == 0xFFFF) && (condition))
                         {
-                            condition |= V_OVERFLOW;
-                        } else {
-                            condition &= ~V_OVERFLOW;
-                        }
-
-                        if((program[deferred].data == 0xFFFF) && (condition & CARRY))
-                        {
-                            program[deferred].data += (condition & CARRY);
                             condition |= CARRY;
                         } else {
-                            program[deferred].data += (condition & CARRY);
                             condition &= ~CARRY;
                         }
 
+                       if((program[deferred].data == 0x7FFF) && condition)
+                        {
+                            program[deferred].data += (condition);
+                            condition |= V_OVERFLOW;
+                        } else {
+                            program[deferred].data += (condition);
+                            condition &= ~V_OVERFLOW;
+                        }
                         program[deferred + 1].data = program[deferred].data;
 
                         if (!program[deferred].data)           //check for zero
@@ -5420,26 +5428,27 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         if(regs[destination] % 2)
                         {
                             cout << "unaligned reference\n";
+                            regs[destination] += 2;
                             break;
                         }
 
                         condition = states->get_condition() & CARRY;    //get carry bit
-                        if((program[regs[destination]].data == 0x7FFF) && condition)
+ 
+                        if((program[regs[destination]].data == 0xFFFF) && (condition))
                         {
-                            condition |= V_OVERFLOW;
-                        } else {
-                            condition &= ~V_OVERFLOW;
-                        }
-
-                        if((program[regs[destination]].data == 0xFFFF) && (condition & CARRY))
-                        {
-                            program[regs[destination]].data += (condition & CARRY);
                             condition |= CARRY;
                         } else {
-                            program[regs[destination]].data += (condition & CARRY);
                             condition &= ~CARRY;
                         }
 
+                       if((program[regs[destination]].data == 0x7FFF) && condition)
+                        {
+                            program[regs[destination]].data += (condition);
+                            condition |= V_OVERFLOW;
+                        } else {
+                            program[regs[destination]].data += (condition);
+                            condition &= ~V_OVERFLOW;
+                        }
                         program[regs[destination] + 1].data = program[regs[destination]].data;
 
                         if (!program[regs[destination]].data)           //check for zero
@@ -5475,26 +5484,27 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         if((regs[destination] % 2) || (deferred % 2))
                         {
                             cout << "unaligned reference\n";
+                            regs[destination] += 2;
                             break;
                         }
 
                         condition = states->get_condition() & CARRY;    //get carry bit
-                        if((program[deferred].data == 0x7FFF) && condition)
+ 
+                        if((program[deferred].data == 0xFFFF) && (condition))
                         {
-                            condition |= V_OVERFLOW;
-                        } else {
-                            condition &= ~V_OVERFLOW;
-                        }
-
-                        if((program[deferred].data == 0xFFFF) && (condition & CARRY))
-                        {
-                            program[deferred].data += (condition & CARRY);
                             condition |= CARRY;
                         } else {
-                            program[deferred].data += (condition & CARRY);
                             condition &= ~CARRY;
                         }
 
+                       if((program[deferred].data == 0x7FFF) && condition)
+                        {
+                            program[deferred].data += (condition);
+                            condition |= V_OVERFLOW;
+                        } else {
+                            program[deferred].data += (condition);
+                            condition &= ~V_OVERFLOW;
+                        }
                         program[deferred + 1].data = program[deferred].data;
 
                         if (!program[deferred].data)           //check for zero
@@ -5532,24 +5542,24 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                             regs[PC] += 2;
                             break;
                         }
-
                         condition = states->get_condition() & CARRY;    //get carry bit
-                        if((program[index].data == 0x7FFF) && condition)
-                        {
-                            condition |= V_OVERFLOW;
-                        } else {
-                            condition &= ~V_OVERFLOW;
-                        }
 
-                        if((program[index].data == 0xFFFF) && (condition & CARRY))
+                        if((program[index].data == 0xFFFF) && (condition))
                         {
-                            program[index].data += (condition & CARRY);
                             condition |= CARRY;
                         } else {
-                            program[index].data += (condition & CARRY);
                             condition &= ~CARRY;
                         }
 
+
+                        if((program[index].data == 0x7FFF) && condition)
+                        {
+                            program[index].data += (condition);
+                            condition |= V_OVERFLOW;
+                        } else {
+                            program[index].data += (condition);
+                            condition &= ~V_OVERFLOW;
+                        }
                         program[index + 1].data = program[index].data;
 
                         if (!program[index].data)           //check for zero
@@ -5590,23 +5600,24 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         }
 
                         condition = states->get_condition() & CARRY;    //get carry bit
-                        if((program[program[index].data].data == 0x7FFF) && condition)
+                        if((program[program[index].data].data == 0xFFFF) && (condition))
                         {
-                            condition |= V_OVERFLOW;
-                        } else {
-                            condition &= ~V_OVERFLOW;
-                        }
-
-                        if((program[program[index].data].data == 0xFFFF) && (condition & CARRY))
-                        {
-                            program[program[index].data].data += (condition & CARRY);
                             condition |= CARRY;
                         } else {
-                            program[program[index].data].data += (condition & CARRY);
                             condition &= ~CARRY;
                         }
 
-                        program[program[index].data + 1].data = program[program[index].data].data;
+ 
+                        if((program[program[index].data].data == 0x7FFF) && condition)
+                        {
+                            program[program[index].data].data += (condition);
+                            condition |= V_OVERFLOW;
+                        } else {
+                            program[program[index].data].data += (condition);
+                            condition &= ~V_OVERFLOW;
+                        }
+
+                       program[program[index].data + 1].data = program[program[index].data].data;
 
                         if (!program[program[index].data].data)           //check for zero
                         {
@@ -5655,10 +5666,8 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         // subtract carry
 
                         condition = states->get_condition() & CARRY;    //get carry bit
-                        regs[destination] -= condition;
-                        regs[destination + 1] = regs[destination];
 
-                        if(!(regs[destination]) && (condition & CARRY))
+                        if(!(regs[destination]) && (condition))
                         {
                             condition |= CARRY;
                         } else {
@@ -5667,10 +5676,13 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
 
                         if((regs[destination] == 0x8000))
                         {
+                            regs[destination] -= condition;
                             condition |= V_OVERFLOW;
                         } else {
+                            regs[destination] -= condition;
                             condition &= ~V_OVERFLOW;
                         }
+                        regs[destination + 1] = regs[destination];
 
                         if (!(regs[destination]))           //check for zero
                         {
@@ -5702,8 +5714,6 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         }
 
                         condition = states->get_condition() & CARRY;    //get carry bit
-                        program[regs[destination]].data -= condition;
-                        program[regs[destination] + 1].data = program[regs[destination]].data;
                         if(!(program[regs[destination]].data) && (condition & CARRY))
                         {
                             condition |= CARRY;
@@ -5713,10 +5723,14 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
 
                         if((program[regs[destination]].data == 0x8000))
                         {
+                            program[regs[destination]].data -= condition;
                             condition |= V_OVERFLOW;
                         } else {
+                            program[regs[destination]].data -= condition;
                             condition &= ~V_OVERFLOW;
                         }
+
+                        program[regs[destination] + 1].data = program[regs[destination]].data;
 
 
                         if (!program[regs[destination]].data)           //check for zero
@@ -5750,8 +5764,6 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         }
 
                         condition = states->get_condition() & CARRY;    //get carry bit
-                        program[regs[destination]].data -= condition;
-                        program[regs[destination] + 1].data = program[regs[destination]].data;
                         if(!(program[regs[destination]].data) && (condition & CARRY))
                         {
                             condition |= CARRY;
@@ -5761,11 +5773,14 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
 
                         if((program[regs[destination]].data == 0x8000))
                         {
+                            program[regs[destination]].data -= condition;
                             condition |= V_OVERFLOW;
                         } else {
+                            program[regs[destination]].data -= condition;
                             condition &= ~V_OVERFLOW;
                         }
 
+                        program[regs[destination] + 1].data = program[regs[destination]].data;
 
                         if (!program[regs[destination]].data)           //check for zero
                         {
@@ -5803,8 +5818,6 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
 
                         condition = states->get_condition() & CARRY;    //get carry bit
                         
-                        program[deferred].data -= condition;
-                        program[deferred + 1].data = program[deferred].data;
                         if(!(program[deferred].data) && (condition & CARRY))
                         {
                             condition |= CARRY;
@@ -5814,11 +5827,14 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
 
                         if((program[deferred].data == 0x7FFF) && condition)
                         {
+                            program[deferred].data -= condition;
                             condition |= V_OVERFLOW;
                         } else {
+                            program[deferred].data -= condition;
                             condition &= ~V_OVERFLOW;
                         }
 
+                        program[deferred + 1].data = program[deferred].data;
 
                         if (!program[deferred].data)           //check for zero
                         {
@@ -5851,12 +5867,11 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         if(regs[destination] % 2)
                         {
                             cout << "unaligned reference\n";
+                            regs[destination] += 2;
                             break;
                         }
 
                         condition = states->get_condition() & CARRY;    //get carry bit
-                        program[regs[destination]].data -= condition;
-                        program[regs[destination] + 1].data = program[regs[destination]].data;
                         if(!(program[regs[destination]].data) && (condition & CARRY))
                         {
                             condition |= CARRY;
@@ -5866,11 +5881,14 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
 
                         if((program[regs[destination]].data == 0x8000))
                         {
+                            program[regs[destination]].data -= condition;
                             condition |= V_OVERFLOW;
                         } else {
+                            program[regs[destination]].data -= condition;
                             condition &= ~V_OVERFLOW;
                         }
 
+                        program[regs[destination] + 1].data = program[regs[destination]].data;
 
                         if (!program[regs[destination]].data)           //check for zero
                         {
@@ -5905,12 +5923,11 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         if((regs[destination] % 2) || (deferred % 2))
                         {
                             cout << "unaligned reference\n";
+                            regs[destination] += 2;
                             break;
                         }
 
                         condition = states->get_condition() & CARRY;    //get carry bit
-                        program[deferred].data -= condition;
-                        program[deferred + 1].data = program[deferred].data;
 
                         if(!(program[deferred].data) && (condition & CARRY))
                         {
@@ -5922,11 +5939,14 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
 
                         if((program[deferred].data == 0x8000))
                         {
+                            program[deferred].data -= condition;
                             condition |= V_OVERFLOW;
                         } else {
+                            program[deferred].data -= condition;
                             condition &= ~V_OVERFLOW;
                         }
 
+                        program[deferred + 1].data = program[deferred].data;
 
                         if (!program[deferred].data)           //check for zero
                         {
@@ -5965,8 +5985,6 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         }
 
                         condition = states->get_condition() & CARRY;    //get carry bit
-                        program[index].data -= condition;
-                        program[index + 1].data = program[index].data;
 
                         if(!(program[index].data) && (condition & CARRY))
                         {
@@ -5977,11 +5995,14 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
 
                         if(!(program[index].data))
                         {
+                            program[index].data -= condition;
                             condition |= V_OVERFLOW;
                         } else {
+                            program[index].data -= condition;
                             condition &= ~V_OVERFLOW;
                         }
 
+                        program[index + 1].data = program[index].data;
 
                         if (!program[index].data)           //check for zero
                         {
@@ -6021,8 +6042,6 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         }
 
                         condition = states->get_condition() & CARRY;    //get carry bit
-                        program[program[index].data].data -= condition;
-                        program[program[index].data + 1].data = program[program[index].data].data;
 
                         if(!(program[program[index].data].data) && (condition & CARRY))
                         {
@@ -6033,11 +6052,14 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
 
                         if((program[program[index].data].data == 0x8000))
                         {
+                            program[program[index].data].data -= condition;
                             condition |= V_OVERFLOW;
                         } else {
+                            program[program[index].data].data -= condition;
                             condition &= ~V_OVERFLOW;
                         }
 
+                        program[program[index].data + 1].data = program[program[index].data].data;
 
                         if (!program[program[index].data].data)           //check for zero
                         {
@@ -6218,6 +6240,7 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                                 if(regs[destination] % 2)
                                 {
                                     cout << "unaligned reference\n";
+                                    regs[destination] += 2;
                                     break;
                                 }
 
@@ -6255,6 +6278,7 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                                 if((regs[destination] % 2) || (deferred % 2))
                                 {
                                     cout << "unaligned reference\n";
+                                    regs[destination] += 2;
                                     break;
                                 }
 
