@@ -1159,6 +1159,8 @@ int trapIntMiscCond::instruction(uint16_t *regs, CPSR *states, i_cache *program)
         case HALT:
             {
                 cout << "HALT" << endl;
+                regs[PC] = 0xFFFD;      //set to 65533, so next instruction 
+                                        //fetch ends execution
                 break;
             }
         case WAIT:
