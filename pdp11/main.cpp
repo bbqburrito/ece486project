@@ -22,7 +22,6 @@ int main(int argc, char* argv[])
     uint16_t to_run;
     CPSR status_reg;
     int firstbit;
-    int make_instruction;
     int to_interpret;
     int filepos = 0;
     int prog_size;

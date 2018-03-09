@@ -1141,7 +1141,7 @@ void trapIntMiscCond::disp()
 
 int trapIntMiscCond::instruction(uint16_t *regs, CPSR *states, i_cache *program)
 {
-    //int outcome = -1;
+    char answer[25];
 
     cout << "function_code: " << function_code << ": ";
    switch(function_code)
@@ -1159,14 +1159,32 @@ int trapIntMiscCond::instruction(uint16_t *regs, CPSR *states, i_cache *program)
         case HALT:
             {
                 cout << "HALT" << endl;
-                regs[PC] = 0xFFFD;      //set to 65533, so next instruction 
-                                        //fetch ends execution
+
+                cin.sync();
+                cout << "End program?(Y/n) ";
+                cin.getline(answer, 25);
+                cin.sync();
+
+                if(toupper(answer[0]) != 'N')
+                    regs[PC] = 0xFFFF;  //set to 65535, so next fetch
+                                        //ends execution
+
                 break;
             }
         case WAIT:
             {
                 cout << "WAIT" << endl;
-                break;
+ 
+                cin.sync();
+                cout << "End program?(y/N) ";
+                cin.getline(answer, 25);
+                cin.sync();
+
+                if(toupper(answer[0]) != 'Y')
+                    regs[PC] = 0xFFFF;  //set to 65535, so next fetch
+                                        //ends execution
+
+               break;
             }
         case RESET:
             {
@@ -6116,7 +6134,7 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                                     condition |= ZERO;
                                     condition &= ~NEGATIVE;
                                 } else {
-                                    regs[destination] = -1;
+                                    regs[destination] = 0xFFFF;
                                     condition &= ~ZERO;
                                     condition |= NEGATIVE;
                                 }
@@ -6127,6 +6145,7 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                                     cout << regs[i] << ' ';
 
                                 cout << endl;
+                                outcome = regs[destination];
                                 break;
                             }
 
@@ -6146,7 +6165,7 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                                     condition |= ZERO;
                                     condition &= ~NEGATIVE;
                                 } else {
-                                    program[regs[destination]].data = -1;
+                                    program[regs[destination]].data = 0xFFFF;
                                     condition &= ~ZERO;
                                     condition |= NEGATIVE;
                                 }
@@ -6160,6 +6179,7 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                                     cout << regs[i] << ' ';
 
                                 cout << endl;
+                                outcome = program[regs[destination]].data;
                                 break;
                             }
 
@@ -6179,7 +6199,7 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                                     condition |= ZERO;
                                     condition &= ~NEGATIVE;
                                 } else {
-                                    program[regs[destination]].data = -1;
+                                    program[regs[destination]].data = 0xFFFF;
                                     condition &= ~ZERO;
                                     condition |= NEGATIVE;
                                 }
@@ -6194,6 +6214,7 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                                     cout << regs[i] << ' ';
 
                                 cout << endl;
+                                outcome = program[regs[destination]].data;
                                 break;
                             }
 
@@ -6216,7 +6237,7 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                                     condition |= ZERO;
                                     condition &= ~NEGATIVE;
                                 } else {
-                                    program[deferred].data = -1;
+                                    program[deferred].data = 0xFFFF;
                                     condition &= ~ZERO;
                                     condition |= NEGATIVE;
                                 }
@@ -6232,6 +6253,7 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                                     cout << regs[i] << ' ';
 
                                 cout << endl;
+                                outcome = program[deferred].data;
                                 break;
                             }
 
@@ -6254,7 +6276,7 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                                     condition |= ZERO;
                                     condition &= ~NEGATIVE;
                                 } else {
-                                    program[regs[destination]].data = -1;
+                                    program[regs[destination]].data = 0xFFFF;
                                     condition &= ~ZERO;
                                     condition |= NEGATIVE;
                                 }
@@ -6268,6 +6290,7 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                                     cout << regs[i] << ' ';
 
                                 cout << endl;
+                                outcome = program[regs[destination]].data;
                                 break;
                             }
 
@@ -6292,7 +6315,7 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                                     condition |= ZERO;
                                     condition &= ~NEGATIVE;
                                 } else {
-                                    program[deferred].data = -1;
+                                    program[deferred].data = 0xFFFF;
                                     condition &= ~ZERO;
                                     condition |= NEGATIVE;
                                 }
@@ -6307,6 +6330,7 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                                     cout << regs[i] << ' ';
 
                                 cout << endl;
+                                outcome = program[deferred].data;
                                 break;
                             }
 
@@ -6332,7 +6356,7 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                                     condition |= ZERO;
                                     condition &= ~NEGATIVE;
                                 } else {
-                                    program[index].data = -1;
+                                    program[index].data = 0xFFFF;
                                     condition &= ~ZERO;
                                     condition |= NEGATIVE;
                                 }
@@ -6348,6 +6372,7 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                                     cout << regs[i] << ' ';
 
                                 cout << endl;
+                                outcome = program[index].data;
                                 break;
                             }
 
@@ -6373,7 +6398,7 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                                     condition |= ZERO;
                                     condition &= ~NEGATIVE;
                                 } else {
-                                    program[program[index].data].data = -1;
+                                    program[program[index].data].data = 0xFFFF;
                                     condition &= ~ZERO;
                                     condition |= NEGATIVE;
                                 }
@@ -6390,6 +6415,7 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                                     cout << regs[i] << ' ';
 
                                 cout << endl;
+                                outcome = program[program[index].data].data;
                                 break;
                             }
 

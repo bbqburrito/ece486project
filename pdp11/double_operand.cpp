@@ -24,6 +24,1414 @@ void double_operand::disp()
     cout << "destination: " << destination << endl;
 }
 
+
+//bic
+int double_operand::bic(uint16_t *regs, CPSR *states, i_cache *program)
+{
+    int index = 0;
+    int source_op = make_source(regs, program);
+    int condition = 0;
+    uint16_t result;
+
+    if(0x10000 < source_op)
+        return source_op;
+
+    //perform action for different register modes
+    switch(destination_mode)
+    {
+        case 0:
+            {   //register
+                result = ~(uint16_t)source_op & regs[destination];
+
+                condition = states->get_condition() & CARRY;
+
+                if(!result)
+                {
+                    condition |= ZERO;
+                }
+                if((int16_t)result < 0)
+                    condition |= NEGATIVE;
+
+                regs[destination] = result;
+
+                states->set_condition(condition);
+
+                return (int) regs[destination];
+                break;
+            }
+
+        case 1:
+            {   //register deferred
+                if(regs[destination] % 2)
+                {
+                    cout << "boundary error\n";
+                    return 0x10000;
+                }
+                result = ~(uint16_t)source_op & program[regs[destination]].data;
+
+                condition = states->get_condition() & CARRY;
+
+                if(!result)
+                {
+                    condition |= ZERO;
+                }
+                if((int16_t)result < 0)
+                    condition |= NEGATIVE;
+
+                program[regs[destination]].data = result;
+                program[regs[destination] + 1].data = result;
+
+                states->set_condition(condition);
+
+                trace_file(tracefile, 1, regs[destination]);
+                return (int) program[regs[destination]].data;
+                break;
+            }
+
+
+        case 2:
+            {   //autoincrement:
+                 if(regs[destination] % 2)
+                {
+                    cout << "boundary error\n";
+                    return 0x10000;
+                }
+                result = ~(uint16_t)source_op & program[regs[destination]].data;
+
+                condition = states->get_condition() & CARRY;
+
+                if(!result)
+                {
+                    condition |= ZERO;
+                }
+                if((int16_t)result < 0)
+                    condition |= NEGATIVE;
+
+
+                program[regs[destination]].data = result;
+                program[regs[destination] + 1].data = result;
+                states->set_condition(condition);
+
+                trace_file(tracefile, 1, regs[destination]);
+                regs[destination] += 2;
+
+                return (int) program[regs[destination] - 2].data;
+                break;
+            }
+
+
+
+       case 3: {   //autoincrement deferred
+                if((regs[destination] % 2) || (program[regs[destination]].data % 2))
+                {
+                    cout << "boundary error\n";
+                    return 0x10000;
+                }
+                result = ~(uint16_t)source_op & program[program[regs[destination]].data].data;
+
+                condition = states->get_condition() & CARRY;
+
+                if(!result)
+                {
+                    condition |= ZERO;
+                }
+                if((int16_t)result < 0)
+                    condition |= NEGATIVE;
+
+                program[program[regs[destination]].data].data = result;
+                program[program[regs[destination]].data + 1].data = result;
+
+                states->set_condition(condition);
+
+                trace_file(tracefile, 0, regs[destination]);
+                trace_file(tracefile, 1, program[regs[destination]].data);
+                regs[destination] += 2;
+
+                return (int) program[regs[destination] - 2].data;
+                break;
+            }
+
+
+        case 4: {   //autodecrement
+
+                regs[destination] -= 2;
+                  if(regs[destination] % 2)
+                {
+                    cout << "boundary error\n";
+                    return 0x10000;
+                }
+                result = ~(uint16_t)source_op & program[regs[destination]].data;
+
+                condition = states->get_condition() & CARRY;
+
+                if(!result)
+                {
+                    condition |= ZERO;
+                }
+                if((int16_t)result < 0)
+                    condition |= NEGATIVE;
+
+
+                program[regs[destination]].data = result;
+                program[regs[destination] + 1].data = result;
+                states->set_condition(condition);
+
+                trace_file(tracefile, 1, regs[destination]);
+
+                return (int) program[regs[destination]].data;
+                break;
+            }
+
+
+        case 5: {   //autodecrement deferred
+                regs[destination] -= 2;
+                 if((regs[destination] % 2) || (program[regs[destination]].data % 2))
+                {
+                    cout << "boundary error\n";
+                    return 0x10000;
+                }
+                result = ~(uint16_t)source_op & program[program[regs[destination]].data].data;
+
+                condition = states->get_condition() & CARRY;
+
+                if(!result)
+                {
+                    condition |= ZERO;
+                }
+                if((int16_t)result < 0)
+                    condition |= NEGATIVE;
+
+                program[program[regs[destination]].data].data = result;
+                program[program[regs[destination]].data + 1].data = result;
+
+                states->set_condition(condition);
+
+                trace_file(tracefile, 0, regs[destination]);
+                trace_file(tracefile, 1, program[regs[destination]].data);
+
+                return (int) program[regs[destination]].data;
+                break;
+            }
+
+
+
+        case 6: {   //index
+            if (destination == PC)
+                index = regs[PC] + 2 + program[regs[PC]].data;
+            else index = regs[destination] + program[regs[PC]].data;
+            if ((regs[destination] % 2) || (index % 2)) {
+                cout << "boundary error\n";
+                return 0x10000;
+            }
+                result = ~(uint16_t)source_op & program[index].data;
+
+                condition = states->get_condition() & CARRY;
+
+                if(!result)
+                {
+                    condition |= ZERO;
+                }
+                if((int16_t)result < 0)
+                    condition |= NEGATIVE;
+
+
+                program[index].data = result;
+                program[index + 1].data = result;
+                states->set_condition(condition);
+
+                trace_file(tracefile, 0, regs[PC]);
+                trace_file(tracefile, 1, (uint16_t)index);
+
+                return (int) program[index].data;
+                break;
+            }
+
+
+        case 7: {   //register deferred
+             if (destination == PC)
+                index = regs[PC] + 2 + program[regs[PC]].data;
+            else index = regs[destination] + program[regs[PC]].data;
+            if ((regs[destination] % 2) || (index % 2) || (program[index].data % 2)) 
+            {
+                cout << "boundary error\n";
+                return 0x10000;
+            }
+                result = ~(uint16_t)source_op & program[program[index].data].data;
+
+                condition = states->get_condition() & CARRY;
+
+                if(!result)
+                {
+                    condition |= ZERO;
+                }
+                if((int16_t)result < 0)
+                    condition |= NEGATIVE;
+
+
+                program[program[index].data].data = result;
+                program[program[index].data + 1].data = result;
+                states->set_condition(condition);
+
+                trace_file(tracefile, 0, regs[PC]);
+                trace_file(tracefile, 0, (uint16_t)index);
+                trace_file(tracefile, 1, program[index].data);
+
+                return (int) program[program[index].data].data;
+                break;
+            }
+
+        default: {
+            cout << "invalid destination mode\n";
+            return 0x10000;
+            break;
+        }
+    }
+
+    return 0x10000;
+}
+
+
+
+
+
+//bit
+int double_operand::bit(uint16_t *regs, CPSR *states, i_cache *program)
+{
+    int index = 0;
+    int source_op = make_source(regs, program);
+    int condition = 0;
+    uint16_t result;
+
+    if(0x10000 < source_op)
+        return source_op;
+
+    //perform action for different register modes
+    switch(destination_mode)
+    {
+        case 0:
+            {   //register
+                result = (uint16_t)source_op & regs[destination];
+
+                condition = states->get_condition() & CARRY;
+
+                if(!result)
+                {
+                    condition |= ZERO;
+                }
+                if((int16_t)result < 0)
+                    condition |= NEGATIVE;
+
+                states->set_condition(condition);
+
+                return (int) result;
+                break;
+            }
+
+        case 1:
+            {   //register deferred
+                if(regs[destination] % 2)
+                {
+                    cout << "boundary error\n";
+                    return 0x10000;
+                }
+                result = (uint16_t)source_op & program[regs[destination]].data;
+
+                condition = states->get_condition() & CARRY;
+
+                if(!result)
+                {
+                    condition |= ZERO;
+                }
+                if((int16_t)result < 0)
+                    condition |= NEGATIVE;
+
+                states->set_condition(condition);
+
+                trace_file(tracefile, 0, regs[destination]);
+                return (int) result;
+                break;
+            }
+
+
+        case 2:
+            {   //autoincrement:
+                 if(regs[destination] % 2)
+                {
+                    cout << "boundary error\n";
+                    return 0x10000;
+                }
+                result = (uint16_t)source_op & program[regs[destination]].data;
+
+                condition = states->get_condition() & CARRY;
+
+                if(!result)
+                {
+                    condition |= ZERO;
+                }
+                if((int16_t)result < 0)
+                    condition |= NEGATIVE;
+
+
+                states->set_condition(condition);
+
+                trace_file(tracefile, 0, regs[destination]);
+                regs[destination] += 2;
+
+                return (int) result;
+                break;
+            }
+
+
+
+       case 3: {   //autoincrement deferred
+                if((regs[destination] % 2) || (program[regs[destination]].data % 2))
+                {
+                    cout << "boundary error\n";
+                    return 0x10000;
+                }
+                result = (uint16_t)source_op & program[program[regs[destination]].data].data;
+
+                condition = states->get_condition() & CARRY;
+
+                if(!result)
+                {
+                    condition |= ZERO;
+                }
+                if((int16_t)result < 0)
+                    condition |= NEGATIVE;
+
+
+                states->set_condition(condition);
+
+                trace_file(tracefile, 0, regs[destination]);
+                trace_file(tracefile, 0, program[regs[destination]].data);
+                regs[destination] += 2;
+
+                return (int) result;
+                break;
+            }
+
+
+        case 4: {   //autodecrement
+
+                regs[destination] -= 2;
+                  if(regs[destination] % 2)
+                {
+                    cout << "boundary error\n";
+                    return 0x10000;
+                }
+                result = (uint16_t)source_op & program[regs[destination]].data;
+
+                condition = states->get_condition() & CARRY;
+
+                if(!result)
+                {
+                    condition |= ZERO;
+                }
+                if((int16_t)result < 0)
+                    condition |= NEGATIVE;
+
+
+                states->set_condition(condition);
+
+                trace_file(tracefile, 0, regs[destination]);
+
+                return (int) result;
+                break;
+            }
+
+
+        case 5: {   //autodecrement deferred
+                regs[destination] -= 2;
+                 if((regs[destination] % 2) || (program[regs[destination]].data % 2))
+                {
+                    cout << "boundary error\n";
+                    return 0x10000;
+                }
+                result = (uint16_t)source_op & program[program[regs[destination]].data].data;
+
+                condition = states->get_condition() & CARRY;
+
+                if(!result)
+                {
+                    condition |= ZERO;
+                }
+                if((int16_t)result < 0)
+                    condition |= NEGATIVE;
+
+
+                states->set_condition(condition);
+
+                trace_file(tracefile, 0, regs[destination]);
+                trace_file(tracefile, 0, program[regs[destination]].data);
+
+                return (int) result;
+                break;
+            }
+
+
+
+        case 6: {   //index
+            if (destination == PC)
+                index = regs[PC] + 2 + program[regs[PC]].data;
+            else index = regs[destination] + program[regs[PC]].data;
+            if ((regs[destination] % 2) || (index % 2)) {
+                cout << "boundary error\n";
+                return 0x10000;
+            }
+                result = (uint16_t)source_op & program[index].data;
+
+                condition = states->get_condition() & CARRY;
+
+                if(!result)
+                {
+                    condition |= ZERO;
+                }
+                if((int16_t)result < 0)
+                    condition |= NEGATIVE;
+
+
+                states->set_condition(condition);
+
+                trace_file(tracefile, 0, regs[PC]);
+                trace_file(tracefile, 0, (uint16_t)index);
+
+                return (int) result;
+                break;
+            }
+
+
+        case 7: {   //register deferred
+             if (destination == PC)
+                index = regs[PC] + 2 + program[regs[PC]].data;
+            else index = regs[destination] + program[regs[PC]].data;
+            if ((regs[destination] % 2) || (index % 2) || (program[index].data % 2)) 
+            {
+                cout << "boundary error\n";
+                return 0x10000;
+            }
+                result = (uint16_t)source_op & program[program[index].data].data;
+
+                condition = states->get_condition() & CARRY;
+
+                if(!result)
+                {
+                    condition |= ZERO;
+                }
+                if((int16_t)result < 0)
+                    condition |= NEGATIVE;
+
+
+                states->set_condition(condition);
+
+                trace_file(tracefile, 0, regs[PC]);
+                trace_file(tracefile, 0, (uint16_t)index);
+                trace_file(tracefile, 0, program[index].data);
+
+                return (int) result;
+                break;
+            }
+
+        default: {
+            cout << "invalid destination mode\n";
+            return 0x10000;
+            break;
+        }
+    }
+
+    return 0x10000;
+}
+
+
+
+
+
+
+
+//bis
+int double_operand::bis(uint16_t *regs, CPSR *states, i_cache *program)
+{
+    int index = 0;
+    int source_op = make_source(regs, program);
+    int condition = 0;
+    uint16_t result;
+
+    if(0x10000 < source_op)
+        return source_op;
+
+    //perform action for different register modes
+    switch(destination_mode)
+    {
+        case 0:
+            {   //register
+                result = (uint16_t)source_op | regs[destination];
+
+                condition = states->get_condition() & CARRY;
+
+                if(!result)
+                {
+                    condition |= ZERO;
+                }
+                if((int16_t)result < 0)
+                    condition |= NEGATIVE;
+
+                regs[destination] = result;
+
+                states->set_condition(condition);
+
+                return (int) regs[destination];
+                break;
+            }
+
+        case 1:
+            {   //register deferred
+                if(regs[destination] % 2)
+                {
+                    cout << "boundary error\n";
+                    return 0x10000;
+                }
+                result = (uint16_t)source_op | program[regs[destination]].data;
+
+                condition = states->get_condition() & CARRY;
+
+                if(!result)
+                {
+                    condition |= ZERO;
+                }
+                if((int16_t)result < 0)
+                    condition |= NEGATIVE;
+
+                program[regs[destination]].data = result;
+                program[regs[destination] + 1].data = result;
+
+                states->set_condition(condition);
+
+                trace_file(tracefile, 1, regs[destination]);
+                return (int) program[regs[destination]].data;
+                break;
+            }
+
+
+        case 2:
+            {   //autoincrement:
+                 if(regs[destination] % 2)
+                {
+                    cout << "boundary error\n";
+                    return 0x10000;
+                }
+                result = (uint16_t)source_op | program[regs[destination]].data;
+
+                condition = states->get_condition() & CARRY;
+
+                if(!result)
+                {
+                    condition |= ZERO;
+                }
+                if((int16_t)result < 0)
+                    condition |= NEGATIVE;
+
+
+                program[regs[destination]].data = result;
+                program[regs[destination] + 1].data = result;
+                states->set_condition(condition);
+
+                trace_file(tracefile, 1, regs[destination]);
+                regs[destination] += 2;
+
+                return (int) program[regs[destination] - 2].data;
+                break;
+            }
+
+
+
+       case 3: {   //autoincrement deferred
+                if((regs[destination] % 2) || (program[regs[destination]].data % 2))
+                {
+                    cout << "boundary error\n";
+                    return 0x10000;
+                }
+                result = (uint16_t)source_op | program[program[regs[destination]].data].data;
+
+                condition = states->get_condition() & CARRY;
+
+                if(!result)
+                {
+                    condition |= ZERO;
+                }
+                if((int16_t)result < 0)
+                    condition |= NEGATIVE;
+
+                program[program[regs[destination]].data].data = result;
+                program[program[regs[destination]].data + 1].data = result;
+
+                states->set_condition(condition);
+
+                trace_file(tracefile, 0, regs[destination]);
+                trace_file(tracefile, 1, program[regs[destination]].data);
+                regs[destination] += 2;
+
+                return (int) program[regs[destination] - 2].data;
+                break;
+            }
+
+
+        case 4: {   //autodecrement
+
+                regs[destination] -= 2;
+                  if(regs[destination] % 2)
+                {
+                    cout << "boundary error\n";
+                    return 0x10000;
+                }
+                result = (uint16_t)source_op | program[regs[destination]].data;
+
+                condition = states->get_condition() & CARRY;
+
+                if(!result)
+                {
+                    condition |= ZERO;
+                }
+                if((int16_t)result < 0)
+                    condition |= NEGATIVE;
+
+
+                program[regs[destination]].data = result;
+                program[regs[destination] + 1].data = result;
+                states->set_condition(condition);
+
+                trace_file(tracefile, 1, regs[destination]);
+
+                return (int) program[regs[destination]].data;
+                break;
+            }
+
+
+        case 5: {   //autodecrement deferred
+                regs[destination] -= 2;
+                 if((regs[destination] % 2) || (program[regs[destination]].data % 2))
+                {
+                    cout << "boundary error\n";
+                    return 0x10000;
+                }
+                result = (uint16_t)source_op | program[program[regs[destination]].data].data;
+
+                condition = states->get_condition() & CARRY;
+
+                if(!result)
+                {
+                    condition |= ZERO;
+                }
+                if((int16_t)result < 0)
+                    condition |= NEGATIVE;
+
+                program[program[regs[destination]].data].data = result;
+                program[program[regs[destination]].data + 1].data = result;
+
+                states->set_condition(condition);
+
+                trace_file(tracefile, 0, regs[destination]);
+                trace_file(tracefile, 1, program[regs[destination]].data);
+
+                return (int) program[regs[destination]].data;
+                break;
+            }
+
+
+
+        case 6: {   //index
+            if (destination == PC)
+                index = regs[PC] + 2 + program[regs[PC]].data;
+            else index = regs[destination] + program[regs[PC]].data;
+            if ((regs[destination] % 2) || (index % 2)) {
+                cout << "boundary error\n";
+                return 0x10000;
+            }
+                result = (uint16_t)source_op | program[index].data;
+
+                condition = states->get_condition() & CARRY;
+
+                if(!result)
+                {
+                    condition |= ZERO;
+                }
+                if((int16_t)result < 0)
+                    condition |= NEGATIVE;
+
+
+                program[index].data = result;
+                program[index + 1].data = result;
+                states->set_condition(condition);
+
+                trace_file(tracefile, 0, regs[PC]);
+                trace_file(tracefile, 1, (uint16_t)index);
+
+                return (int) program[index].data;
+                break;
+            }
+
+
+        case 7: {   //register deferred
+             if (destination == PC)
+                index = regs[PC] + 2 + program[regs[PC]].data;
+            else index = regs[destination] + program[regs[PC]].data;
+            if ((regs[destination] % 2) || (index % 2) || (program[index].data % 2)) 
+            {
+                cout << "boundary error\n";
+                return 0x10000;
+            }
+                result = (uint16_t)source_op | program[program[index].data].data;
+
+                condition = states->get_condition() & CARRY;
+
+                if(!result)
+                {
+                    condition |= ZERO;
+                }
+                if((int16_t)result < 0)
+                    condition |= NEGATIVE;
+
+
+                program[program[index].data].data = result;
+                program[program[index].data + 1].data = result;
+                states->set_condition(condition);
+
+                trace_file(tracefile, 0, regs[PC]);
+                trace_file(tracefile, 0, (uint16_t)index);
+                trace_file(tracefile, 1, program[index].data);
+
+                return (int) program[program[index].data].data;
+                break;
+            }
+
+        default: {
+            cout << "invalid destination mode\n";
+            return 0x10000;
+            break;
+        }
+    }
+
+    return 0x10000;
+}
+
+
+
+
+
+//subtract
+int double_operand::sub(uint16_t *regs, CPSR *states, i_cache *program)
+{
+    int index = 0;
+    int source_op = make_source(regs, program);
+    int sign_source = (uint16_t)source_op >> 15;
+    int condition = 0;
+    uint16_t result;
+
+    if(0xFFFF < source_op)
+        return source_op;
+
+    //perform action for different register modes
+    switch(destination_mode)
+    {
+        case 0:
+            {   //register
+                result = (uint16_t)source_op + ~regs[destination] + 1;
+
+                if(!result)
+                {
+                    condition |= ZERO;
+                }
+                if((int16_t)result < 0)
+                    condition |= NEGATIVE;
+                if(!((sign_source) ^ (regs[destination] >> 15)) && (sign_source != (result >> 15)))
+                        condition |= V_OVERFLOW;
+                if((int16_t)source_op < (int16_t)regs[destination])
+                    condition |= CARRY;
+
+                regs[destination] = result;
+
+                states->set_condition(condition);
+
+                return (int) regs[destination];
+                break;
+            }
+
+        case 1:
+            {   //register deferred
+                if(regs[destination] % 2)
+                {
+                    cout << "boundary error\n";
+                    return 0x10000;
+                }
+
+                result = (uint16_t)source_op + ~program[regs[destination]].data + 1;
+
+                if(!result)
+                {
+                    condition |= ZERO;
+                }
+                if((int16_t)result < 0)
+                    condition |= NEGATIVE;
+                if(!((sign_source) ^ (program[regs[destination]].data >> 15)) && (sign_source != (result >> 15)))
+                        condition |= V_OVERFLOW;
+                if((int16_t)source_op < (int16_t)program[regs[destination]].data)
+                    condition |= CARRY;
+
+                program[regs[destination]].data = result;
+                program[regs[destination] + 1].data = result;
+
+                states->set_condition(condition);
+
+                trace_file(tracefile, 1, program[regs[destination]].data);
+
+                return (int) program[regs[destination]].data;
+                break;
+            }
+
+
+        case 2:
+            {   //autoincrement:
+                 if(regs[destination] % 2)
+                {
+                    cout << "boundary error\n";
+                    return 0x10000;
+                }
+
+                result = (uint16_t)source_op + ~program[regs[destination]].data + 1;
+
+                if(!result)
+                {
+                    condition |= ZERO;
+                }
+                if((int16_t)result < 0)
+                    condition |= NEGATIVE;
+                if(!((sign_source) ^ (program[regs[destination]].data >> 15)) && (sign_source != (result >> 15)))
+                        condition |= V_OVERFLOW;
+                if((int16_t)source_op < (int16_t)program[regs[destination]].data)
+                    condition |= CARRY;
+
+                program[regs[destination]].data = result;
+                program[regs[destination] + 1].data = result;
+
+                states->set_condition(condition);
+                trace_file(tracefile, 1, program[regs[destination]].data);
+                regs[destination] += 2;
+
+                return (int) program[regs[destination]].data;
+                break;
+            }
+
+
+       case 3: {   //autoincrement deferred
+                if((regs[destination] % 2) || (program[regs[destination]].data % 2))
+                {
+                    cout << "boundary error\n";
+                    return 0x10000;
+                }
+ 
+                result = (uint16_t)source_op + ~program[program[regs[destination]].data].data + 1;
+
+                if(!result)
+                {
+                    condition |= ZERO;
+                }
+                if((int16_t)result < 0)
+                    condition |= NEGATIVE;
+                if(!((sign_source) ^ (program[program[regs[destination]].data].data >> 15)) && (sign_source != (result >> 15)))
+                        condition |= V_OVERFLOW;
+                if((int16_t)source_op < (int16_t)program[regs[destination]].data)
+                    condition |= CARRY;
+
+                program[program[regs[destination]].data].data = result;
+                program[program[regs[destination]].data + 1].data = result;
+
+                states->set_condition(condition);
+                trace_file(tracefile, 0, program[regs[destination]].data);
+                trace_file(tracefile, 1, program[program[regs[destination]].data].data);
+                regs[destination] += 2;
+
+                return (int) program[program[regs[destination]].data].data;
+                break;
+            }
+
+
+        case 4: {   //autodecrement
+
+                regs[destination] -= 2;
+                  if(regs[destination] % 2)
+                {
+                    cout << "boundary error\n";
+                    return 0x10000;
+                }
+
+                result = (uint16_t)source_op + ~program[regs[destination]].data + 1;
+
+                if(!result)
+                {
+                    condition |= ZERO;
+                }
+                if((int16_t)result < 0)
+                    condition |= NEGATIVE;
+                if(!((sign_source) ^ (program[regs[destination]].data >> 15)) && (sign_source != (result >> 15)))
+                        condition |= V_OVERFLOW;
+                if((int16_t)source_op < (int16_t)program[regs[destination]].data)
+                    condition |= CARRY;
+                
+                program[regs[destination]].data = result;
+                program[regs[destination] + 1].data = result;
+
+                states->set_condition(condition);
+                trace_file(tracefile, 1, program[regs[destination]].data);
+
+                return (int) program[regs[destination]].data;
+                break;
+            }
+
+
+        case 5: {   //autodecrement deferred
+                regs[destination] -= 2;
+                 if((regs[destination] % 2) || (program[regs[destination]].data % 2))
+                {
+                    cout << "boundary error\n";
+                    return 0x10000;
+                }
+ 
+                result = (uint16_t)source_op + ~program[program[regs[destination]].data].data + 1;
+
+                if(!result)
+                {
+                    condition |= ZERO;
+                }
+                if((int16_t)result < 0)
+                    condition |= NEGATIVE;
+                if(!((sign_source) ^ (program[program[regs[destination]].data].data >> 15)) && (sign_source != (result >> 15)))
+                        condition |= V_OVERFLOW;
+                if((int16_t)source_op < (int16_t)program[regs[destination]].data)
+                    condition |= CARRY;
+
+                program[program[regs[destination]].data].data = result;
+                program[program[regs[destination]].data + 1].data = result;
+
+                states->set_condition(condition);
+                trace_file(tracefile, 0, program[regs[destination]].data);
+                trace_file(tracefile, 1, program[program[regs[destination]].data].data);
+
+                return (int) program[program[regs[destination]].data].data;
+                break;
+            }
+
+
+
+        case 6: {   //index
+            if (destination == PC)
+                index = regs[PC] + 2 + program[regs[PC]].data;
+            else index = regs[destination] + program[regs[PC]].data;
+            if ((regs[destination] % 2) || (index % 2)) {
+                cout << "boundary error\n";
+                return 0x10000;
+            }
+
+                result = (uint16_t)source_op + ~program[index].data + 1;
+
+                if(!result)
+                {
+                    condition |= ZERO;
+                }
+                if((int16_t)result < 0)
+                    condition |= NEGATIVE;
+                if(!((sign_source) ^ (program[regs[destination]].data >> 15)) && (sign_source != (result >> 15)))
+                        condition |= V_OVERFLOW;
+
+                if((int16_t)source_op < (int16_t)program[index].data)
+                    condition |= CARRY;
+
+                states->set_condition(condition);
+
+                program[index].data = result;
+                program[index + 1].data = result;
+
+                trace_file(tracefile, 0, regs[PC]);
+                trace_file(tracefile, 1, (uint16_t) index);
+                regs[PC] += 2;
+
+                return (int) program[index].data;
+                break;
+            }
+
+
+        case 7: {   //register deferred
+             if (destination == PC)
+                index = regs[PC] + 2 + program[regs[PC]].data;
+            else index = regs[destination] + program[regs[PC]].data;
+            if ((regs[destination] % 2) || (index % 2) || (program[index].data % 2)) 
+            {
+                cout << "boundary error\n";
+                return 0x10000;
+            }
+
+                result = (uint16_t)source_op + ~program[program[index].data].data + 1;
+
+                if(!result)
+                {
+                    condition |= ZERO;
+                }
+                if((int16_t)result < 0)
+                    condition |= NEGATIVE;
+                if(!((sign_source) ^ (program[program[index].data].data >> 15)) && (sign_source != (result >> 15)))
+                        condition |= V_OVERFLOW;
+
+                if((int16_t)source_op < (int16_t)program[program[index].data].data)
+                    condition |= CARRY;
+
+                states->set_condition(condition);
+
+                program[program[index].data].data = result;
+                program[program[index].data + 1].data = result;
+
+                trace_file(tracefile, 0, regs[PC]);
+                trace_file(tracefile, 0, (uint16_t) index);
+                trace_file(tracefile, 1, program[index].data);
+                regs[PC] += 2;
+
+                return (int) program[program[index].data].data;
+                break;
+            }
+
+
+        default: {
+            cout << "invalid destination mode\n";
+            return 0x10000;
+            break;
+        }
+    }
+
+    return 0x10000;
+}
+
+
+
+
+
+//add function
+int double_operand::add(uint16_t *regs, CPSR *states, i_cache *program)
+{
+    int index = 0;
+    int source_op = make_source(regs, program);
+    int condition = 0;
+    int result = 0;
+    int sign = 0;
+
+    if(0xFFFF < source_op)
+        return source_op;
+    
+    switch(destination_mode)
+    {
+        case 0:
+            {   //register
+                result = regs[destination] + (uint16_t)source_op;
+                sign = (uint16_t)result >> 15;
+
+                if(result < 0x10000)     //set carry bit if result greater than 0xFFFF
+                    condition = 0;
+                else condition = CARRY;
+
+                condition |= states->get_condition();
+                if(!(uint16_t)result)
+                {
+                    condition |= ZERO;
+                }
+                if(sign)
+                    condition |= NEGATIVE;
+                
+                if(!(((uint16_t)source_op) ^ (regs[destination] >> 15)) && ((regs[destination] >> 15) == sign))
+                    condition |= V_OVERFLOW;
+
+                regs[destination] += ((uint16_t)source_op);
+
+                states->set_condition(condition);
+
+                return (int) regs[destination];
+                break;
+            }
+
+        case 1:
+            {   //register deferred
+                if(regs[destination] % 2)
+                {
+                    cout << "boundary error\n";
+                    return 0x10000;
+                }
+                result = program[regs[destination]].data + (uint16_t)source_op;
+                sign = (uint16_t)result >> 15;
+
+                if(result < 0x10000)     //set carry bit if result greater than 0xFFFF
+                    condition = 0;
+                else condition = CARRY;
+
+                condition |= states->get_condition();
+                if(!(uint16_t)result)
+                {
+                    condition |= ZERO;
+                }
+                if(sign)
+                    condition |= NEGATIVE;
+                
+                if(!(((uint16_t)source_op) ^ (program[regs[destination]].data >> 15)) && ((program[regs[destination]].data >> 15) == sign))
+                    condition |= V_OVERFLOW;
+
+                program[regs[destination]].data += ((uint16_t)source_op);
+                program[regs[destination] + 1].data = program[regs[destination]].data;
+
+                states->set_condition(condition);
+                trace_file(tracefile, 1, regs[destination]);
+
+                return (int) program[regs[destination]].data;
+                break;
+            }
+
+
+        case 2:
+            {   //autoincrement
+                if(regs[destination] % 2)
+                {
+                    cout << "boundary error\n";
+                    return 0x10000;
+                }
+                result = program[regs[destination]].data + (uint16_t)source_op;
+                sign = (uint16_t)result >> 15;
+
+                if(result < 0x10000)     //set carry bit if result greater than 0xFFFF
+                    condition = 0;
+                else condition = CARRY;
+
+                condition |= states->get_condition();
+                if(!(uint16_t)result)
+                {
+                    condition |= ZERO;
+                }
+                if(sign)
+                    condition |= NEGATIVE;
+                
+                if(!(((uint16_t)source_op) ^ (program[regs[destination]].data >> 15)) && ((program[regs[destination]].data >> 15) == sign))
+                    condition |= V_OVERFLOW;
+
+                program[regs[destination]].data += ((uint16_t)source_op);
+                program[regs[destination] + 1].data = program[regs[destination]].data;
+
+                states->set_condition(condition);
+                trace_file(tracefile, 1, regs[destination]);
+
+                regs[destination] += 2;
+
+                return (int) program[regs[destination]].data;
+                break;
+            }
+
+
+
+       case 3: {   //autoincrement deferred
+                if((regs[destination] % 2) || (program[regs[destination]].data % 2))
+                {
+                    cout << "boundary error\n";
+                    return 0x10000;
+                }
+                result = program[program[regs[destination]].data].data + (uint16_t)source_op;
+                sign = (uint16_t)result >> 15;
+
+                if(result < 0x10000)     //set carry bit if result greater than 0xFFFF
+                    condition = 0;
+                else condition = CARRY;
+
+                condition |= states->get_condition();
+                if(!(uint16_t)result)
+                {
+                    condition |= ZERO;
+                }
+                if(sign)
+                    condition |= NEGATIVE;
+                
+                if(!(((uint16_t)source_op) ^ (program[program[regs[destination]].data].data >> 15)) && ((program[program[regs[destination]].data].data >> 15) == sign))
+                    condition |= V_OVERFLOW;
+
+                program[program[regs[destination]].data].data += ((uint16_t)source_op);
+                program[program[regs[destination]].data + 1].data = program[program[regs[destination]].data].data;
+
+                states->set_condition(condition);
+                trace_file(tracefile, 0, regs[destination]);
+                trace_file(tracefile, 1, program[regs[destination]].data);
+
+                regs[destination] += 2;
+
+                return (int) program[regs[destination]].data;
+                break;
+            }
+
+        case 4: {   //autodecrement
+                if(regs[destination] % 2)
+                {
+                    cout << "boundary error\n";
+                    return 0x10000;
+                }
+                regs[destination] -= 2;
+                result = program[regs[destination]].data + (uint16_t)source_op;
+                sign = (uint16_t)result >> 15;
+
+                if(result < 0x10000)     //set carry bit if result greater than 0xFFFF
+                    condition = 0;
+                else condition = CARRY;
+
+                condition |= states->get_condition();
+                if(!(uint16_t)result)
+                {
+                    condition |= ZERO;
+                }
+                if(sign)
+                    condition |= NEGATIVE;
+                
+                if(!(((uint16_t)source_op) ^ (program[regs[destination]].data >> 15)) && ((program[regs[destination]].data >> 15) == sign))
+                    condition |= V_OVERFLOW;
+
+                program[regs[destination]].data += ((uint16_t)source_op);
+                program[regs[destination] + 1].data = program[regs[destination]].data;
+
+                states->set_condition(condition);
+                trace_file(tracefile, 1, regs[destination]);
+
+                return (int) program[regs[destination]].data;
+                break;
+            }
+
+
+
+        case 5: {   //autodecrement deferred
+                if((regs[destination] % 2) || (program[regs[destination]].data % 2))
+                {
+                    cout << "boundary error\n";
+                    return 0x10000;
+                }
+                regs[destination] -= 2;
+                result = program[program[regs[destination]].data].data + (uint16_t)source_op;
+                sign = (uint16_t)result >> 15;
+
+                if(result < 0x10000)     //set carry bit if result greater than 0xFFFF
+                    condition = 0;
+                else condition = CARRY;
+
+                condition |= states->get_condition();
+                if(!(uint16_t)result)
+                {
+                    condition |= ZERO;
+                }
+                if(sign)
+                    condition |= NEGATIVE;
+                
+                if(!(((uint16_t)source_op) ^ (program[program[regs[destination]].data].data >> 15)) && ((program[program[regs[destination]].data].data >> 15) == sign))
+                    condition |= V_OVERFLOW;
+
+                program[program[regs[destination]].data].data += ((uint16_t)source_op);
+                program[program[regs[destination]].data + 1].data = program[program[regs[destination]].data].data;
+
+                states->set_condition(condition);
+                trace_file(tracefile, 0, regs[destination]);
+                trace_file(tracefile, 1, program[regs[destination]].data);
+
+                return (int) program[regs[destination]].data;
+                break;
+            }
+
+
+
+        case 6: {   //index
+            if (destination == PC)
+                index = regs[PC] + 2 + program[regs[PC]].data;
+            else index = regs[destination] + program[regs[PC]].data;
+            if ((regs[destination] % 2) || (index % 2)) {
+                cout << "boundary error\n";
+                return 0x10000;
+            }
+
+                result = program[index].data + (uint16_t)source_op;
+                sign = (uint16_t)result >> 15;
+
+                if(result < 0x10000)     //set carry bit if result greater than 0xFFFF
+                    condition = 0;
+                else condition = CARRY;
+
+                condition |= states->get_condition();
+                if(!(uint16_t)result)
+                {
+                    condition |= ZERO;
+                }
+                if(sign)
+                    condition |= NEGATIVE;
+                
+                if(!(((uint16_t)source_op) ^ (program[index].data >> 15)) && ((program[index].data >> 15) == sign))
+                    condition |= V_OVERFLOW;
+
+                program[index].data += ((uint16_t)source_op);
+                program[index + 1].data = program[index].data; 
+
+                states->set_condition(condition);
+
+            trace_file(tracefile, 0, regs[PC]);
+            trace_file(tracefile, 1, (uint16_t) index);
+            regs[PC] += 2;
+                return (int) program[index].data;
+                break;
+            }
+
+        case 7: {   //index deferred
+            if (destination == PC)
+                index = regs[PC] + 2 + program[regs[PC]].data;
+            else index = regs[destination] + program[regs[PC]].data;
+            if ((regs[destination] % 2) || (index % 2) || (program[index].data % 2)) {
+                cout << "boundary error\n";
+                return 0x10000;
+            }
+
+                result = program[program[index].data].data + (uint16_t)source_op;
+                sign = (uint16_t)result >> 15;
+
+                if(result < 0x10000)     //set carry bit if result greater than 0xFFFF
+                    condition = 0;
+                else condition = CARRY;
+
+                condition |= states->get_condition();
+                if(!(uint16_t)result)
+                {
+                    condition |= ZERO;
+                }
+                if(sign)
+                    condition |= NEGATIVE;
+                
+                if(!(((uint16_t)source_op) ^ (program[program[index].data].data >> 15)) && ((program[program[index].data].data >> 15) == sign))
+                    condition |= V_OVERFLOW;
+
+                program[program[index].data].data += ((uint16_t)source_op);
+                program[program[index].data + 1].data = program[program[index].data].data;
+
+                states->set_condition(condition);
+
+            trace_file(tracefile, 0, regs[PC]);
+            trace_file(tracefile, 0, (uint16_t) index);
+            trace_file(tracefile, 1, program[index].data);
+            regs[PC] += 2;
+                return (int) program[program[index].data].data;
+                break;
+            }
+
+
+        default: {
+            cout << "invalid destination mode\n";
+            return 0x10000;
+            break;
+        }
+    }
+
+    return 0x10000;
+}
+
+
+
 //compare
 int double_operand::compare(uint16_t *regs, CPSR *states, i_cache *program)
 {
@@ -32,6 +1440,9 @@ int double_operand::compare(uint16_t *regs, CPSR *states, i_cache *program)
     int sign_source = (uint16_t)source_op >> 15;
     int condition = 0;
     uint16_t result;
+
+    if(0x10000 < source_op)
+        return source_op;
 
     //perform action for different register modes
     switch(destination_mode)
@@ -62,7 +1473,7 @@ int double_operand::compare(uint16_t *regs, CPSR *states, i_cache *program)
                 if(regs[destination] % 2)
                 {
                     cout << "boundary error\n";
-                    return -1;
+                    return 0x10000;
                 }
 
                 result = (uint16_t)source_op + ~program[regs[destination]].data + 1;
@@ -80,7 +1491,9 @@ int double_operand::compare(uint16_t *regs, CPSR *states, i_cache *program)
 
                 states->set_condition(condition);
 
-                return (int) regs[destination];
+                trace_file(tracefile, 0, regs[destination]);
+
+                return (int) program[regs[destination]].data;
                 break;
             }
 
@@ -90,7 +1503,7 @@ int double_operand::compare(uint16_t *regs, CPSR *states, i_cache *program)
                  if(regs[destination] % 2)
                 {
                     cout << "boundary error\n";
-                    return -1;
+                    return 0x10000;
                 }
 
                 result = (uint16_t)source_op + ~program[regs[destination]].data + 1;
@@ -107,6 +1520,7 @@ int double_operand::compare(uint16_t *regs, CPSR *states, i_cache *program)
                     condition |= CARRY;
 
                 states->set_condition(condition);
+                trace_file(tracefile, 0, regs[destination]);
                 regs[destination] += 2;
 
                 return (int) program[regs[destination]].data;
@@ -118,7 +1532,7 @@ int double_operand::compare(uint16_t *regs, CPSR *states, i_cache *program)
                 if((regs[destination] % 2) || (program[regs[destination]].data % 2))
                 {
                     cout << "boundary error\n";
-                    return -1;
+                    return 0x10000;
                 }
  
                 result = (uint16_t)source_op + ~program[program[regs[destination]].data].data + 1;
@@ -135,6 +1549,8 @@ int double_operand::compare(uint16_t *regs, CPSR *states, i_cache *program)
                     condition |= CARRY;
 
                 states->set_condition(condition);
+                trace_file(tracefile, 0, regs[destination]);
+                trace_file(tracefile, 0, program[regs[destination]].data);
                 regs[destination] += 2;
 
                 return (int) program[program[regs[destination]].data].data;
@@ -148,7 +1564,7 @@ int double_operand::compare(uint16_t *regs, CPSR *states, i_cache *program)
                   if(regs[destination] % 2)
                 {
                     cout << "boundary error\n";
-                    return -1;
+                    return 0x10000;
                 }
 
                 result = (uint16_t)source_op + ~program[regs[destination]].data + 1;
@@ -165,6 +1581,7 @@ int double_operand::compare(uint16_t *regs, CPSR *states, i_cache *program)
                     condition |= CARRY;
 
                 states->set_condition(condition);
+                trace_file(tracefile, 0, regs[destination]);
 
                 return (int) program[regs[destination]].data;
                 break;
@@ -176,7 +1593,7 @@ int double_operand::compare(uint16_t *regs, CPSR *states, i_cache *program)
                  if((regs[destination] % 2) || (program[regs[destination]].data % 2))
                 {
                     cout << "boundary error\n";
-                    return -1;
+                    return 0x10000;
                 }
  
                 result = (uint16_t)source_op + ~program[program[regs[destination]].data].data + 1;
@@ -193,6 +1610,8 @@ int double_operand::compare(uint16_t *regs, CPSR *states, i_cache *program)
                     condition |= CARRY;
 
                 states->set_condition(condition);
+                trace_file(tracefile, 0, regs[destination]);
+                trace_file(tracefile, 0, program[regs[destination]].data);
 
                 return (int) program[program[regs[destination]].data].data;
                 break;
@@ -206,7 +1625,7 @@ int double_operand::compare(uint16_t *regs, CPSR *states, i_cache *program)
             else index = regs[destination] + program[regs[PC]].data;
             if ((regs[destination] % 2) || (index % 2)) {
                 cout << "boundary error\n";
-                return -1;
+                return 0x10000;
             }
 
                 result = (uint16_t)source_op + ~program[index].data + 1;
@@ -240,7 +1659,7 @@ int double_operand::compare(uint16_t *regs, CPSR *states, i_cache *program)
             if ((regs[destination] % 2) || (index % 2) || (program[index].data % 2)) 
             {
                 cout << "boundary error\n";
-                return -1;
+                return 0x10000;
             }
 
                 result = (uint16_t)source_op + ~program[program[index].data].data + 1;
@@ -270,12 +1689,12 @@ int double_operand::compare(uint16_t *regs, CPSR *states, i_cache *program)
 
         default: {
             cout << "invalid destination mode\n";
-            return -1;
+            return 0x10000;
             break;
         }
     }
 
-    return -1;
+    return 0x10000;
 }
 
 
@@ -285,6 +1704,9 @@ int double_operand::move(uint16_t *regs, CPSR *states, i_cache *program)
 {
     int index = 0;
     int source_op = make_source(regs, program);
+    if(0xFFFF < source_op)
+        return source_op;
+
     int condition = 0;
 
 
@@ -314,9 +1736,10 @@ int double_operand::move(uint16_t *regs, CPSR *states, i_cache *program)
                 if(regs[destination] % 2)
                 {
                     cout << "boundary error\n";
-                    return -1;
+                    return 0x10000;
                 }
                 program[regs[destination]].data = source_op;
+                program[regs[destination] + 1].data = source_op;
  
                 condition = states->get_condition() & CARRY;
                 if(!program[regs[destination]].data)
@@ -340,9 +1763,10 @@ int double_operand::move(uint16_t *regs, CPSR *states, i_cache *program)
                 if(regs[destination] % 2)
                 {
                     cout << "boundary error\n";
-                    return -1;
+                    return 0x10000;
                 }
                 program[regs[destination]].data = source_op;
+                program[regs[destination] + 1].data = source_op;
   
                 condition = states->get_condition() & CARRY;
                 if(!program[regs[destination]].data)
@@ -366,7 +1790,7 @@ int double_operand::move(uint16_t *regs, CPSR *states, i_cache *program)
                 if((regs[destination] % 2) || (program[regs[destination]].data % 2))
                 {
                     cout << "boundary error\n";
-                    return -1;
+                    return 0x10000;
                 }
                 program[program[regs[destination]].data].data = source_op;
                 program[program[regs[destination]].data + 1].data = source_op; 
@@ -393,7 +1817,7 @@ int double_operand::move(uint16_t *regs, CPSR *states, i_cache *program)
                 if(regs[destination] % 2)
                 {
                     cout << "boundary error\n";
-                    return -1;
+                    return 0x10000;
                 }
                 regs[destination] -= 2;
                 program[regs[destination]].data = source_op;
@@ -417,7 +1841,7 @@ int double_operand::move(uint16_t *regs, CPSR *states, i_cache *program)
                 if((regs[destination] % 2) || (program[regs[destination]].data % 2))
                 {
                     cout << "boundary error\n";
-                    return -1;
+                    return 0x10000;
                 }
                 regs[destination] -= 2;
                 program[program[regs[destination]].data].data = source_op;
@@ -447,7 +1871,7 @@ int double_operand::move(uint16_t *regs, CPSR *states, i_cache *program)
             else index = regs[destination] + program[regs[PC]].data;
             if ((regs[destination] % 2) || (index % 2)) {
                 cout << "boundary error\n";
-                return -1;
+                return 0x10000;
             }
 
             program[index].data = source_op;
@@ -477,9 +1901,8 @@ int double_operand::move(uint16_t *regs, CPSR *states, i_cache *program)
             else index = regs[destination] + program[regs[PC]].data;
             if ((regs[destination] % 2) || (index % 2) || (program[index].data % 2)) {
                 cout << "boundary error\n";
-                return -1;
+                return 0x10000;
             }
-            index = program[index].data;
 
             program[program[index].data].data = source_op;
             program[program[index].data + 1].data = source_op;
@@ -504,12 +1927,12 @@ condition |= ZERO;
         }
         default: {
             cout << "invalid destination mode\n";
-            return -1;
+            return 0x10000;
             break;
         }
     }
 
-    return -1;
+    return 0x10000;
 }
 
 
@@ -528,8 +1951,6 @@ int double_operand::make_source(uint16_t *regs, i_cache *program)
 
         case 1:
             {   //register deferred
-                //memory read for BIT and CMP
-                //memory write for all others
                 trace_file(tracefile, 0, regs[source]);
                 return (int)program[regs[source]].data;
                 break;
@@ -537,50 +1958,44 @@ int double_operand::make_source(uint16_t *regs, i_cache *program)
 
 
         case 2:
-            {   //register deferred
-                //memory read for BIT and CMP
-                //memory write for all others
+            {   //autoincrement
                 trace_file(tracefile, 0, regs[source]);
-                return (int)program[regs[source]].data;
+                regs[source] += 2;
+                return (int)program[regs[source] - 2].data;
                 break;
             }
 
 
-        case 3: {   //register deferred
-            //memory read for BIT and CMP
-            //memory write for all others
+        case 3: {   //autoincrement deferred
             trace_file(tracefile, 0, regs[source]);
             trace_file(tracefile, 0, program[regs[source]].data);
-            return (int) program[program[regs[source]].data].data;
+            regs[source] += 2;
+            return (int) program[program[regs[source] - 2].data].data;
             break;
         }
 
 
-        case 4: {   //register deferred
-                    //memory read for BIT and CMP
-                    //memory write for all others
+        case 4: {   //autodecrement
+            regs[source] -= 2;
             trace_file(tracefile, 0, regs[source]);
             return (int) program[regs[source]].data;
             break;
         }
-        case 5: {   //register deferred
-                    //memory read for BIT and CMP
-                    //memory write for all others
+        case 5: {   //autodecrement deferred
+            regs[source] -= 2;
             trace_file(tracefile, 0, regs[source]);
             trace_file(tracefile, 0, program[regs[source]].data);
             return (int) program[program[regs[source]].data].data;
             break;
         }
 
-        case 6: {   //register deferred
-                        //memory read for BIT and CMP
-                        //memory write for all others
+        case 6: {   //index
             if (source == PC)
                 index = regs[PC] + 2 + program[regs[PC]].data;
             else index = regs[source] + program[regs[PC]].data;
             if ((regs[source] % 2) || (index % 2)) {
                 cout << "boundary error\n";
-                return -1;
+                return 0x10000;
             }
 
             trace_file(tracefile, 0, regs[PC]);
@@ -590,15 +2005,13 @@ int double_operand::make_source(uint16_t *regs, i_cache *program)
             break;
         }
 
-        case 7: {   //register deferred
-                        //memory read for BIT and CMP
-                        //memory write for all others
+        case 7: {   //index deferred
             if (source == PC)
                 index = regs[PC] + 2 + program[regs[PC]].data;
             else index = regs[source] + program[regs[PC]].data;
             if ((regs[source] % 2) || (index % 2) || (program[index].data % 2)) {
                 cout << "boundary error\n";
-                return -1;
+                return 0x10000;
             }
             index = program[index].data;
             trace_file(tracefile, 0, regs[PC]);
@@ -611,12 +2024,12 @@ int double_operand::make_source(uint16_t *regs, i_cache *program)
         }
         default: {
             cout << "invalid source mode\n";
-            return -1;
+            return 0x10000;
             break;
         }
     }
 
-    return -1;
+    return 0x10000;
 }
 
 
@@ -643,6 +2056,7 @@ int double_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
         case CMP: 
             {
                 cout << "CMP" << endl;
+                result = compare(regs, states, program);
                 break;
             }
         case CMPB:
@@ -653,16 +2067,19 @@ int double_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
         case ADD:
             {
                 cout << "ADD" << endl;
+                result = add(regs, states, program);
                 break;
             }
         case SUB:
             {
                 cout << "SUB" << endl;
+                result = sub(regs, states, program);
                 break;
             }
         case BIT:
             {
                 cout << "BIT" << endl;
+                result = bit(regs, states, program);
                 break;
             }
         case BITB:
@@ -673,6 +2090,7 @@ int double_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
         case BIC:
             {
                 cout << "BIC" << endl;
+                result = bic(regs, states, program);
                 break;
             }
         case BICB:
@@ -683,6 +2101,7 @@ int double_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
         case BIS:
             {
                 cout << "BIS" << endl;
+                result = bis(regs, states, program);
                 break;
             }
         case BISB:

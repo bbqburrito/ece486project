@@ -170,6 +170,11 @@ class double_operand: public command
         int make_source(uint16_t *regs, i_cache *program);
         int move(uint16_t *regs, CPSR *states, i_cache *program);
         int compare(uint16_t *regs, CPSR *states, i_cache *program);
+        int add(uint16_t *regs, CPSR *states, i_cache *program);
+        int sub(uint16_t *regs, CPSR *states, i_cache *program);
+        int bis(uint16_t *regs, CPSR *states, i_cache *program);
+        int bit(uint16_t *regs, CPSR *states, i_cache *program);
+        int bic(uint16_t *regs, CPSR *states, i_cache *program);
 
 
 
