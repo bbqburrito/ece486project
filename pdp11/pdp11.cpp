@@ -1292,7 +1292,7 @@ void jump_sub::disp()
 int jump_sub::instruction(uint16_t *regs, CPSR *states, i_cache *program)
 {
     int i;
-    int index;
+    uint16_t index;
     int deferred;
 
     cout << "function_code: " << function_code << ": ";
@@ -1935,7 +1935,7 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
     int i;
     int outcome = -1;
     int deferred = 0;   //temp for deferred addressing
-    int index = 0;      //temp for index addressing
+    uint16_t index = 0;      //temp for index addressing
     int condition;      //temp for condition codes
 
     cout << "function_code: " << function_code << ": ";
@@ -4929,7 +4929,6 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         // swap bytes
                         condition = (regs[destination] << 8) & 0xFF00;    //use condition as swap variable to store low order byte
                         regs[destination] = ((regs[destination] >> 8) & 0xFF) | condition; //swap bytes 
-                        regs[destination + 1] = regs[destination];
 
                         condition = 0;                          //reset condition variable
                         
@@ -5265,7 +5264,6 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                             regs[destination] += (condition);
                             condition &= ~V_OVERFLOW;
                         }
-                        regs[destination + 1] = regs[destination];
 
                         if (!(regs[destination]))           //check for zero
                         {
@@ -5702,7 +5700,6 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                             regs[destination] -= condition;
                             condition &= ~V_OVERFLOW;
                         }
-                        regs[destination + 1] = regs[destination];
 
                         if (!(regs[destination]))           //check for zero
                         {

@@ -223,7 +223,7 @@ int main(int argc, char* argv[])
         cout << "mem[" << i << "] = " << prog_mem[i].data << endl;
     }
 
-    gps[PC] = uint16_t(start) * 2;
+    gps[PC] = uint16_t(start);
 
     gps[2] = 70;
     gps[4] = 60;
@@ -246,6 +246,12 @@ int main(int argc, char* argv[])
 
     while(gps[PC] < prog_size)
     {
+        for(i = 0; i < 8; ++i)
+        {
+            cout << gps[i] << ' ';
+        }
+        cout << endl;
+
         to_run = prog_mem[gps[PC]].data;    //get instruction from memory
         trace_file(trace, 2, gps[PC]);      //write to trace file
         gps[PC] += 2;
