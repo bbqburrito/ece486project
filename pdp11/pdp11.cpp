@@ -1616,8 +1616,8 @@ int jump_sub::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                                 program[regs[SP] + 1].data = program[regs[SP]].data;
                                 regs[linkage_reg] = regs[PC];
                                 regs[PC] = index;
+                                trace_file(tracefile, 1, (regs[SP]));
                                 trace_file(tracefile, 0, regs[PC]);
-                                trace_file(tracefile, 1, (regs[SP] - 2));
                                 for(i = 0; i < 8; ++i)
                                 {
                                     cout << regs[i] << ' ';
@@ -1645,8 +1645,8 @@ int jump_sub::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                                 program[regs[SP] + 1].data = program[regs[SP]].data;
                                 regs[linkage_reg] = regs[PC];
                                 regs[PC] = program[index].data;
-                                trace_file(tracefile, 0, regs[PC]);
                                 trace_file(tracefile, 1, regs[SP]);
+                                trace_file(tracefile, 0, regs[PC]);
                                 trace_file(tracefile, 0, index);
                                 for(i = 0; i < 8; ++i)
                                 {
@@ -2587,8 +2587,8 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                             condition |= NEGATIVE;
                         } else condition &= ~NEGATIVE;
                         states->set_condition(condition);       //set conditions
-                        trace_file(tracefile, 0, index);
                         trace_file(tracefile, 0, regs[PC]);
+                        trace_file(tracefile, 0, index);
                         trace_file(tracefile, 1, index);
                         regs[PC] += 2;
                         for (i = 0; i < 8; ++i) {
@@ -2628,8 +2628,8 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                             condition |= NEGATIVE;
                         } else condition &= ~NEGATIVE;
                         states->set_condition(condition);       //set conditions
-                        trace_file(tracefile, 0, index);
                         trace_file(tracefile, 0, regs[PC]);
+                        trace_file(tracefile, 0, index);
                         trace_file(tracefile, 0, program[index].data);
                         trace_file(tracefile, 1, program[index].data);
                         
