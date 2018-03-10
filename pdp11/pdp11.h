@@ -92,11 +92,11 @@ const int I_SIZE = 65536;
 const int MEM_SIZE = 65536;
 const int PC = 7;
 const int SP = 6;
-const int T_DEBUG = 16;
-const int NEGATIVE = 8;
-const int ZERO = 4;
-const int V_OVERFLOW = 2;
-const int CARRY = 1;
+const uint16_t T_DEBUG = 16;
+const uint16_t NEGATIVE = 8;
+const uint16_t ZERO = 4;
+const uint16_t V_OVERFLOW = 2;
+const uint16_t CARRY = 1;
 
 
 
@@ -120,12 +120,12 @@ class CPSR {
         void display();
 
     protected:
-        int T;
-        int N;
-        int Z;
-        int V;
-        int C;
-        int priority;
+        uint16_t T;
+        uint16_t N;
+        uint16_t Z;
+        uint16_t V;
+        uint16_t C;
+        uint16_t priority;
 };
 
 

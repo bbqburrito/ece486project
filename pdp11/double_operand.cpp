@@ -96,6 +96,7 @@ int double_operand::bic(uint16_t *regs, CPSR *states, i_cache *program)
             cout << endl;
  
  
+                trace_file(tracefile, 0, regs[destination]);
                 trace_file(tracefile, 1, regs[destination]);
                 return (int) program[regs[destination]].data;
                 break;
@@ -125,6 +126,7 @@ int double_operand::bic(uint16_t *regs, CPSR *states, i_cache *program)
                 program[regs[destination] + 1].data = result;
                 states->set_condition(condition);
 
+                trace_file(tracefile, 0, regs[destination]);
                 trace_file(tracefile, 1, regs[destination]);
                 regs[destination] += 2;
  
@@ -163,6 +165,7 @@ int double_operand::bic(uint16_t *regs, CPSR *states, i_cache *program)
                 states->set_condition(condition);
 
                 trace_file(tracefile, 0, regs[destination]);
+                trace_file(tracefile, 0, program[regs[destination]].data);
                 trace_file(tracefile, 1, program[regs[destination]].data);
                 regs[destination] += 2;
  
@@ -201,6 +204,7 @@ int double_operand::bic(uint16_t *regs, CPSR *states, i_cache *program)
                 program[regs[destination] + 1].data = result;
                 states->set_condition(condition);
 
+                trace_file(tracefile, 0, regs[destination]);
                 trace_file(tracefile, 1, regs[destination]);
  
             for(i = 0; i < 8; ++i)
@@ -238,6 +242,7 @@ int double_operand::bic(uint16_t *regs, CPSR *states, i_cache *program)
                 states->set_condition(condition);
 
                 trace_file(tracefile, 0, regs[destination]);
+                trace_file(tracefile, 0, program[regs[destination]].data);
                 trace_file(tracefile, 1, program[regs[destination]].data);
  
             for(i = 0; i < 8; ++i)
@@ -277,7 +282,8 @@ int double_operand::bic(uint16_t *regs, CPSR *states, i_cache *program)
                 states->set_condition(condition);
 
                 trace_file(tracefile, 0, regs[PC]);
-                trace_file(tracefile, 1, (uint16_t)index);
+                trace_file(tracefile, 0, index);
+                trace_file(tracefile, 1, index);
 
                 regs[PC] += 2;
 
@@ -318,7 +324,8 @@ int double_operand::bic(uint16_t *regs, CPSR *states, i_cache *program)
                 states->set_condition(condition);
 
                 trace_file(tracefile, 0, regs[PC]);
-                trace_file(tracefile, 0, (uint16_t)index);
+                trace_file(tracefile, 0, index);
+                trace_file(tracefile, 0, program[index].data);
                 trace_file(tracefile, 1, program[index].data);
  
 
@@ -585,7 +592,7 @@ int double_operand::bit(uint16_t *regs, CPSR *states, i_cache *program)
                 states->set_condition(condition);
 
                 trace_file(tracefile, 0, regs[PC]);
-                trace_file(tracefile, 0, (uint16_t)index);
+                trace_file(tracefile, 0, index);
  
 
                 regs[PC] += 2;
@@ -625,7 +632,7 @@ int double_operand::bit(uint16_t *regs, CPSR *states, i_cache *program)
                 states->set_condition(condition);
 
                 trace_file(tracefile, 0, regs[PC]);
-                trace_file(tracefile, 0, (uint16_t)index);
+                trace_file(tracefile, 0, index);
                 trace_file(tracefile, 0, program[index].data);
 
                 regs[PC] += 2;
@@ -728,6 +735,7 @@ int double_operand::bis(uint16_t *regs, CPSR *states, i_cache *program)
             cout << endl;
  
  
+                trace_file(tracefile, 0, regs[destination]);
                 trace_file(tracefile, 1, regs[destination]);
                 return (int) program[regs[destination]].data;
                 break;
@@ -757,6 +765,7 @@ int double_operand::bis(uint16_t *regs, CPSR *states, i_cache *program)
                 program[regs[destination] + 1].data = result;
                 states->set_condition(condition);
 
+                trace_file(tracefile, 0, regs[destination]);
                 trace_file(tracefile, 1, regs[destination]);
                 regs[destination] += 2;
  
@@ -795,6 +804,7 @@ int double_operand::bis(uint16_t *regs, CPSR *states, i_cache *program)
                 states->set_condition(condition);
 
                 trace_file(tracefile, 0, regs[destination]);
+                trace_file(tracefile, 0, program[regs[destination]].data);
                 trace_file(tracefile, 1, program[regs[destination]].data);
                 regs[destination] += 2;
  
@@ -833,6 +843,7 @@ int double_operand::bis(uint16_t *regs, CPSR *states, i_cache *program)
                 program[regs[destination] + 1].data = result;
                 states->set_condition(condition);
 
+                trace_file(tracefile, 0, regs[destination]);
                 trace_file(tracefile, 1, regs[destination]);
  
             for(i = 0; i < 8; ++i)
@@ -870,6 +881,7 @@ int double_operand::bis(uint16_t *regs, CPSR *states, i_cache *program)
                 states->set_condition(condition);
 
                 trace_file(tracefile, 0, regs[destination]);
+                trace_file(tracefile, 0, program[regs[destination]].data);
                 trace_file(tracefile, 1, program[regs[destination]].data);
  
             for(i = 0; i < 8; ++i)
@@ -909,7 +921,8 @@ int double_operand::bis(uint16_t *regs, CPSR *states, i_cache *program)
                 states->set_condition(condition);
 
                 trace_file(tracefile, 0, regs[PC]);
-                trace_file(tracefile, 1, (uint16_t)index);
+                trace_file(tracefile, 0, index);
+                trace_file(tracefile, 1, index);
  
 
                 regs[PC] += 2;
@@ -951,7 +964,8 @@ int double_operand::bis(uint16_t *regs, CPSR *states, i_cache *program)
                 states->set_condition(condition);
 
                 trace_file(tracefile, 0, regs[PC]);
-                trace_file(tracefile, 0, (uint16_t)index);
+                trace_file(tracefile, 0, index);
+                trace_file(tracefile, 0, program[index].data);
                 trace_file(tracefile, 1, program[index].data);
  
 
@@ -1052,7 +1066,8 @@ int double_operand::sub(uint16_t *regs, CPSR *states, i_cache *program)
 
                 states->set_condition(condition);
 
-                trace_file(tracefile, 1, program[regs[destination]].data);
+                trace_file(tracefile, 0, regs[destination]);
+                trace_file(tracefile, 1, regs[destination]);
  
             for(i = 0; i < 8; ++i)
                 cout << regs[i] << ' ';
@@ -1090,7 +1105,8 @@ int double_operand::sub(uint16_t *regs, CPSR *states, i_cache *program)
                 program[regs[destination] + 1].data = result;
 
                 states->set_condition(condition);
-                trace_file(tracefile, 1, program[regs[destination]].data);
+                trace_file(tracefile, 0, regs[destination]);
+                trace_file(tracefile, 1, regs[destination]);
                 regs[destination] += 2;
  
             for(i = 0; i < 8; ++i)
@@ -1128,8 +1144,9 @@ int double_operand::sub(uint16_t *regs, CPSR *states, i_cache *program)
                 program[program[regs[destination]].data + 1].data = result;
 
                 states->set_condition(condition);
+                trace_file(tracefile, 0, regs[destination]);
                 trace_file(tracefile, 0, program[regs[destination]].data);
-                trace_file(tracefile, 1, program[program[regs[destination]].data].data);
+                trace_file(tracefile, 1, program[regs[destination]].data);
                 regs[destination] += 2;
  
             for(i = 0; i < 8; ++i)
@@ -1169,7 +1186,8 @@ int double_operand::sub(uint16_t *regs, CPSR *states, i_cache *program)
                 program[regs[destination] + 1].data = result;
 
                 states->set_condition(condition);
-                trace_file(tracefile, 1, program[regs[destination]].data);
+                trace_file(tracefile, 0, regs[destination]);
+                trace_file(tracefile, 1, regs[destination]);
  
             for(i = 0; i < 8; ++i)
                 cout << regs[i] << ' ';
@@ -1207,8 +1225,9 @@ int double_operand::sub(uint16_t *regs, CPSR *states, i_cache *program)
                 program[program[regs[destination]].data + 1].data = result;
 
                 states->set_condition(condition);
+                trace_file(tracefile, 0, regs[destination]);
                 trace_file(tracefile, 0, program[regs[destination]].data);
-                trace_file(tracefile, 1, program[program[regs[destination]].data].data);
+                trace_file(tracefile, 1, program[regs[destination]].data);
  
             for(i = 0; i < 8; ++i)
                 cout << regs[i] << ' ';
@@ -1251,7 +1270,8 @@ int double_operand::sub(uint16_t *regs, CPSR *states, i_cache *program)
                 program[index + 1].data = result;
 
                 trace_file(tracefile, 0, regs[PC]);
-                trace_file(tracefile, 1, (uint16_t) index);
+                trace_file(tracefile, 0, index);
+                trace_file(tracefile, 1, index);
                 regs[PC] += 2;
  
             for(i = 0; i < 8; ++i)
@@ -1295,7 +1315,8 @@ int double_operand::sub(uint16_t *regs, CPSR *states, i_cache *program)
                 program[program[index].data + 1].data = result;
 
                 trace_file(tracefile, 0, regs[PC]);
-                trace_file(tracefile, 0, (uint16_t) index);
+                trace_file(tracefile, 0, index);
+                trace_file(tracefile, 0, program[index].data);
                 trace_file(tracefile, 1, program[index].data);
                 regs[PC] += 2;
  
@@ -1402,6 +1423,7 @@ int double_operand::add(uint16_t *regs, CPSR *states, i_cache *program)
                 program[regs[destination] + 1].data = program[regs[destination]].data;
 
                 states->set_condition(condition);
+                trace_file(tracefile, 0, regs[destination]);
                 trace_file(tracefile, 1, regs[destination]);
  
             for(i = 0; i < 8; ++i)
@@ -1444,6 +1466,7 @@ int double_operand::add(uint16_t *regs, CPSR *states, i_cache *program)
                 program[regs[destination] + 1].data = program[regs[destination]].data;
 
                 states->set_condition(condition);
+                trace_file(tracefile, 0, regs[destination]);
                 trace_file(tracefile, 1, regs[destination]);
 
                 regs[destination] += 2;
@@ -1489,6 +1512,7 @@ int double_operand::add(uint16_t *regs, CPSR *states, i_cache *program)
 
                 states->set_condition(condition);
                 trace_file(tracefile, 0, regs[destination]);
+                trace_file(tracefile, 0, program[regs[destination]].data);
                 trace_file(tracefile, 1, program[regs[destination]].data);
 
                 regs[destination] += 2;
@@ -1532,6 +1556,7 @@ int double_operand::add(uint16_t *regs, CPSR *states, i_cache *program)
                 program[regs[destination] + 1].data = program[regs[destination]].data;
 
                 states->set_condition(condition);
+                trace_file(tracefile, 0, regs[destination]);
                 trace_file(tracefile, 1, regs[destination]);
  
             for(i = 0; i < 8; ++i)
@@ -1576,6 +1601,7 @@ int double_operand::add(uint16_t *regs, CPSR *states, i_cache *program)
 
                 states->set_condition(condition);
                 trace_file(tracefile, 0, regs[destination]);
+                trace_file(tracefile, 0, program[regs[destination]].data);
                 trace_file(tracefile, 1, program[regs[destination]].data);
  
             for(i = 0; i < 8; ++i)
@@ -1623,7 +1649,8 @@ int double_operand::add(uint16_t *regs, CPSR *states, i_cache *program)
                 states->set_condition(condition);
 
             trace_file(tracefile, 0, regs[PC]);
-            trace_file(tracefile, 1, (uint16_t) index);
+            trace_file(tracefile, 0, index);
+            trace_file(tracefile, 1, index);
             regs[PC] += 2;
    
             for(i = 0; i < 8; ++i)
@@ -1668,7 +1695,8 @@ int double_operand::add(uint16_t *regs, CPSR *states, i_cache *program)
                 states->set_condition(condition);
 
             trace_file(tracefile, 0, regs[PC]);
-            trace_file(tracefile, 0, (uint16_t) index);
+            trace_file(tracefile, 0, index);
+            trace_file(tracefile, 0, program[index].data);
             trace_file(tracefile, 1, program[index].data);
             regs[PC] += 2;
   
@@ -1943,7 +1971,7 @@ int double_operand::compare(uint16_t *regs, CPSR *states, i_cache *program)
 
                 states->set_condition(condition);
                 trace_file(tracefile, 0, regs[PC]);
-                trace_file(tracefile, 0, (uint16_t) index);
+                trace_file(tracefile, 0, index);
                 regs[PC] += 2;
  
             for(i = 0; i < 8; ++i)
@@ -1983,7 +2011,7 @@ int double_operand::compare(uint16_t *regs, CPSR *states, i_cache *program)
 
                 states->set_condition(condition);
                 trace_file(tracefile, 0, regs[PC]);
-                trace_file(tracefile, 0, (uint16_t) index);
+                trace_file(tracefile, 0, index);
                 trace_file(tracefile, 0, program[index].data);
                 regs[PC] += 2;
 
@@ -2229,7 +2257,7 @@ int double_operand::move(uint16_t *regs, CPSR *states, i_cache *program)
             states->set_condition(condition);
 
             trace_file(tracefile, 0, regs[PC]);
-            trace_file(tracefile, 1, (uint16_t) index);
+            trace_file(tracefile, 1, index);
  
             regs[PC] += 2;
  
@@ -2267,7 +2295,7 @@ condition |= ZERO;
             states->set_condition(condition);
 
             trace_file(tracefile, 0, regs[PC]);
-            trace_file(tracefile, 0, (uint16_t) index);
+            trace_file(tracefile, 0, index);
             trace_file(tracefile, 1, program[index].data);
             
             regs[PC] += 2;
@@ -2354,10 +2382,10 @@ int double_operand::make_source(uint16_t *regs, i_cache *program)
             }
 
             trace_file(tracefile, 0, regs[PC]);
-            trace_file(tracefile, 0, (uint16_t) index);
+            trace_file(tracefile, 0, index);
             regs[PC] += 2;
-            cout << program[(uint16_t)index].data << endl;
-            return (int) program[(uint16_t)index].data;
+            cout << program[index].data << endl;
+            return (int) program[index].data;
             break;
         }
 
@@ -2371,13 +2399,13 @@ int double_operand::make_source(uint16_t *regs, i_cache *program)
             }
             index = program[index].data;
             trace_file(tracefile, 0, regs[PC]);
-            trace_file(tracefile, 0, (uint16_t) index);
+            trace_file(tracefile, 0, index);
             trace_file(tracefile, 0, program[index].data);
             regs[PC] += 2;
 
             cout << program[program[index].data].data << endl;
 
-            return (int) program[program[(uint16_t)index].data].data;
+            return (int) program[program[index].data].data;
             break;
         }
         default: {
