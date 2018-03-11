@@ -1130,7 +1130,6 @@ void extended::disp()
 
 int extended::instruction(uint16_t *regs, CPSR *states, i_cache * program)
 {
-    cout << "function_code: " << function_code << ": ";
     switch(function_code)
     {
         case MUL:
@@ -1195,7 +1194,6 @@ int trapIntMiscCond::instruction(uint16_t *regs, CPSR *states, i_cache *program)
 {
     char answer[25];
 
-    cout << "function_code: " << function_code << ": ";
    switch(function_code)
     {
         case TRAP:
@@ -1210,8 +1208,6 @@ int trapIntMiscCond::instruction(uint16_t *regs, CPSR *states, i_cache *program)
             }
         case HALT:
             {
-                cout << "HALT" << endl;
-
                 cin.sync();
                 cout << "End program?(Y/n) ";
                 cin.getline(answer, 25);
@@ -1220,13 +1216,10 @@ int trapIntMiscCond::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                 if(toupper(answer[0]) != 'N')
                     regs[PC] = I_SIZE;  //set to 65535, so next fetch
                                         //ends execution
-
                 break;
             }
         case WAIT:
             {
-                cout << "WAIT" << endl;
- 
                 cin.sync();
                 cout << "End program?(y/N) ";
                 cin.getline(answer, 25);
@@ -1240,72 +1233,60 @@ int trapIntMiscCond::instruction(uint16_t *regs, CPSR *states, i_cache *program)
             }
         case RESET:
             {
-                cout << "RESET" << endl;
                 break;
             }
         case CLC:
             {
-                cout << "CLC" << endl;
                 states->set_condition(states->get_condition() & ~CARRY);
                 break;
             }
         case CLV:
             {
-                cout << "CLV" << endl;
                 states->set_condition(states->get_condition() & ~V_OVERFLOW);
                 break;
             }
         case CLZ:
             {
-                cout << "CLZ" << endl;
                 states->set_condition(states->get_condition() & ~ZERO);
                 break;
             }
         case CLN:
             {
-                cout << "CLN" << endl;
                 states->set_condition(states->get_condition() & ~NEGATIVE);
                 break;
             }
         case CCC:
             {
-                cout << "CCC" << endl;
                 states->set_condition(states->get_condition() & 0xF0);
                 break;
             }
         case SEC:
             {
-                cout << "SEC" << endl;
                 states->set_condition(states->get_condition() | CARRY);
                 break;
             }
         case SEV:
             {
-                cout << "SEV" << endl;
                 states->set_condition(states->get_condition() | V_OVERFLOW);
                 break;
             }
         case SEZ:
             {
-                cout << "SEZ" << endl;
                 states->set_condition(states->get_condition() | ZERO);
                 break;
             }
         case SEN:
             {
-                cout << "SEN" << endl;
                 states->set_condition(states->get_condition() | NEGATIVE);
                 break;
             }
         case SCC:
             {
-                cout << "SCC" << endl;
                 states->set_condition(states->get_condition() | 0xF);
                 break;
             }
         case NOP:
             {
-                cout << "NOP" << endl;
                 break;
             }
         default:
@@ -1615,21 +1596,16 @@ void jump_sub::disp()
 
 int jump_sub::instruction(uint16_t *regs, CPSR *states, i_cache *program)
 {
-    int i;
     uint16_t index;
     int deferred;
     char taken = 'y';
     char type[10];
 
 
-    cout << "function_code: " << function_code << ": ";
    switch(function_code)
     {
         case JMP:
             {
-                
-                cout << "JMP" << endl;
-
                 switch(destination_code) {
                     case 0: { //register mode illegal
                                 cout << "illegal instruction\n";
@@ -1646,11 +1622,6 @@ int jump_sub::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                                 regs[PC] = regs[destination];
                                 sprintf(type, "JMP");
                                 branch_trace(br_trace, type, regs[PC], taken);
-                                for(i = 0; i < 8; ++i)
-                                {
-                                    cout << regs[i] << ' ';
-                                }
-                                cout << endl;
                                 break;
                             }
                     case 2: {   //autoincrement:
@@ -1666,11 +1637,6 @@ int jump_sub::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                                 regs[destination] += 2;
                                 sprintf(type, "JMP");
                                 branch_trace(br_trace, type, regs[PC], taken);
-                                for(i = 0; i < 8; ++i)
-                                {
-                                    cout << regs[i] << ' ';
-                                }
-                                cout << endl;
                                 break;
                             }
                     case 3: {   //autoincrement deferred:
@@ -1689,11 +1655,6 @@ int jump_sub::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                                 sprintf(type, "JMP");
                                 branch_trace(br_trace, type, regs[PC], taken);
                                 regs[destination] += 2;
-                                for(i = 0; i < 8; ++i)
-                                {
-                                    cout << regs[i] << ' ';
-                                }
-                                cout << endl;
                                 break;
                             }
                     case 4: {   //autodecrement:
@@ -1709,11 +1670,6 @@ int jump_sub::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                                 regs[PC] = regs[destination];
                                 sprintf(type, "JMP");
                                 branch_trace(br_trace, type, regs[PC], taken);
-                                for(i = 0; i < 8; ++i)
-                                {
-                                    cout << regs[i] << ' ';
-                                }
-                                cout << endl;
                                 break;
                             }
                     case 5: {   //autodecrement deferred:
@@ -1732,11 +1688,6 @@ int jump_sub::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                                 trace_file(tracefile, 0, regs[destination]);
                                 sprintf(type, "JMP");
                                 branch_trace(br_trace, type, regs[PC], taken);
-                                for(i = 0; i < 8; ++i)
-                                {
-                                    cout << regs[i] << ' ';
-                                }
-                                cout << endl;
                                 break;
                             }
                     case 6: {   //index: jump to 
@@ -1757,11 +1708,6 @@ int jump_sub::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                                 trace_file(tracefile, 0, regs[PC]);
                                 sprintf(type, "JMP");
                                 branch_trace(br_trace, type, regs[PC], taken);
-                                for (i = 0; i < 8; ++i)
-                                {
-                                    cout << regs[i] << ' ';
-                                }
-                                cout << endl;
                                 break;
                             }
                     case 7: {   //index deferred:
@@ -1785,11 +1731,6 @@ int jump_sub::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                                 trace_file(tracefile, 0, index);
                                 sprintf(type, "JMP");
                                 branch_trace(br_trace, type, regs[PC], taken);
-                                for (i = 0; i < 8; ++i)
-                                {
-                                    cout << regs[i] << ' ';
-                                }
-                                cout << endl;
                                 break;
                             }
                     default:
@@ -1803,7 +1744,6 @@ int jump_sub::instruction(uint16_t *regs, CPSR *states, i_cache *program)
             }
         case JSR:
             {
-                cout << "JSR" << endl;
                 switch(destination_code) {
                     case 0: {   //register mode
                                 //not legal
@@ -1828,11 +1768,6 @@ int jump_sub::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                                 trace_file(tracefile, 1, regs[SP]);
                                 sprintf(type, "JSR");
                                 branch_trace(br_trace, type, regs[PC], taken);
-                                for(i = 0; i < 8; ++i)
-                                {
-                                    cout << regs[i] << ' ';
-                                }
-                                cout << endl;
                                 break;
                             }
                     case 2: {   //autoincrement:
@@ -1855,11 +1790,6 @@ int jump_sub::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                                 sprintf(type, "JSR");
                                 branch_trace(br_trace, type, regs[PC], taken);
                                 regs[destination] += 2;
-                                for(i = 0; i < 8; ++i)
-                                {
-                                    cout << regs[i] << ' ';
-                                }
-                                cout << endl;
                                 break;
                             }
                     case 3: {   //autoincrement deferred:
@@ -1884,11 +1814,6 @@ int jump_sub::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                                 sprintf(type, "JSR");
                                 branch_trace(br_trace, type, regs[PC], taken);
                                 regs[destination] += 2;
-                                for(i = 0; i < 8; ++i)
-                                {
-                                    cout << regs[i] << ' ';
-                                }
-                                cout << endl;
                                 break;
                             }
                     case 4: {   //autodecrement:
@@ -1911,11 +1836,6 @@ int jump_sub::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                                 trace_file(tracefile, 1, regs[SP]);
                                 sprintf(type, "JSR");
                                 branch_trace(br_trace, type, regs[PC], taken);
-                                for(i = 0; i < 8; ++i)
-                                {
-                                    cout << regs[i] << ' ';
-                                }
-                                cout << endl;
                                 break;
                             }
                     case 5: {   //autodecrement deferred:
@@ -1941,11 +1861,6 @@ int jump_sub::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                                 trace_file(tracefile, 0, regs[destination]);
                                 sprintf(type, "JSR");
                                 branch_trace(br_trace, type, regs[PC], taken);
-                                for(i = 0; i < 8; ++i)
-                                {
-                                    cout << regs[i] << ' ';
-                                }
-                                cout << endl;
                                 break;
                             }
                     case 6: {   //index: push linkage register contents to 
@@ -1971,11 +1886,6 @@ int jump_sub::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                                 trace_file(tracefile, 0, regs[PC]);
                                 sprintf(type, "JSR");
                                 branch_trace(br_trace, type, regs[PC], taken);
-                                for(i = 0; i < 8; ++i)
-                                {
-                                    cout << regs[i] << ' ';
-                                }
-                                cout << endl;
                                 break;
                             }
                     case 7: {   //index deferred: push linkage register contents to 
@@ -2003,11 +1913,6 @@ int jump_sub::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                                 trace_file(tracefile, 0, index);
                                 sprintf(type, "JSR");
                                 branch_trace(br_trace, type, regs[PC], taken);
-                                for(i = 0; i < 8; ++i)
-                                {
-                                    cout << regs[i] << ' ';
-                                }
-                                cout << endl;
                                 break;
                             }
                     default: {
@@ -2021,7 +1926,6 @@ int jump_sub::instruction(uint16_t *regs, CPSR *states, i_cache *program)
             }
         case RTS:
             {
-                cout << "RTS" << endl;
 
                 //register mode
                 //load contents of register to PC                        
@@ -2037,11 +1941,6 @@ int jump_sub::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                 sprintf(type, "RTS");
                 branch_trace(br_trace, type, regs[PC], taken);
                 regs[SP] += 2;
-                for (i = 0; i < 8; ++i)
-                {
-                    cout << regs[i] << ' ';
-                }
-                cout << endl;
                 break;
             }
         default:
@@ -2146,13 +2045,10 @@ int branch::instruction(uint16_t *regs, CPSR *states, i_cache *program)
     char type[10];
     int condition = 0;
 
-    cout << "function_code: " << function_code << ": ";
    switch(function_code)
     {
         case BR:
             {
-                cout << "BR" << endl;
-
                 regs[PC] += (2 * (int8_t)offset);
                 sprintf(type, "BR");
                 branch_trace(br_trace, type, regs[PC], taken); 
@@ -2161,7 +2057,6 @@ int branch::instruction(uint16_t *regs, CPSR *states, i_cache *program)
             }
         case BNE:
             {
-                cout << "BNE" << endl;
                 taken = 'n';
 
                 condition = states->get_condition() & ZERO;
@@ -2176,7 +2071,6 @@ int branch::instruction(uint16_t *regs, CPSR *states, i_cache *program)
             }
         case BEQ:
             {
-                cout << "BEQ" << endl;
                 taken = 'n';
 
                 condition = states->get_condition() & ZERO;
@@ -2191,7 +2085,6 @@ int branch::instruction(uint16_t *regs, CPSR *states, i_cache *program)
             }
         case BPL:
             {
-                cout << "BPL" << endl;
                 taken = 'n';
 
                 condition = states->get_condition() & NEGATIVE;
@@ -2206,7 +2099,6 @@ int branch::instruction(uint16_t *regs, CPSR *states, i_cache *program)
             }
         case BMI:
             {
-                cout << "BMI" << endl;
                 taken = 'n';
 
                 condition = states->get_condition() & NEGATIVE;
@@ -2221,7 +2113,6 @@ int branch::instruction(uint16_t *regs, CPSR *states, i_cache *program)
             }
         case BVC:
             {
-                cout << "BVC" << endl;
                 taken = 'n';
 
                 condition = states->get_condition() & V_OVERFLOW;
@@ -2236,7 +2127,6 @@ int branch::instruction(uint16_t *regs, CPSR *states, i_cache *program)
             }
         case BVS:
             {
-                cout << "BVS" << endl;
                 taken = 'n';
 
                 condition = states->get_condition() & V_OVERFLOW;
@@ -2251,7 +2141,6 @@ int branch::instruction(uint16_t *regs, CPSR *states, i_cache *program)
             }
         case BCC:
             {
-                cout << "BCC" << endl;
                 taken = 'n';
 
                 condition = states->get_condition() & CARRY;
@@ -2266,7 +2155,6 @@ int branch::instruction(uint16_t *regs, CPSR *states, i_cache *program)
             }
         case BCS:
             {
-                cout << "BCS" << endl;
                 taken = 'n';
 
                 condition = states->get_condition() & CARRY;
@@ -2281,7 +2169,6 @@ int branch::instruction(uint16_t *regs, CPSR *states, i_cache *program)
             }
         case BGE:
             {   //branch if xnor N and V bits
-                cout << "BGE" << endl;
                 taken = 'n';
  
                 //xor N and V condition bits
@@ -2298,7 +2185,6 @@ int branch::instruction(uint16_t *regs, CPSR *states, i_cache *program)
             }
         case BLT:
             {   //branch if xor N and V bits
-                cout << "BLT" << endl;
                 taken = 'n';
 
                 //xor N and V condition bits
@@ -2316,7 +2202,6 @@ int branch::instruction(uint16_t *regs, CPSR *states, i_cache *program)
         case BGT:
             {   //branch if xnor N and V bits or Z bit
 
-                cout << "BGT" << endl;
                 taken = 'n';
  
                 //xor N and V condition bits
@@ -2334,7 +2219,6 @@ int branch::instruction(uint16_t *regs, CPSR *states, i_cache *program)
             }
         case BLE:
             {   //branch if xor N and V bits or Z bits
-                cout << "BLE" << endl;
                 taken = 'n';
  
                 //xor N and V condition bits
@@ -2352,7 +2236,6 @@ int branch::instruction(uint16_t *regs, CPSR *states, i_cache *program)
             }
         case BHI:
             {   //branch if C & Z both zero
-                cout << "BHI" << endl;
                 taken = 'n';
  
                 condition = (states->get_condition() & CARRY);
@@ -2370,7 +2253,6 @@ int branch::instruction(uint16_t *regs, CPSR *states, i_cache *program)
             }
         case BLOS:
             {   //branch if C | Z set
-                cout << "BLOS" << endl;
                 taken = 'n';
   
                 condition = (states->get_condition() & CARRY);
@@ -2672,10 +2554,7 @@ single_operand::single_operand(): command(), function_code(0), destination_mode(
 {
 }
 
-single_operand::single_operand(int to_data, char to_disposition, char * to_tracefile, int to_function_code,
-                               int to_destination_mode,
-                               int to_destination): command(to_data, to_disposition, to_tracefile), function_code(to_function_code),
-                                                    destination_mode(to_destination_mode), destination(to_destination)
+single_operand::single_operand(int to_data, char to_disposition, char * to_tracefile, int to_function_code, int to_destination_mode, int to_destination): command(to_data, to_disposition, to_tracefile), function_code(to_function_code), destination_mode(to_destination_mode), destination(to_destination)
 {
 }
 
@@ -2690,29 +2569,20 @@ void single_operand::disp()
 
 int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
 {
-    int i;
     int outcome = -1;
     int deferred = 0;   //temp for deferred addressing
     uint16_t index = 0;      //temp for index addressing
     int condition;      //temp for condition codes
 
-    cout << "function_code: " << function_code << ": ";
-
     switch(function_code)
     {
         case CLR:
             {
-                cout << "CLR" << endl;
                 switch (destination_mode) {
                     case 0: {           //register:
                                         //set register to 0
                         regs[destination] = 0;
                         states->set_condition(4);
-                        for(i = 0; i < 8; ++i)
-                        {
-                            cout << regs[i] << ' ';
-                        }
-                        cout << endl;
                         break;
                     }
                     case 1: {           //register deferred:
@@ -2728,11 +2598,6 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         states->set_condition(4);
                         trace_file(tracefile, 1, regs[destination]);   //write data write to trace file
                         outcome = 1;
-                        for(i = 0; i < 8; ++i)
-                        {
-                            cout << regs[i] << ' ';
-                        }
-                        cout << endl;
                         break;
                     }
                     case 2: {           //autoincrement:
@@ -2749,11 +2614,6 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         regs[destination] += 2;
                         states->set_condition(4);
                         outcome = 1;
-                        for(i = 0; i < 8; ++i)
-                        {
-                            cout << regs[i] << ' ';
-                        }
-                        cout << endl;
                         break;
                     }
                     case 3:         //autoincrement deferred:
@@ -2775,11 +2635,6 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         regs[destination] += 2;
                         states->set_condition(4);
                         outcome = 1;
-                        for(i = 0; i < 8; ++i)
-                        {
-                            cout << regs[i] << ' ';
-                        }
-                        cout << endl;
                         break;
                     }
                     case 4:         //autodecrement:
@@ -2798,11 +2653,6 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         program[regs[destination] + 1].data = 0;
                         states->set_condition(4);
                         trace_file(tracefile, 1, regs[destination]);
-                        for(i = 0; i < 8; ++i)
-                        {
-                            cout << regs[i] << ' ';
-                        }
-                        cout << endl;
                         break;
                     }
                     case 5: {       //autodecrement deferred:
@@ -2824,11 +2674,6 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         trace_file(tracefile, 1, (uint16_t)deferred);
                         states->set_condition(4);
                         outcome = 1;
-                        for(i = 0; i < 8; ++i)
-                        {
-                            cout << regs[i] << ' ';
-                        }
-                        cout << endl;
                         break;
                     }
                     case 6: {       //index:
@@ -2852,11 +2697,6 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         trace_file(tracefile, 1, index);
                         regs[PC] += 2;
                         states->set_condition(4);
-                        for(i = 0; i < 8; ++i)
-                        {
-                            cout << regs[i] << ' ';
-                        }
-                        cout << endl;
                         outcome = 1;
                         break;
                     }
@@ -2882,11 +2722,6 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         trace_file(tracefile, 1, program[index].data);
                         regs[PC] += 2;
                         states->set_condition(4);
-                        for(i = 0; i < 8; ++i)
-                        {
-                            cout << regs[i] << ' ';
-                        }
-                        cout << endl;
                         outcome = 1;
                         break;
                     }
@@ -2907,17 +2742,11 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
             }
         case COM:
             {
-                cout << "COM" << endl;
                 switch (destination_mode) {
                     case 0: {           //register:
                                         //flip register bits
                         regs[destination] ^= 0xFFFF;     //flip bits
                         states->set_condition(((regs[destination] >> 15) << 3)  | (!(regs[destination]) << 2) | 1);
-                        for(i = 0; i < 8; ++i)
-                        {
-                            cout << regs[i] << ' ';
-                        }
-                        cout << endl;
                         break;
                     }
                     case 1: {           //register deferred:
@@ -2934,11 +2763,6 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         trace_file(tracefile, 0, regs[destination]);   //data read to trace file
                         trace_file(tracefile, 1, regs[destination]);   //write data write to trace file
                         outcome = 1;
-                        for(i = 0; i < 8; ++i)
-                        {
-                            cout << regs[i] << ' ';
-                        }
-                        cout << endl;
                         break;
                     }
                     case 2: {           //autoincrement:
@@ -2956,11 +2780,6 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         regs[destination] += 2;
                         states->set_condition(((program[regs[destination]].data >> 15) << 3)  | (!(program[regs[destination]].data) << 2) | 1);
                         outcome = 1;
-                        for(i = 0; i < 8; ++i)
-                        {
-                            cout << regs[i] << ' ';
-                        }
-                        cout << endl;
                         break;
                     }
                     case 3:         //autoincrement deferred:
@@ -2983,11 +2802,6 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         condition = 0;
                         states->set_condition(((program[deferred].data >> 15) << 3)  | (!(program[deferred].data) << 2) | 1);
                         outcome = 1;
-                        for(i = 0; i < 8; ++i)
-                        {
-                            cout << regs[i] << ' ';
-                        }
-                        cout << endl;
                         break;
                     }
                     case 4:         //autodecrement:
@@ -3007,11 +2821,6 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         states->set_condition(((program[regs[destination]].data >> 15) << 3)  | (!(program[regs[destination]].data) << 2) | 1);
                         trace_file(tracefile, 0, regs[destination]);
                         trace_file(tracefile, 1, regs[destination]);
-                        for(i = 0; i < 8; ++i)
-                        {
-                            cout << regs[i] << ' ';
-                        }
-                        cout << endl;
                         break;
                     }
                     case 5: {       //autodecrement deferred:
@@ -3034,11 +2843,6 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         trace_file(tracefile, 1, (uint16_t)deferred);
                         states->set_condition(((program[deferred].data >> 15) << 3)  | (!(program[deferred].data) << 2) | 1);
                         outcome = 1;
-                        for(i = 0; i < 8; ++i)
-                        {
-                            cout << regs[i] << ' ';
-                        }
-                        cout << endl;
                         break;
                     }
                     case 6: {       //index:
@@ -3059,11 +2863,6 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         trace_file(tracefile, 0, index);
                         trace_file(tracefile, 1, index);
                         regs[PC] += 2;
-                        for(i = 0; i < 8; ++i)
-                        {
-                            cout << regs[i] << ' ';
-                        }
-                        cout << endl;
                         states->set_condition(((program[index + 1].data >> 15) << 3)  | (!(program[index].data) << 2) | 1);
                         outcome = 1;
                         break;
@@ -3090,11 +2889,6 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         trace_file(tracefile, 0, index);
                         trace_file(tracefile, 0, program[index].data);
                         trace_file(tracefile, 1, program[index].data);
-                        for(i = 0; i < 8; ++i)
-                        {
-                            cout << regs[i] << ' ';
-                        }
-                        cout << endl;
 
                         outcome = 1;
                         break;
@@ -3114,7 +2908,6 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
             }
         case INC:
             {
-                cout << "INC" << endl;
                 switch (destination_mode) {
                     case 0: {           //register:
                         //add 1 to signed value
@@ -3133,10 +2926,6 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                             condition |= NEGATIVE;
                         } else condition &= ~NEGATIVE;
                         states->set_condition(condition);       //set conditions
-                        for (i = 0; i < 8; ++i) {
-                            cout << regs[i] << ' ';
-                        }
-                        cout << endl;
                         break;
                     }
                     case 1: {           //register deferred:
@@ -3166,10 +2955,6 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         trace_file(tracefile, 0, regs[destination]);   //data read to trace file
                         trace_file(tracefile, 1, regs[destination]);   //write data write to trace file
                         outcome = 1;
-                        for (i = 0; i < 8; ++i) {
-                            cout << regs[i] << ' ';
-                        }
-                        cout << endl;
                         break;
                     }
                     case 2: {           //autoincrement:
@@ -3200,10 +2985,6 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         trace_file(tracefile, 1, regs[destination]);   //write data write to trace file
                         regs[destination] += 2;
                         outcome = 1;
-                        for (i = 0; i < 8; ++i) {
-                            cout << regs[i] << ' ';
-                        }
-                        cout << endl;
                         break;
                     }
                     case 3:         //autoincrement deferred:
@@ -3238,10 +3019,6 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         trace_file(tracefile, 1, (uint16_t)deferred);
                         regs[destination] += 2;
                         outcome = 1;
-                        for (i = 0; i < 8; ++i) {
-                            cout << regs[i] << ' ';
-                        }
-                        cout << endl;
                         break;
                     }
                     case 4:         //autodecrement:
@@ -3274,10 +3051,6 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         states->set_condition(condition);       //set conditions
                         trace_file(tracefile, 0, regs[destination]);   //data read to trace file
                         trace_file(tracefile, 1, regs[destination]);   //write data write to trace file
-                        for (i = 0; i < 8; ++i) {
-                            cout << regs[i] << ' ';
-                        }
-                        cout << endl;
                         break;
                     }
                     case 5: {       //autodecrement deferred:
@@ -3312,10 +3085,6 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         trace_file(tracefile, 0, regs[destination]);
                         trace_file(tracefile, 0, (uint16_t)deferred);
                         trace_file(tracefile, 1, (uint16_t)deferred);
-                        for (i = 0; i < 8; ++i) {
-                            cout << regs[i] << ' ';
-                        }
-                        cout << endl;
                         break;
                     }
                     case 6: {       //index:
@@ -3350,10 +3119,6 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         trace_file(tracefile, 0, index);
                         trace_file(tracefile, 1, index);
                         regs[PC] += 2;
-                        for (i = 0; i < 8; ++i) {
-                            cout << regs[i] << ' ';
-                        }
-                        cout << endl;
                         outcome = 1;
                         break;
                     }
@@ -3394,11 +3159,6 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         
                         regs[PC] += 2;
 
-                        for (i = 0; i < 8; ++i) {
-                            cout << regs[i] << ' ';
-                        }
-                        cout << endl;
-
                         outcome = 1;
                         break;
                     }
@@ -3416,7 +3176,6 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
             }
         case DEC:
             {
-                cout << "DEC" << endl;
                 switch (destination_mode) {
                     case 0: {           //register:
                         //subtract 1 from signed value
@@ -3435,10 +3194,6 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                             condition |= NEGATIVE;
                         } else condition &= ~NEGATIVE;
                         states->set_condition(condition);       //set conditions
-                        for (i = 0; i < 8; ++i) {
-                            cout << regs[i] << ' ';
-                        }
-                        cout << endl;
                         break;
                     }
                     case 1: {           //register deferred:
@@ -3468,10 +3223,6 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         trace_file(tracefile, 0, regs[destination]);   //data read to trace file
                         trace_file(tracefile, 1, regs[destination]);   //write data write to trace file
                         outcome = 1;
-                        for (i = 0; i < 8; ++i) {
-                            cout << regs[i] << ' ';
-                        }
-                        cout << endl;
                         break;
                     }
                     case 2: {           //autoincrement:
@@ -3502,10 +3253,6 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         trace_file(tracefile, 1, regs[destination]);   //write data write to trace file
                         regs[destination] += 2;
                         outcome = 1;
-                        for (i = 0; i < 8; ++i) {
-                            cout << regs[i] << ' ';
-                        }
-                        cout << endl;
                         break;
                     }
                     case 3:         //autoincrement deferred:
@@ -3540,10 +3287,6 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         trace_file(tracefile, 1, (uint16_t)deferred);
                         regs[destination] += 2;
                         outcome = 1;
-                        for (i = 0; i < 8; ++i) {
-                            cout << regs[i] << ' ';
-                        }
-                        cout << endl;
                         break;
                     }
                     case 4:         //autodecrement:
@@ -3576,10 +3319,6 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         states->set_condition(condition);       //set conditions
                         trace_file(tracefile, 0, regs[destination]);   //data read to trace file
                         trace_file(tracefile, 1, regs[destination]);   //write data write to trace file
-                        for (i = 0; i < 8; ++i) {
-                            cout << regs[i] << ' ';
-                        }
-                        cout << endl;
                         break;
                     }
                     case 5: {       //autodecrement deferred:
@@ -3614,10 +3353,6 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         trace_file(tracefile, 0, regs[destination]);
                         trace_file(tracefile, 0, (uint16_t)deferred);
                         trace_file(tracefile, 1, (uint16_t)deferred);
-                        for (i = 0; i < 8; ++i) {
-                            cout << regs[i] << ' ';
-                        }
-                        cout << endl;
                         break;
                     }
                     case 6: {       //index:
@@ -3652,10 +3387,6 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         trace_file(tracefile, 0, (uint16_t)index);
                         trace_file(tracefile, 1, (uint16_t)index);
                         regs[PC] += 2;
-                        for (i = 0; i < 8; ++i) {
-                            cout << regs[i] << ' ';
-                        }
-                        cout << endl;
                         outcome = 1;
                         break;
                     }
@@ -3696,11 +3427,6 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         
                         regs[PC] += 2;
 
-                        for (i = 0; i < 8; ++i) {
-                            cout << regs[i] << ' ';
-                        }
-                        cout << endl;
-
                         outcome = 1;
                         break;
                     }
@@ -3718,7 +3444,6 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
             }
         case NEG:
             {
-                cout << "NEG" << endl;
                 switch (destination_mode) {
                     case 0: {           //register:
                         //invert signed value
@@ -3742,10 +3467,6 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         } else condition &= ~CARRY;
 
                         states->set_condition(condition);       //set conditions
-                        for (i = 0; i < 8; ++i) {
-                            cout << regs[i] << ' ';
-                        }
-                        cout << endl;
                         break;
                     }
                     case 1: {           //register deferred:
@@ -3780,10 +3501,6 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         trace_file(tracefile, 0, regs[destination]);   //data read to trace file
                         trace_file(tracefile, 1, regs[destination]);   //write data write to trace file
                         outcome = 1;
-                        for (i = 0; i < 8; ++i) {
-                            cout << regs[i] << ' ';
-                        }
-                        cout << endl;
                         break;
                     }
                     case 2: {           //autoincrement:
@@ -3818,10 +3535,6 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         trace_file(tracefile, 1, regs[destination]);   //write data write to trace file
                         regs[destination] += 2;
                         outcome = 1;
-                        for (i = 0; i < 8; ++i) {
-                            cout << regs[i] << ' ';
-                        }
-                        cout << endl;
                         break;
                     }
                     case 3:         //autoincrement deferred:
@@ -3861,10 +3574,6 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         trace_file(tracefile, 1, (uint16_t)deferred);
                         regs[destination] += 2;
                         outcome = 1;
-                        for (i = 0; i < 8; ++i) {
-                            cout << regs[i] << ' ';
-                        }
-                        cout << endl;
                         break;
                     }
                     case 4:         //autodecrement:
@@ -3902,10 +3611,6 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         states->set_condition(condition);       //set conditions
                         trace_file(tracefile, 0, regs[destination]);   //data read to trace file
                         trace_file(tracefile, 1, regs[destination]);   //write data write to trace file
-                        for (i = 0; i < 8; ++i) {
-                            cout << regs[i] << ' ';
-                        }
-                        cout << endl;
                         break;
                     }
                     case 5: {       //autodecrement deferred:
@@ -3945,10 +3650,6 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         trace_file(tracefile, 0, regs[destination]);
                         trace_file(tracefile, 0, (uint16_t)deferred);
                         trace_file(tracefile, 1, (uint16_t)deferred);
-                        for (i = 0; i < 8; ++i) {
-                            cout << regs[i] << ' ';
-                        }
-                        cout << endl;
                         break;
                     }
                     case 6: {       //index:
@@ -3988,10 +3689,6 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         trace_file(tracefile, 0, index);
                         trace_file(tracefile, 1, index);
                         regs[PC] += 2;
-                        for (i = 0; i < 8; ++i) {
-                            cout << regs[i] << ' ';
-                        }
-                        cout << endl;
                         outcome = 1;
                         break;
                     }
@@ -4037,11 +3734,6 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         
                         regs[PC] += 2;
 
-                        for (i = 0; i < 8; ++i) {
-                            cout << regs[i] << ' ';
-                        }
-                        cout << endl;
-
                         outcome = 1;
                         break;
                     }
@@ -4059,7 +3751,6 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
             }
         case TST:
             {
-                cout << "TST" << endl;
                 switch (destination_mode) {
                     case 0: {           //register:
                         // signed value
@@ -4074,10 +3765,6 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         } else condition &= ~NEGATIVE;
 
                         states->set_condition(condition);       //set conditions
-                        for (i = 0; i < 8; ++i) {
-                            cout << regs[i] << ' ';
-                        }
-                        cout << endl;
                         break;
                     }
                     case 1: {           //register deferred:
@@ -4101,10 +3788,6 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         states->set_condition(condition);       //set conditions
                         trace_file(tracefile, 0, regs[destination]);   //write data write to trace file
                         outcome = 1;
-                        for (i = 0; i < 8; ++i) {
-                            cout << regs[i] << ' ';
-                        }
-                        cout << endl;
                         break;
                     }
                     case 2: {           //autoincrement:
@@ -4128,10 +3811,6 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         trace_file(tracefile, 0, regs[destination]);   //write data write to trace file
                         regs[destination] += 2;
                         outcome = 1;
-                        for (i = 0; i < 8; ++i) {
-                            cout << regs[i] << ' ';
-                        }
-                        cout << endl;
                         break;
                     }
                     case 3:         //autoincrement deferred:
@@ -4160,10 +3839,6 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         trace_file(tracefile, 0, (uint16_t)deferred);
                         regs[destination] += 2;
                         outcome = 1;
-                        for (i = 0; i < 8; ++i) {
-                            cout << regs[i] << ' ';
-                        }
-                        cout << endl;
                         break;
                     }
                     case 4:         //autodecrement:
@@ -4190,10 +3865,6 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
 
                         states->set_condition(condition);       //set conditions
                         trace_file(tracefile, 0, regs[destination]);   //write data write to trace file
-                        for (i = 0; i < 8; ++i) {
-                            cout << regs[i] << ' ';
-                        }
-                        cout << endl;
                         break;
                     }
                     case 5: {       //autodecrement deferred:
@@ -4222,10 +3893,6 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         states->set_condition(condition);       //set conditions
                         trace_file(tracefile, 0, regs[destination]);
                         trace_file(tracefile, 0, (uint16_t)deferred);
-                        for (i = 0; i < 8; ++i) {
-                            cout << regs[i] << ' ';
-                        }
-                        cout << endl;
                         break;
                     }
                     case 6: {       //index:
@@ -4254,10 +3921,6 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         trace_file(tracefile, 0, (uint16_t)index);
                         trace_file(tracefile, 0, regs[PC]);
                         regs[PC] += 2;
-                        for (i = 0; i < 8; ++i) {
-                            cout << regs[i] << ' ';
-                        }
-                        cout << endl;
                         outcome = 1;
                         break;
                     }
@@ -4292,11 +3955,6 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         
                         regs[PC] += 2;
 
-                        for (i = 0; i < 8; ++i) {
-                            cout << regs[i] << ' ';
-                        }
-                        cout << endl;
-
                         outcome = 1;
                         break;
                     }
@@ -4314,8 +3972,6 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
             }
         case ASR:
             {
-                cout << "ASR" << endl;
-
                 switch (destination_mode) {
                     case 0: {           //register:
                         // arithmetic shift left 16 bit
@@ -4339,10 +3995,6 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         } else condition &= ~V_OVERFLOW;
 
                         states->set_condition(condition);       //set conditions
-                        for (i = 0; i < 8; ++i) {
-                            cout << regs[i] << ' ';
-                        }
-                        cout << endl;
                         break;
                     }
                     case 1: {           //register deferred:
@@ -4379,10 +4031,6 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         trace_file(tracefile, 0, regs[destination]);   //data read to trace file
                         trace_file(tracefile, 1, regs[destination]);   //write data write to trace file
                         outcome = 1;
-                        for (i = 0; i < 8; ++i) {
-                            cout << regs[i] << ' ';
-                        }
-                        cout << endl;
                         break;
                     }
                     case 2: {           //autoincrement:
@@ -4420,10 +4068,6 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         trace_file(tracefile, 1, regs[destination]);   //write data write to trace file
                         regs[destination] += 2;
                         outcome = 1;
-                        for (i = 0; i < 8; ++i) {
-                            cout << regs[i] << ' ';
-                        }
-                        cout << endl;
                         break;
                     }
                     case 3:         //autoincrement deferred:
@@ -4463,10 +4107,6 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         trace_file(tracefile, 1, (uint16_t)deferred);
                         regs[destination] += 2;
                         outcome = 1;
-                        for (i = 0; i < 8; ++i) {
-                            cout << regs[i] << ' ';
-                        }
-                        cout << endl;
                         break;
                     }
                     case 4:         //autodecrement:
@@ -4506,10 +4146,6 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         trace_file(tracefile, 0, regs[destination]);   //data read to trace file
                         trace_file(tracefile, 1, regs[destination]);   //write data write to trace file
                         outcome = 1;
-                        for (i = 0; i < 8; ++i) {
-                            cout << regs[i] << ' ';
-                        }
-                        cout << endl;
                         break;
                     }
 
@@ -4550,10 +4186,6 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         trace_file(tracefile, 0, regs[destination]);
                         trace_file(tracefile, 0, (uint16_t)deferred);
                         trace_file(tracefile, 1, (uint16_t)deferred);
-                        for (i = 0; i < 8; ++i) {
-                            cout << regs[i] << ' ';
-                        }
-                        cout << endl;
                         break;
                     }
                     case 6: {       //index:
@@ -4594,10 +4226,6 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         trace_file(tracefile, 0, index);
                         trace_file(tracefile, 1, index);
                         regs[PC] += 2;
-                        for (i = 0; i < 8; ++i) {
-                            cout << regs[i] << ' ';
-                        }
-                        cout << endl;
                         outcome = 1;
                         break;
                     }
@@ -4643,11 +4271,6 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         
                         regs[PC] += 2;
 
-                        for (i = 0; i < 8; ++i) {
-                            cout << regs[i] << ' ';
-                        }
-                        cout << endl;
-
                         outcome = 1;
                         break;
                     }
@@ -4666,9 +4289,6 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
             }
         case ASL:
             {
- 
-               cout << "ASL" << endl;
-
                 switch (destination_mode) {
                     case 0: {           //register:
                         // arithmetic shift left 16 bit
@@ -4691,10 +4311,6 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         } else condition &= ~V_OVERFLOW;
 
                         states->set_condition(condition);       //set conditions
-                        for (i = 0; i < 8; ++i) {
-                            cout << regs[i] << ' ';
-                        }
-                        cout << endl;
                         break;
                     }
                     case 1: {           //register deferred:
@@ -4730,10 +4346,6 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         trace_file(tracefile, 0, regs[destination]);   //data read to trace file
                         trace_file(tracefile, 1, regs[destination]);   //write data write to trace file
                         outcome = 1;
-                        for (i = 0; i < 8; ++i) {
-                            cout << regs[i] << ' ';
-                        }
-                        cout << endl;
                         break;
                     }
                     case 2: {           //autoincrement:
@@ -4770,10 +4382,6 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         trace_file(tracefile, 1, regs[destination]);   //write data write to trace file
                         regs[destination] += 2;
                         outcome = 1;
-                        for (i = 0; i < 8; ++i) {
-                            cout << regs[i] << ' ';
-                        }
-                        cout << endl;
                         break;
                     }
                     case 3:         //autoincrement deferred:
@@ -4812,10 +4420,6 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         trace_file(tracefile, 1, (uint16_t)deferred);
                         regs[destination] += 2;
                         outcome = 1;
-                        for (i = 0; i < 8; ++i) {
-                            cout << regs[i] << ' ';
-                        }
-                        cout << endl;
                         break;
                     }
                     case 4:         //autodecrement:
@@ -4855,10 +4459,6 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         trace_file(tracefile, 1, regs[destination]);   //write data write to trace file
                         regs[destination] += 2;
                         outcome = 1;
-                        for (i = 0; i < 8; ++i) {
-                            cout << regs[i] << ' ';
-                        }
-                        cout << endl;
                         break;
                     }
 
@@ -4899,10 +4499,6 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         trace_file(tracefile, 0, regs[destination]);
                         trace_file(tracefile, 0, (uint16_t)deferred);
                         trace_file(tracefile, 1, (uint16_t)deferred);
-                        for (i = 0; i < 8; ++i) {
-                            cout << regs[i] << ' ';
-                        }
-                        cout << endl;
                         break;
                     }
                     case 6: {       //index:
@@ -4942,10 +4538,6 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         trace_file(tracefile, 0, index);
                         trace_file(tracefile, 1, index);
                         regs[PC] += 2;
-                        for (i = 0; i < 8; ++i) {
-                            cout << regs[i] << ' ';
-                        }
-                        cout << endl;
                         outcome = 1;
                         break;
                     }
@@ -4990,11 +4582,6 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         
                         regs[PC] += 2;
 
-                        for (i = 0; i < 8; ++i) {
-                            cout << regs[i] << ' ';
-                        }
-                        cout << endl;
-
                         outcome = 1;
                         break;
                     }
@@ -5013,8 +4600,6 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
             }
         case ROR:
             {
-                cout << "ROR" << endl;
- 
                 switch (destination_mode) {
                     case 0: {           //register:
                         // rotate right 1 bit
@@ -5038,10 +4623,6 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         } else condition &= ~V_OVERFLOW;
 
                         states->set_condition(condition);       //set conditions
-                        for (i = 0; i < 8; ++i) {
-                            cout << regs[i] << ' ';
-                        }
-                        cout << endl;
                         break;
                     }
                     case 1: {           //register deferred:
@@ -5078,10 +4659,6 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         trace_file(tracefile, 0, regs[destination]);   //data read to trace file
                         trace_file(tracefile, 1, regs[destination]);   //write data write to trace file
                         outcome = 1;
-                        for (i = 0; i < 8; ++i) {
-                            cout << regs[i] << ' ';
-                        }
-                        cout << endl;
                         break;
                     }
                     case 2: {           //autoincrement:
@@ -5119,10 +4696,6 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         trace_file(tracefile, 1, regs[destination]);   //write data write to trace file
                         regs[destination] += 2;
                         outcome = 1;
-                        for (i = 0; i < 8; ++i) {
-                            cout << regs[i] << ' ';
-                        }
-                        cout << endl;
                         break;
                     }
                     case 3:         //autoincrement deferred:
@@ -5162,10 +4735,6 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         trace_file(tracefile, 1, (uint16_t)deferred);
                         regs[destination] += 2;
                         outcome = 1;
-                        for (i = 0; i < 8; ++i) {
-                            cout << regs[i] << ' ';
-                        }
-                        cout << endl;
                         break;
                     }
                     case 4:         //autodecrement:
@@ -5206,10 +4775,6 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         trace_file(tracefile, 1, regs[destination]);   //write data write to trace file
                         regs[destination] += 2;
                         outcome = 1;
-                        for (i = 0; i < 8; ++i) {
-                            cout << regs[i] << ' ';
-                        }
-                        cout << endl;
                         break;
                     }
 
@@ -5251,10 +4816,6 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         trace_file(tracefile, 0, regs[destination]);
                         trace_file(tracefile, 0, (uint16_t)deferred);
                         trace_file(tracefile, 1, (uint16_t)deferred);
-                        for (i = 0; i < 8; ++i) {
-                            cout << regs[i] << ' ';
-                        }
-                        cout << endl;
                         break;
                     }
                     case 6: {       //index:
@@ -5295,10 +4856,6 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         trace_file(tracefile, 0, index);
                         trace_file(tracefile, 1, index);
                         regs[PC] += 2;
-                        for (i = 0; i < 8; ++i) {
-                            cout << regs[i] << ' ';
-                        }
-                        cout << endl;
                         outcome = 1;
                         break;
                     }
@@ -5344,11 +4901,6 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         
                         regs[PC] += 2;
 
-                        for (i = 0; i < 8; ++i) {
-                            cout << regs[i] << ' ';
-                        }
-                        cout << endl;
-
                         outcome = 1;
                         break;
                     }
@@ -5367,8 +4919,6 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
             }
         case ROL:
             {
-                cout << "ROL" << endl;
- 
                 switch (destination_mode) {
                     case 0: {           //register:
                         // rotate left 1 bit
@@ -5392,10 +4942,6 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         } else condition &= ~V_OVERFLOW;
 
                         states->set_condition(condition);       //set conditions
-                        for (i = 0; i < 8; ++i) {
-                            cout << regs[i] << ' ';
-                        }
-                        cout << endl;
                         break;
                     }
                     case 1: {           //register deferred:
@@ -5432,10 +4978,6 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         trace_file(tracefile, 0, regs[destination]);   //write data write to trace file
                         trace_file(tracefile, 1, regs[destination]);   //write data write to trace file
                         outcome = 1;
-                        for (i = 0; i < 8; ++i) {
-                            cout << regs[i] << ' ';
-                        }
-                        cout << endl;
                         break;
                     }
                     case 2: {           //autoincrement:
@@ -5473,10 +5015,6 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         trace_file(tracefile, 1, regs[destination]);   //write data write to trace file
                         regs[destination] += 2;
                         outcome = 1;
-                        for (i = 0; i < 8; ++i) {
-                            cout << regs[i] << ' ';
-                        }
-                        cout << endl;
                         break;
                     }
                     case 3:         //autoincrement deferred:
@@ -5516,10 +5054,6 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         trace_file(tracefile, 1, (uint16_t)deferred);
                         regs[destination] += 2;
                         outcome = 1;
-                        for (i = 0; i < 8; ++i) {
-                            cout << regs[i] << ' ';
-                        }
-                        cout << endl;
                         break;
                     }
                     case 4:         //autodecrement:
@@ -5560,10 +5094,6 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         trace_file(tracefile, 1, regs[destination]);   //write data write to trace file
                         regs[destination] += 2;
                         outcome = 1;
-                        for (i = 0; i < 8; ++i) {
-                            cout << regs[i] << ' ';
-                        }
-                        cout << endl;
                         break;
                     }
 
@@ -5605,10 +5135,6 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         trace_file(tracefile, 0, regs[destination]);
                         trace_file(tracefile, 0, (uint16_t)deferred);
                         trace_file(tracefile, 1, (uint16_t)deferred);
-                        for (i = 0; i < 8; ++i) {
-                            cout << regs[i] << ' ';
-                        }
-                        cout << endl;
                         break;
                     }
                     case 6: {       //index:
@@ -5649,10 +5175,6 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         trace_file(tracefile, 0, index);
                         trace_file(tracefile, 1, index);
                         regs[PC] += 2;
-                        for (i = 0; i < 8; ++i) {
-                            cout << regs[i] << ' ';
-                        }
-                        cout << endl;
                         outcome = 1;
                         break;
                     }
@@ -5698,11 +5220,6 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         
                         regs[PC] += 2;
 
-                        for (i = 0; i < 8; ++i) {
-                            cout << regs[i] << ' ';
-                        }
-                        cout << endl;
-
                         outcome = 1;
                         break;
                     }
@@ -5722,8 +5239,6 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
             }
         case SWAB:
             {
-                cout << "SWAB" << endl;
-  
                 switch (destination_mode) {
                     case 0: {           //register:
                         // swap bytes
@@ -5743,10 +5258,6 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         } else condition &= ~NEGATIVE;
 
                         states->set_condition(condition);       //set conditions
-                        for (i = 0; i < 8; ++i) {
-                            cout << regs[i] << ' ';
-                        }
-                        cout << endl;
                         break;
                     }
 
@@ -5780,10 +5291,6 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         trace_file(tracefile, 0, regs[destination]);   //data read to trace file
                         trace_file(tracefile, 1, regs[destination]);   //write data write to trace file
                         outcome = 1;
-                        for (i = 0; i < 8; ++i) {
-                            cout << regs[i] << ' ';
-                        }
-                        cout << endl;
                         break;
                     }
 
@@ -5818,10 +5325,6 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         trace_file(tracefile, 1, regs[destination]);   //write data write to trace file
                         regs[destination] += 2;
                         outcome = 1;
-                        for (i = 0; i < 8; ++i) {
-                            cout << regs[i] << ' ';
-                        }
-                        cout << endl;
                         break;
                     }
 
@@ -5859,10 +5362,6 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         trace_file(tracefile, 1, (uint16_t)deferred);
                         regs[destination] += 2;
                         outcome = 1;
-                        for (i = 0; i < 8; ++i) {
-                            cout << regs[i] << ' ';
-                        }
-                        cout << endl;
                         break;
                     }
 
@@ -5898,10 +5397,6 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         trace_file(tracefile, 0, regs[destination]);   //data read to trace file
                         trace_file(tracefile, 1, regs[destination]);   //write data write to trace file
                         outcome = 1;
-                        for (i = 0; i < 8; ++i) {
-                            cout << regs[i] << ' ';
-                        }
-                        cout << endl;
                         break;
                     }
 
@@ -5942,10 +5437,6 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         trace_file(tracefile, 0, (uint16_t)deferred);
                         trace_file(tracefile, 1, (uint16_t)deferred);
                         outcome = 1;
-                        for (i = 0; i < 8; ++i) {
-                            cout << regs[i] << ' ';
-                        }
-                        cout << endl;
                         break;
                     }
 
@@ -5984,10 +5475,6 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         trace_file(tracefile, 1, index);
                         outcome = 1;
                         regs[PC] += 2;
-                        for (i = 0; i < 8; ++i) {
-                            cout << regs[i] << ' ';
-                        }
-                        cout << endl;
                         break;
                     }
 
@@ -6029,10 +5516,6 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         trace_file(tracefile, 1, program[index].data);
                         outcome = 1;
                         regs[PC] += 2;
-                        for (i = 0; i < 8; ++i) {
-                            cout << regs[i] << ' ';
-                        }
-                        cout << endl;
                         break;
                     }
 
@@ -6048,8 +5531,6 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
 
         case ADC:
             {
-                cout << "ADC" << endl;
-   
                 switch (destination_mode) {
                     case 0: {           //register:
                         // add carry
@@ -6083,10 +5564,6 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         } else condition &= ~NEGATIVE;
 
                         states->set_condition(condition);       //set conditions
-                        for (i = 0; i < 8; ++i) {
-                            cout << regs[i] << ' ';
-                        }
-                        cout << endl;
                         break;
                     }
 
@@ -6133,10 +5610,6 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         states->set_condition(condition);       //set conditions
                         trace_file(tracefile, 0, regs[destination]);   //data read to trace file
                         trace_file(tracefile, 1, regs[destination]);   //write data write to trace file
-                        for (i = 0; i < 8; ++i) {
-                            cout << regs[i] << ' ';
-                        }
-                        cout << endl;
                         break;
                     }
 
@@ -6185,10 +5658,6 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         trace_file(tracefile, 1, regs[destination]);   //write data write to trace file
                         regs[destination] += 2;
                         outcome = 1;
-                        for (i = 0; i < 8; ++i) {
-                            cout << regs[i] << ' ';
-                        }
-                        cout << endl;
                         break;
                     }
 
@@ -6240,10 +5709,6 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         trace_file(tracefile, 1, (uint16_t)deferred);
                         regs[destination] += 2;
                         outcome = 1;
-                        for (i = 0; i < 8; ++i) {
-                            cout << regs[i] << ' ';
-                        }
-                        cout << endl;
                         break;
                     }
 
@@ -6293,10 +5758,6 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         trace_file(tracefile, 0, regs[destination]);   //data read to trace file
                         trace_file(tracefile, 1, regs[destination]);   //write data write to trace file
                         outcome = 1;
-                        for (i = 0; i < 8; ++i) {
-                            cout << regs[i] << ' ';
-                        }
-                        cout << endl;
                         break;
                     }
 
@@ -6351,10 +5812,6 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         trace_file(tracefile, 0, (uint16_t)deferred);
                         trace_file(tracefile, 1, (uint16_t)deferred);
                         outcome = 1;
-                        for (i = 0; i < 8; ++i) {
-                            cout << regs[i] << ' ';
-                        }
-                        cout << endl;
                         break;
                     }
 
@@ -6408,10 +5865,6 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         trace_file(tracefile, 1, index);
                         outcome = 1;
                         regs[PC] += 2;
-                        for (i = 0; i < 8; ++i) {
-                            cout << regs[i] << ' ';
-                        }
-                        cout << endl;
                         break;
                     }
 
@@ -6467,10 +5920,6 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         trace_file(tracefile, 1, program[index].data);
                         outcome = 1;
                         regs[PC] += 2;
-                        for (i = 0; i < 8; ++i) {
-                            cout << regs[i] << ' ';
-                        }
-                        cout << endl;
                         break;
                     }
 
@@ -6491,7 +5940,6 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
             }
         case SBC:
             {
-                cout << "SBC" << endl;
     
                 switch (destination_mode) {
                     case 0: {           //register:
@@ -6526,10 +5974,6 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         } else condition &= ~NEGATIVE;
 
                         states->set_condition(condition);       //set conditions
-                        for (i = 0; i < 8; ++i) {
-                            cout << regs[i] << ' ';
-                        }
-                        cout << endl;
                         break;
                     }
 
@@ -6577,10 +6021,6 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         states->set_condition(condition);       //set conditions
                         trace_file(tracefile, 0, regs[destination]);   //data read to trace file
                         trace_file(tracefile, 1, regs[destination]);   //write data write to trace file
-                        for (i = 0; i < 8; ++i) {
-                            cout << regs[i] << ' ';
-                        }
-                        cout << endl;
                         break;
                     }
 
@@ -6629,10 +6069,6 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         trace_file(tracefile, 1, regs[destination]);   //write data write to trace file
                         regs[destination] += 2;
                         outcome = 1;
-                        for (i = 0; i < 8; ++i) {
-                            cout << regs[i] << ' ';
-                        }
-                        cout << endl;
                         break;
                     }
 
@@ -6685,10 +6121,6 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         trace_file(tracefile, 1, (uint16_t)deferred);
                         regs[destination] += 2;
                         outcome = 1;
-                        for (i = 0; i < 8; ++i) {
-                            cout << regs[i] << ' ';
-                        }
-                        cout << endl;
                         break;
                     }
 
@@ -6738,10 +6170,6 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         trace_file(tracefile, 0, regs[destination]);   //data read to trace file
                         trace_file(tracefile, 1, regs[destination]);   //write data write to trace file
                         outcome = 1;
-                        for (i = 0; i < 8; ++i) {
-                            cout << regs[i] << ' ';
-                        }
-                        cout << endl;
                         break;
                     }
 
@@ -6798,10 +6226,6 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         trace_file(tracefile, 0, (uint16_t)deferred);
                         trace_file(tracefile, 1, (uint16_t)deferred);
                         outcome = 1;
-                        for (i = 0; i < 8; ++i) {
-                            cout << regs[i] << ' ';
-                        }
-                        cout << endl;
                         break;
                     }
 
@@ -6856,10 +6280,6 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         trace_file(tracefile, 1, index);
                         outcome = 1;
                         regs[PC] += 2;
-                        for (i = 0; i < 8; ++i) {
-                            cout << regs[i] << ' ';
-                        }
-                        cout << endl;
                         break;
                     }
 
@@ -6915,10 +6335,6 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         trace_file(tracefile, 1, program[index].data);
                         outcome = 1;
                         regs[PC] += 2;
-                        for (i = 0; i < 8; ++i) {
-                            cout << regs[i] << ' ';
-                        }
-                        cout << endl;
                         break;
                     }
 
@@ -6939,7 +6355,6 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
             }
         case SXT:
             {
-                cout << "SXT" << endl;
 
                 switch(destination_mode) {
                     case 0: {       //register: set to N flag
@@ -6958,11 +6373,6 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                                 }
 
                                 states->set_condition(condition);
-
-                                for(i = 0; i < 8; ++i)
-                                    cout << regs[i] << ' ';
-
-                                cout << endl;
                                 outcome = regs[destination];
                                 break;
                             }
@@ -6992,11 +6402,6 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                                 states->set_condition(condition);
 
                                 trace_file(tracefile, 1, regs[destination]);
-
-                                for(i = 0; i < 8; ++i)
-                                    cout << regs[i] << ' ';
-
-                                cout << endl;
                                 outcome = program[regs[destination]].data;
                                 break;
                             }
@@ -7028,10 +6433,6 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                                 trace_file(tracefile, 1, regs[destination]);
 
                                 regs[destination] += 2;
-                                for(i = 0; i < 8; ++i)
-                                    cout << regs[i] << ' ';
-
-                                cout << endl;
                                 outcome = program[regs[destination]].data;
                                 break;
                             }
@@ -7067,10 +6468,6 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                                 trace_file(tracefile, 1, deferred);
 
                                 regs[destination] += 2;
-                                for(i = 0; i < 8; ++i)
-                                    cout << regs[i] << ' ';
-
-                                cout << endl;
                                 outcome = program[deferred].data;
                                 break;
                             }
@@ -7103,11 +6500,6 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                                 
                                 states->set_condition(condition);
                                 trace_file(tracefile, 1, regs[destination]);
-
-                                for(i = 0; i < 8; ++i)
-                                    cout << regs[i] << ' ';
-
-                                cout << endl;
                                 outcome = program[regs[destination]].data;
                                 break;
                             }
@@ -7144,10 +6536,6 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                                 trace_file(tracefile, 0, regs[destination]);
                                 trace_file(tracefile, 1, deferred);
 
-                                for(i = 0; i < 8; ++i)
-                                    cout << regs[i] << ' ';
-
-                                cout << endl;
                                 outcome = program[deferred].data;
                                 break;
                             }
@@ -7186,10 +6574,6 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                                 trace_file(tracefile, 1, index);
 
                                 regs[PC] += 2;
-                                for(i = 0; i < 8; ++i)
-                                    cout << regs[i] << ' ';
-
-                                cout << endl;
                                 outcome = program[index].data;
                                 break;
                             }
@@ -7229,10 +6613,6 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                                 trace_file(tracefile, 1, program[index].data);
 
                                 regs[PC] += 2;
-                                for(i = 0; i < 8; ++i)
-                                    cout << regs[i] << ' ';
-
-                                cout << endl;
                                 outcome = program[program[index].data].data;
                                 break;
                             }

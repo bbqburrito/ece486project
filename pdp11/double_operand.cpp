@@ -28,7 +28,6 @@ void double_operand::disp()
 //bic
 int double_operand::bic(uint16_t *regs, CPSR *states, i_cache *program)
 {
-    int i;
     uint16_t index = 0;
     int source_op = make_source(regs, program);
     int condition = 0;
@@ -57,12 +56,6 @@ int double_operand::bic(uint16_t *regs, CPSR *states, i_cache *program)
 
                 states->set_condition(condition);
  
-            for(i = 0; i < 8; ++i)
-                cout << regs[i] << ' ';
-
-            cout << endl;
- 
- 
                 return (int) regs[destination];
                 break;
             }
@@ -89,12 +82,6 @@ int double_operand::bic(uint16_t *regs, CPSR *states, i_cache *program)
                 program[regs[destination] + 1].data = result;
 
                 states->set_condition(condition);
- 
-            for(i = 0; i < 8; ++i)
-                cout << regs[i] << ' ';
-
-            cout << endl;
- 
  
                 trace_file(tracefile, 0, regs[destination]);
                 trace_file(tracefile, 1, regs[destination]);
@@ -130,12 +117,6 @@ int double_operand::bic(uint16_t *regs, CPSR *states, i_cache *program)
                 trace_file(tracefile, 1, regs[destination]);
                 regs[destination] += 2;
  
-            for(i = 0; i < 8; ++i)
-                cout << regs[i] << ' ';
-
-            cout << endl;
- 
- 
                 return (int) program[regs[destination] - 2].data;
                 break;
             }
@@ -169,12 +150,6 @@ int double_operand::bic(uint16_t *regs, CPSR *states, i_cache *program)
                 trace_file(tracefile, 1, program[regs[destination]].data);
                 regs[destination] += 2;
  
-            for(i = 0; i < 8; ++i)
-                cout << regs[i] << ' ';
-
-            cout << endl;
- 
- 
                 return (int) program[regs[destination] - 2].data;
                 break;
             }
@@ -207,12 +182,6 @@ int double_operand::bic(uint16_t *regs, CPSR *states, i_cache *program)
                 trace_file(tracefile, 0, regs[destination]);
                 trace_file(tracefile, 1, regs[destination]);
  
-            for(i = 0; i < 8; ++i)
-                cout << regs[i] << ' ';
-
-            cout << endl;
- 
- 
                 return (int) program[regs[destination]].data;
                 break;
             }
@@ -244,12 +213,6 @@ int double_operand::bic(uint16_t *regs, CPSR *states, i_cache *program)
                 trace_file(tracefile, 0, regs[destination]);
                 trace_file(tracefile, 0, program[regs[destination]].data);
                 trace_file(tracefile, 1, program[regs[destination]].data);
- 
-            for(i = 0; i < 8; ++i)
-                cout << regs[i] << ' ';
-
-            cout << endl;
- 
  
                 return (int) program[regs[destination]].data;
                 break;
@@ -286,12 +249,6 @@ int double_operand::bic(uint16_t *regs, CPSR *states, i_cache *program)
                 trace_file(tracefile, 1, index);
 
                 regs[PC] += 2;
-
-            for(i = 0; i < 8; ++i)
-                cout << regs[i] << ' ';
-
-            cout << endl;
- 
  
                 return (int) program[index].data;
                 break;
@@ -330,12 +287,6 @@ int double_operand::bic(uint16_t *regs, CPSR *states, i_cache *program)
  
 
                 regs[PC] += 2;
-
-            for(i = 0; i < 8; ++i)
-                cout << regs[i] << ' ';
-
-            cout << endl;
- 
  
                 return (int) program[program[index].data].data;
                 break;
@@ -351,14 +302,9 @@ int double_operand::bic(uint16_t *regs, CPSR *states, i_cache *program)
     return 0x10000;
 }
 
-
-
-
-
 //bit
 int double_operand::bit(uint16_t *regs, CPSR *states, i_cache *program)
 {
-    int i;
     uint16_t index = 0;
     int source_op = make_source(regs, program);
     int condition = 0;
@@ -385,12 +331,6 @@ int double_operand::bit(uint16_t *regs, CPSR *states, i_cache *program)
 
                 states->set_condition(condition);
  
-            for(i = 0; i < 8; ++i)
-                cout << regs[i] << ' ';
-
-            cout << endl;
- 
- 
                 return (int) result;
                 break;
             }
@@ -414,12 +354,6 @@ int double_operand::bit(uint16_t *regs, CPSR *states, i_cache *program)
                     condition |= NEGATIVE;
 
                 states->set_condition(condition);
- 
-            for(i = 0; i < 8; ++i)
-                cout << regs[i] << ' ';
-
-            cout << endl;
- 
  
                 trace_file(tracefile, 0, regs[destination]);
                 return (int) result;
@@ -451,12 +385,6 @@ int double_operand::bit(uint16_t *regs, CPSR *states, i_cache *program)
                 trace_file(tracefile, 0, regs[destination]);
                 regs[destination] += 2;
  
-            for(i = 0; i < 8; ++i)
-                cout << regs[i] << ' ';
-
-            cout << endl;
- 
- 
                 return (int) result;
                 break;
             }
@@ -487,12 +415,6 @@ int double_operand::bit(uint16_t *regs, CPSR *states, i_cache *program)
                 trace_file(tracefile, 0, program[regs[destination]].data);
                 regs[destination] += 2;
  
-            for(i = 0; i < 8; ++i)
-                cout << regs[i] << ' ';
-
-            cout << endl;
- 
- 
                 return (int) result;
                 break;
             }
@@ -521,12 +443,6 @@ int double_operand::bit(uint16_t *regs, CPSR *states, i_cache *program)
                 states->set_condition(condition);
 
                 trace_file(tracefile, 0, regs[destination]);
- 
-            for(i = 0; i < 8; ++i)
-                cout << regs[i] << ' ';
-
-            cout << endl;
- 
  
                 return (int) result;
                 break;
@@ -557,17 +473,9 @@ int double_operand::bit(uint16_t *regs, CPSR *states, i_cache *program)
                 trace_file(tracefile, 0, regs[destination]);
                 trace_file(tracefile, 0, program[regs[destination]].data);
  
-            for(i = 0; i < 8; ++i)
-                cout << regs[i] << ' ';
-
-            cout << endl;
- 
- 
                 return (int) result;
                 break;
             }
-
-
 
         case 6: {   //index
             if (destination == PC)
@@ -593,15 +501,8 @@ int double_operand::bit(uint16_t *regs, CPSR *states, i_cache *program)
 
                 trace_file(tracefile, 0, regs[PC]);
                 trace_file(tracefile, 0, index);
- 
 
                 regs[PC] += 2;
-
-            for(i = 0; i < 8; ++i)
-                cout << regs[i] << ' ';
-
-            cout << endl;
- 
  
                 return (int) result;
                 break;
@@ -636,13 +537,6 @@ int double_operand::bit(uint16_t *regs, CPSR *states, i_cache *program)
                 trace_file(tracefile, 0, program[index].data);
 
                 regs[PC] += 2;
-
- 
-            for(i = 0; i < 8; ++i)
-                cout << regs[i] << ' ';
-
-            cout << endl;
- 
  
                 return (int) result;
                 break;
@@ -658,16 +552,9 @@ int double_operand::bit(uint16_t *regs, CPSR *states, i_cache *program)
     return 0x10000;
 }
 
-
-
-
-
-
-
 //bis
 int double_operand::bis(uint16_t *regs, CPSR *states, i_cache *program)
 {
-    int i;
     uint16_t index = 0;
     int source_op = make_source(regs, program);
     int condition = 0;
@@ -696,12 +583,6 @@ int double_operand::bis(uint16_t *regs, CPSR *states, i_cache *program)
 
                 states->set_condition(condition);
  
-            for(i = 0; i < 8; ++i)
-                cout << regs[i] << ' ';
-
-            cout << endl;
- 
- 
                 return (int) regs[destination];
                 break;
             }
@@ -728,12 +609,6 @@ int double_operand::bis(uint16_t *regs, CPSR *states, i_cache *program)
                 program[regs[destination] + 1].data = result;
 
                 states->set_condition(condition);
- 
-            for(i = 0; i < 8; ++i)
-                cout << regs[i] << ' ';
-
-            cout << endl;
- 
  
                 trace_file(tracefile, 0, regs[destination]);
                 trace_file(tracefile, 1, regs[destination]);
@@ -769,12 +644,6 @@ int double_operand::bis(uint16_t *regs, CPSR *states, i_cache *program)
                 trace_file(tracefile, 1, regs[destination]);
                 regs[destination] += 2;
  
-            for(i = 0; i < 8; ++i)
-                cout << regs[i] << ' ';
-
-            cout << endl;
- 
- 
                 return (int) program[regs[destination] - 2].data;
                 break;
             }
@@ -808,12 +677,6 @@ int double_operand::bis(uint16_t *regs, CPSR *states, i_cache *program)
                 trace_file(tracefile, 1, program[regs[destination]].data);
                 regs[destination] += 2;
  
-            for(i = 0; i < 8; ++i)
-                cout << regs[i] << ' ';
-
-            cout << endl;
- 
- 
                 return (int) program[regs[destination] - 2].data;
                 break;
             }
@@ -846,12 +709,6 @@ int double_operand::bis(uint16_t *regs, CPSR *states, i_cache *program)
                 trace_file(tracefile, 0, regs[destination]);
                 trace_file(tracefile, 1, regs[destination]);
  
-            for(i = 0; i < 8; ++i)
-                cout << regs[i] << ' ';
-
-            cout << endl;
- 
- 
                 return (int) program[regs[destination]].data;
                 break;
             }
@@ -883,12 +740,6 @@ int double_operand::bis(uint16_t *regs, CPSR *states, i_cache *program)
                 trace_file(tracefile, 0, regs[destination]);
                 trace_file(tracefile, 0, program[regs[destination]].data);
                 trace_file(tracefile, 1, program[regs[destination]].data);
- 
-            for(i = 0; i < 8; ++i)
-                cout << regs[i] << ' ';
-
-            cout << endl;
- 
  
                 return (int) program[regs[destination]].data;
                 break;
@@ -926,12 +777,6 @@ int double_operand::bis(uint16_t *regs, CPSR *states, i_cache *program)
  
 
                 regs[PC] += 2;
-
-            for(i = 0; i < 8; ++i)
-                cout << regs[i] << ' ';
-
-            cout << endl;
- 
  
                 return (int) program[index].data;
                 break;
@@ -970,12 +815,6 @@ int double_operand::bis(uint16_t *regs, CPSR *states, i_cache *program)
  
 
                 regs[PC] += 2;
-
-            for(i = 0; i < 8; ++i)
-                cout << regs[i] << ' ';
-
-            cout << endl;
- 
  
                 return (int) program[program[index].data].data;
                 break;
@@ -998,7 +837,6 @@ int double_operand::bis(uint16_t *regs, CPSR *states, i_cache *program)
 //subtract
 int double_operand::sub(uint16_t *regs, CPSR *states, i_cache *program)
 {
-    int i;
     uint16_t index = 0;
     int source_op = make_source(regs, program);
     int sign_source = (uint16_t)source_op >> 15;
@@ -1029,12 +867,6 @@ int double_operand::sub(uint16_t *regs, CPSR *states, i_cache *program)
                 regs[destination] = result;
 
                 states->set_condition(condition);
- 
-            for(i = 0; i < 8; ++i)
-                cout << regs[i] << ' ';
-
-            cout << endl;
- 
  
                 return (int) regs[destination];
                 break;
@@ -1068,12 +900,6 @@ int double_operand::sub(uint16_t *regs, CPSR *states, i_cache *program)
 
                 trace_file(tracefile, 0, regs[destination]);
                 trace_file(tracefile, 1, regs[destination]);
- 
-            for(i = 0; i < 8; ++i)
-                cout << regs[i] << ' ';
-
-            cout << endl;
- 
  
                 return (int) program[regs[destination]].data;
                 break;
@@ -1109,12 +935,6 @@ int double_operand::sub(uint16_t *regs, CPSR *states, i_cache *program)
                 trace_file(tracefile, 1, regs[destination]);
                 regs[destination] += 2;
  
-            for(i = 0; i < 8; ++i)
-                cout << regs[i] << ' ';
-
-            cout << endl;
- 
- 
                 return (int) program[regs[destination]].data;
                 break;
             }
@@ -1148,12 +968,6 @@ int double_operand::sub(uint16_t *regs, CPSR *states, i_cache *program)
                 trace_file(tracefile, 0, program[regs[destination]].data);
                 trace_file(tracefile, 1, program[regs[destination]].data);
                 regs[destination] += 2;
- 
-            for(i = 0; i < 8; ++i)
-                cout << regs[i] << ' ';
-
-            cout << endl;
- 
  
                 return (int) program[program[regs[destination]].data].data;
                 break;
@@ -1189,12 +1003,6 @@ int double_operand::sub(uint16_t *regs, CPSR *states, i_cache *program)
                 trace_file(tracefile, 0, regs[destination]);
                 trace_file(tracefile, 1, regs[destination]);
  
-            for(i = 0; i < 8; ++i)
-                cout << regs[i] << ' ';
-
-            cout << endl;
- 
- 
                 return (int) program[regs[destination]].data;
                 break;
             }
@@ -1228,12 +1036,6 @@ int double_operand::sub(uint16_t *regs, CPSR *states, i_cache *program)
                 trace_file(tracefile, 0, regs[destination]);
                 trace_file(tracefile, 0, program[regs[destination]].data);
                 trace_file(tracefile, 1, program[regs[destination]].data);
- 
-            for(i = 0; i < 8; ++i)
-                cout << regs[i] << ' ';
-
-            cout << endl;
- 
  
                 return (int) program[program[regs[destination]].data].data;
                 break;
@@ -1273,12 +1075,6 @@ int double_operand::sub(uint16_t *regs, CPSR *states, i_cache *program)
                 trace_file(tracefile, 0, index);
                 trace_file(tracefile, 1, index);
                 regs[PC] += 2;
- 
-            for(i = 0; i < 8; ++i)
-                cout << regs[i] << ' ';
-
-            cout << endl;
- 
  
                 return (int) program[index].data;
                 break;
@@ -1320,12 +1116,6 @@ int double_operand::sub(uint16_t *regs, CPSR *states, i_cache *program)
                 trace_file(tracefile, 1, program[index].data);
                 regs[PC] += 2;
  
-            for(i = 0; i < 8; ++i)
-                cout << regs[i] << ' ';
-
-            cout << endl;
- 
- 
                 return (int) program[program[index].data].data;
                 break;
             }
@@ -1348,7 +1138,6 @@ int double_operand::sub(uint16_t *regs, CPSR *states, i_cache *program)
 //add function
 int double_operand::add(uint16_t *regs, CPSR *states, i_cache *program)
 {
-    int i;
     uint16_t index = 0;
     int source_op = make_source(regs, program);
     int condition = 0;
@@ -1383,12 +1172,6 @@ int double_operand::add(uint16_t *regs, CPSR *states, i_cache *program)
                 regs[destination] += ((uint16_t)source_op);
 
                 states->set_condition(condition);
- 
-            for(i = 0; i < 8; ++i)
-                cout << regs[i] << ' ';
-
-            cout << endl;
- 
  
                 return (int) regs[destination];
                 break;
@@ -1425,12 +1208,6 @@ int double_operand::add(uint16_t *regs, CPSR *states, i_cache *program)
                 states->set_condition(condition);
                 trace_file(tracefile, 0, regs[destination]);
                 trace_file(tracefile, 1, regs[destination]);
- 
-            for(i = 0; i < 8; ++i)
-                cout << regs[i] << ' ';
-
-            cout << endl;
- 
  
                 return (int) program[regs[destination]].data;
                 break;
@@ -1470,12 +1247,6 @@ int double_operand::add(uint16_t *regs, CPSR *states, i_cache *program)
                 trace_file(tracefile, 1, regs[destination]);
 
                 regs[destination] += 2;
- 
-            for(i = 0; i < 8; ++i)
-                cout << regs[i] << ' ';
-
-            cout << endl;
- 
  
                 return (int) program[regs[destination]].data;
                 break;
@@ -1517,12 +1288,6 @@ int double_operand::add(uint16_t *regs, CPSR *states, i_cache *program)
 
                 regs[destination] += 2;
  
-            for(i = 0; i < 8; ++i)
-                cout << regs[i] << ' ';
-
-            cout << endl;
- 
- 
                 return (int) program[regs[destination]].data;
                 break;
             }
@@ -1559,17 +1324,9 @@ int double_operand::add(uint16_t *regs, CPSR *states, i_cache *program)
                 trace_file(tracefile, 0, regs[destination]);
                 trace_file(tracefile, 1, regs[destination]);
  
-            for(i = 0; i < 8; ++i)
-                cout << regs[i] << ' ';
-
-            cout << endl;
- 
- 
                 return (int) program[regs[destination]].data;
                 break;
             }
-
-
 
         case 5: {   //autodecrement deferred
                 if((regs[destination] % 2) || (program[regs[destination]].data % 2))
@@ -1604,17 +1361,9 @@ int double_operand::add(uint16_t *regs, CPSR *states, i_cache *program)
                 trace_file(tracefile, 0, program[regs[destination]].data);
                 trace_file(tracefile, 1, program[regs[destination]].data);
  
-            for(i = 0; i < 8; ++i)
-                cout << regs[i] << ' ';
-
-            cout << endl;
- 
- 
                 return (int) program[regs[destination]].data;
                 break;
             }
-
-
 
         case 6: {   //index
             if (destination == PC)
@@ -1652,11 +1401,6 @@ int double_operand::add(uint16_t *regs, CPSR *states, i_cache *program)
             trace_file(tracefile, 0, index);
             trace_file(tracefile, 1, index);
             regs[PC] += 2;
-   
-            for(i = 0; i < 8; ++i)
-                cout << regs[i] << ' ';
-
-            cout << endl;
  
                return (int) program[index].data;
                 break;
@@ -1699,11 +1443,6 @@ int double_operand::add(uint16_t *regs, CPSR *states, i_cache *program)
             trace_file(tracefile, 0, program[index].data);
             trace_file(tracefile, 1, program[index].data);
             regs[PC] += 2;
-  
-            for(i = 0; i < 8; ++i)
-                cout << regs[i] << ' ';
-
-            cout << endl;
  
                 return (int) program[program[index].data].data;
                 break;
@@ -1725,7 +1464,6 @@ int double_operand::add(uint16_t *regs, CPSR *states, i_cache *program)
 //compare
 int double_operand::compare(uint16_t *regs, CPSR *states, i_cache *program)
 {
-    int i;
     uint16_t index = 0;
     int source_op = make_source(regs, program);
     int sign_source = (uint16_t)source_op >> 15;
@@ -1755,12 +1493,6 @@ int double_operand::compare(uint16_t *regs, CPSR *states, i_cache *program)
 
                 states->set_condition(condition);
  
-            for(i = 0; i < 8; ++i)
-                cout << regs[i] << ' ';
-
-            cout << endl;
- 
- 
                 return (int) regs[destination];
                 break;
             }
@@ -1789,12 +1521,6 @@ int double_operand::compare(uint16_t *regs, CPSR *states, i_cache *program)
                 states->set_condition(condition);
 
                 trace_file(tracefile, 0, regs[destination]);
- 
-            for(i = 0; i < 8; ++i)
-                cout << regs[i] << ' ';
-
-            cout << endl;
- 
  
                 return (int) program[regs[destination]].data;
                 break;
@@ -1826,12 +1552,6 @@ int double_operand::compare(uint16_t *regs, CPSR *states, i_cache *program)
                 trace_file(tracefile, 0, regs[destination]);
                 regs[destination] += 2;
  
-            for(i = 0; i < 8; ++i)
-                cout << regs[i] << ' ';
-
-            cout << endl;
- 
- 
                 return (int) program[regs[destination]].data;
                 break;
             }
@@ -1861,12 +1581,6 @@ int double_operand::compare(uint16_t *regs, CPSR *states, i_cache *program)
                 trace_file(tracefile, 0, regs[destination]);
                 trace_file(tracefile, 0, program[regs[destination]].data);
                 regs[destination] += 2;
- 
-            for(i = 0; i < 8; ++i)
-                cout << regs[i] << ' ';
-
-            cout << endl;
- 
  
                 return (int) program[program[regs[destination]].data].data;
                 break;
@@ -1898,12 +1612,6 @@ int double_operand::compare(uint16_t *regs, CPSR *states, i_cache *program)
                 states->set_condition(condition);
                 trace_file(tracefile, 0, regs[destination]);
  
-            for(i = 0; i < 8; ++i)
-                cout << regs[i] << ' ';
-
-            cout << endl;
- 
- 
                 return (int) program[regs[destination]].data;
                 break;
             }
@@ -1933,12 +1641,6 @@ int double_operand::compare(uint16_t *regs, CPSR *states, i_cache *program)
                 states->set_condition(condition);
                 trace_file(tracefile, 0, regs[destination]);
                 trace_file(tracefile, 0, program[regs[destination]].data);
- 
-            for(i = 0; i < 8; ++i)
-                cout << regs[i] << ' ';
-
-            cout << endl;
- 
  
                 return (int) program[program[regs[destination]].data].data;
                 break;
@@ -1974,12 +1676,6 @@ int double_operand::compare(uint16_t *regs, CPSR *states, i_cache *program)
                 trace_file(tracefile, 0, index);
                 regs[PC] += 2;
  
-            for(i = 0; i < 8; ++i)
-                cout << regs[i] << ' ';
-
-            cout << endl;
- 
- 
                 return (int) program[index].data;
                 break;
             }
@@ -2014,11 +1710,6 @@ int double_operand::compare(uint16_t *regs, CPSR *states, i_cache *program)
                 trace_file(tracefile, 0, index);
                 trace_file(tracefile, 0, program[index].data);
                 regs[PC] += 2;
-
-            for(i = 0; i < 8; ++i)
-                cout << regs[i] << ' ';
-
-            cout << endl;
  
                 return (int) program[program[index].data].data;
                 break;
@@ -2040,15 +1731,12 @@ int double_operand::compare(uint16_t *regs, CPSR *states, i_cache *program)
 //move function
 int double_operand::move(uint16_t *regs, CPSR *states, i_cache *program)
 {
-    int i;
     uint16_t index = 0;
     int source_op = make_source(regs, program);
     if(0xFFFF < source_op)
         return source_op;
 
     int condition = 0;
-
-
 
     switch(destination_mode)
     {
@@ -2065,11 +1753,6 @@ int double_operand::move(uint16_t *regs, CPSR *states, i_cache *program)
                     condition |= NEGATIVE;
                 condition &= ~V_OVERFLOW;
                 states->set_condition(condition);
-
-            for(i = 0; i < 8; ++i)
-                cout << regs[i] << ' ';
-
-            cout << endl;
  
                 return (int) regs[destination];
                 break;
@@ -2098,10 +1781,6 @@ int double_operand::move(uint16_t *regs, CPSR *states, i_cache *program)
                 program[regs[destination] + 1].data = source_op;
                 trace_file(tracefile, 1, regs[destination]);
  
-            for(i = 0; i < 8; ++i)
-                cout << regs[i] << ' ';
-
-            cout << endl;
                 return (int)program[regs[destination]].data;
                 break;
             }
@@ -2131,10 +1810,6 @@ int double_operand::move(uint16_t *regs, CPSR *states, i_cache *program)
                 trace_file(tracefile, 1, regs[destination]);
                 regs[destination] += 2;
  
-            for(i = 0; i < 8; ++i)
-                cout << regs[i] << ' ';
-
-            cout << endl;
                 return (int)program[regs[destination]].data;
                 break;
        }
@@ -2164,10 +1839,6 @@ int double_operand::move(uint16_t *regs, CPSR *states, i_cache *program)
                 trace_file(tracefile, 1, program[regs[destination]].data);
                 regs[destination] += 2;
  
-            for(i = 0; i < 8; ++i)
-                cout << regs[i] << ' ';
-
-            cout << endl;
                 return (int)program[program[regs[destination]].data].data;
                 break;
         }
@@ -2193,11 +1864,6 @@ int double_operand::move(uint16_t *regs, CPSR *states, i_cache *program)
                 states->set_condition(condition);
  
                 trace_file(tracefile, 1, regs[destination]);
- 
-            for(i = 0; i < 8; ++i)
-                cout << regs[i] << ' ';
-
-            cout << endl;
                 return (int)program[regs[destination]].data;
                 break;
         }
@@ -2223,11 +1889,6 @@ int double_operand::move(uint16_t *regs, CPSR *states, i_cache *program)
 
                 trace_file(tracefile, 0, regs[destination]);
                 trace_file(tracefile, 1, program[regs[destination]].data);
- 
-            for(i = 0; i < 8; ++i)
-                cout << regs[i] << ' ';
-
-            cout << endl;
                 return (int)program[program[regs[destination]].data].data;
                 break;
         }
@@ -2260,11 +1921,6 @@ int double_operand::move(uint16_t *regs, CPSR *states, i_cache *program)
             trace_file(tracefile, 1, index);
  
             regs[PC] += 2;
- 
-            for(i = 0; i < 8; ++i)
-                cout << regs[i] << ' ';
-
-            cout << endl;
             
             return program[index].data;
             break;
@@ -2299,11 +1955,6 @@ condition |= ZERO;
             trace_file(tracefile, 1, program[index].data);
             
             regs[PC] += 2;
- 
-            for(i = 0; i < 8; ++i)
-                cout << regs[i] << ' ';
-
-            cout << endl;
  
             return (int) program[program[index].data].data;
             break;
@@ -2384,7 +2035,6 @@ int double_operand::make_source(uint16_t *regs, i_cache *program)
             trace_file(tracefile, 0, regs[PC]);
             trace_file(tracefile, 0, index);
             regs[PC] += 2;
-            cout << program[index].data << endl;
             return (int) program[index].data;
             break;
         }
@@ -2402,8 +2052,6 @@ int double_operand::make_source(uint16_t *regs, i_cache *program)
             trace_file(tracefile, 0, index);
             trace_file(tracefile, 0, program[index].data);
             regs[PC] += 2;
-
-            cout << program[program[index].data].data << endl;
 
             return (int) program[program[index].data].data;
             break;
@@ -2424,13 +2072,11 @@ int double_operand::make_source(uint16_t *regs, i_cache *program)
 int double_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
 {
     int result = -1;
-    cout << "function_code: " << function_code << ": ";
 
     switch(function_code)
     {
         case MOV:
             {
-                cout << "MOV" << endl;
                 result = move(regs, states, program);
                 break;
             }
@@ -2441,7 +2087,6 @@ int double_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
             }
         case CMP: 
             {
-                cout << "CMP" << endl;
                 result = compare(regs, states, program);
                 break;
             }
@@ -2452,19 +2097,16 @@ int double_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
             }
         case ADD:
             {
-                cout << "ADD" << endl;
                 result = add(regs, states, program);
                 break;
             }
         case SUB:
             {
-                cout << "SUB" << endl;
                 result = sub(regs, states, program);
                 break;
             }
         case BIT:
             {
-                cout << "BIT" << endl;
                 result = bit(regs, states, program);
                 break;
             }
@@ -2475,7 +2117,6 @@ int double_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
             }
         case BIC:
             {
-                cout << "BIC" << endl;
                 result = bic(regs, states, program);
                 break;
             }
@@ -2486,7 +2127,6 @@ int double_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
             }
         case BIS:
             {
-                cout << "BIS" << endl;
                 result = bis(regs, states, program);
                 break;
             }

@@ -264,10 +264,6 @@ int main(int argc, char* argv[])
 
     cout << "start point: " << start << endl;
     
-    for(i = 0; i < prog_size * 2; ++i)
-    {
-        cout << "mem[" << i << "] = " << prog_mem[i].data << endl;
-    }
 
     gps[PC] = uint16_t(start);
 
