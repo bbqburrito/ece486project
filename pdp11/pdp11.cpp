@@ -2153,7 +2153,7 @@ int branch::instruction(uint16_t *regs, CPSR *states, i_cache *program)
             {
                 cout << "BR" << endl;
 
-                regs[PC] += (2 * (int8_t)offset - 2);
+                regs[PC] += (2 * (int8_t)offset);
                 sprintf(type, "BR");
                 branch_trace(br_trace, type, regs[PC], taken); 
 
@@ -2167,7 +2167,7 @@ int branch::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                 condition = states->get_condition() & ZERO;
                 if(!condition)
                 {
-                    regs[PC] += (2 * (int8_t)offset - 2);
+                    regs[PC] += (2 * (int8_t)offset);
                     taken = 'y';
                 }
                 sprintf(type, "BNE");
@@ -2182,7 +2182,7 @@ int branch::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                 condition = states->get_condition() & ZERO;
                 if(condition)
                 {
-                    regs[PC] += (2 * (int8_t)offset - 2);
+                    regs[PC] += (2 * (int8_t)offset);
                     taken = 'y';
                 }
                 sprintf(type, "BEQ");
@@ -2197,7 +2197,7 @@ int branch::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                 condition = states->get_condition() & NEGATIVE;
                 if(!condition)
                 {
-                    regs[PC] += (2 * (int8_t)offset - 2);
+                    regs[PC] += (2 * (int8_t)offset);
                     taken = 'y';
                 }
                 sprintf(type, "BPL");
@@ -2212,7 +2212,7 @@ int branch::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                 condition = states->get_condition() & NEGATIVE;
                 if(condition)
                 {
-                    regs[PC] += (2 * (int8_t)offset - 2);
+                    regs[PC] += (2 * (int8_t)offset);
                     taken = 'y';
                 }
                 sprintf(type, "BMI");
@@ -2227,7 +2227,7 @@ int branch::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                 condition = states->get_condition() & V_OVERFLOW;
                 if(!condition)
                 {
-                    regs[PC] += (2 * (int8_t)offset - 2);
+                    regs[PC] += (2 * (int8_t)offset);
                     taken = 'y';
                 }
                 sprintf(type, "BVC");
@@ -2242,7 +2242,7 @@ int branch::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                 condition = states->get_condition() & V_OVERFLOW;
                 if(condition)
                 {
-                    regs[PC] += (2 * (int8_t)offset - 2);
+                    regs[PC] += (2 * (int8_t)offset);
                     taken = 'y';
                 }
                 sprintf(type, "BVS");
@@ -2257,7 +2257,7 @@ int branch::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                 condition = states->get_condition() & CARRY;
                 if(!condition)
                 {
-                    regs[PC] += (2 * (int8_t)offset - 2);
+                    regs[PC] += (2 * (int8_t)offset);
                     taken = 'y';
                 }
                 sprintf(type, "BCC");
@@ -2272,7 +2272,7 @@ int branch::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                 condition = states->get_condition() & CARRY;
                 if(condition)
                 {
-                    regs[PC] += (2 * (int8_t)offset - 2);
+                    regs[PC] += (2 * (int8_t)offset);
                     taken = 'y';
                 }
                 sprintf(type, "BCS");
@@ -2289,7 +2289,7 @@ int branch::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                 condition ^= ((states->get_condition() & NEGATIVE) >> 3);
                 if(!condition)
                 {
-                    regs[PC] += (2 * (int8_t)offset - 2);
+                    regs[PC] += (2 * (int8_t)offset);
                     taken = 'y';
                 }
                 sprintf(type, "BGE");
@@ -2306,7 +2306,7 @@ int branch::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                 condition ^= ((states->get_condition() & NEGATIVE) >> 3);
                 if(condition)
                 {
-                    regs[PC] += (2 * (int8_t)offset - 2);
+                    regs[PC] += (2 * (int8_t)offset);
                     taken = 'y';
                 }
                 sprintf(type, "BLT");
@@ -2325,7 +2325,7 @@ int branch::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                 condition |= ((states->get_condition() & ZERO) >> 2);
                 if(!condition)
                 {
-                    regs[PC] += (2 * (int8_t)offset - 2);
+                    regs[PC] += (2 * (int8_t)offset);
                     taken = 'y';
                 }
                 sprintf(type, "BGT");
@@ -2343,7 +2343,7 @@ int branch::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                 condition |= ((states->get_condition() & ZERO) >> 2);
                 if(condition)
                 {
-                    regs[PC] += (2 * (int8_t)offset - 2);
+                    regs[PC] += (2 * (int8_t)offset);
                     taken = 'y';
                 }
                 sprintf(type, "BLE");
@@ -2359,7 +2359,7 @@ int branch::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                 condition |= (states->get_condition() & ZERO);
                 if(!condition)
                 {
-                    regs[PC] += (2 * (int8_t)offset - 2);
+                    regs[PC] += (2 * (int8_t)offset);
                     taken = 'y';
                 }
                 sprintf(type, "BHI");
@@ -2377,7 +2377,7 @@ int branch::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                 condition |= (states->get_condition() & ZERO);
                 if(condition)
                 {
-                    regs[PC] += (2 * (int8_t)offset - 2);
+                    regs[PC] += (2 * (int8_t)offset);
                     taken = 'y';
                 }
                 sprintf(type, "BLOS");
