@@ -198,15 +198,14 @@ int main(int argc, char* argv[])
         if(*disposition == '@')
         {
             i = to_interpret;
-            to_interpret = line_reader(argv[argc - 2], disposition, filepos);
+        } else {
+
+            prog_mem[i].disposition = *disposition;
+            prog_mem[i].data = uint16_t(to_interpret);     //low bytes stored at even-numbered memory locations 
+            prog_mem[++i].data = uint16_t(to_interpret);    //high bytes stored at odd-numbered memory locations
+            prog_mem[i].disposition = *disposition;
+            ++i;
         }
-
-        prog_mem[i].disposition = *disposition;
-        prog_mem[i].data = uint16_t(to_interpret);     //low bytes stored at even-numbered memory locations 
-        prog_mem[++i].data = uint16_t(to_interpret);    //high bytes stored at odd-numbered memory locations
-        prog_mem[i].disposition = *disposition;
-        ++i;
-
         to_interpret = line_reader(argv[argc - 2], disposition, filepos);
     }
 
@@ -219,8 +218,8 @@ int main(int argc, char* argv[])
         cout << prog_mem[j].disposition << prog_mem[j].data << " " << prog_mem[j + 1].data << endl;
         ++j;
     }
-
-    start= findstart(prog_mem, prog_size);       //get start point
+ 
+    start = findstart(prog_mem, prog_size);       //get start point
 
     cout << "start point: " << start << endl;
     

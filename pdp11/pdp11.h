@@ -148,6 +148,7 @@ class command {
         int data;
         char disposition;
         char * tracefile;
+        char * br_trace;
         int program_counter;
 };
 

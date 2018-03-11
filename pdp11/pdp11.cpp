@@ -1027,13 +1027,16 @@ int CPSR::set_condition(int to_set)
 
 
 //command
-command::command(): data(0), disposition(0), tracefile(nullptr)
+command::command(): data(0), disposition(0), tracefile(nullptr), br_trace(nullptr), program_counter(0)
 {
 }
 
-command::command(int to_data, char to_disposition, char * to_tracefile): data(to_data), disposition(to_disposition),
-                                                                      tracefile(to_tracefile)
+command::command(int to_data, char to_disposition, char * to_tracefile): data(to_data), disposition(to_disposition), tracefile(to_tracefile), program_counter(0)
 {
+    char name_tmp[] = "branch_trace.out";
+    br_trace = new char[strlen(name_tmp)];
+    strcpy(br_trace, name_tmp);
+    //br_trace = "branch_trace.out";
 }
 
 void command::disp()
@@ -1064,8 +1067,7 @@ extended::extended(): command(), function_code(0), destination(0), source_mode(0
 
 extended::extended(int to_data, char disposition, char * to_tracefile, int to_function_code,
                    int to_destination, int to_source_mode,
-                   int to_source): command(to_data, disposition, to_tracefile), function_code(to_function_code),
-                                   destination(to_destination), source_mode(to_source_mode), source(to_source)
+                   int to_source): command(to_data, disposition, to_tracefile), function_code(to_function_code), destination(to_destination), source_mode(to_source_mode), source(to_source)
 {
 }
 
