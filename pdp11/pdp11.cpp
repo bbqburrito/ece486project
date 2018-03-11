@@ -151,6 +151,38 @@ int findstart(i_cache *prog_mem, int prog_length) {
     return start;
 }
 
+//write to branch trace file
+int branch_trace(char * filename, char * type, uint16_t address, char taken)
+{
+    char make_address[100];
+    ofstream outfile;
+    int i;
+    int outcome;
+
+    //initialize make_address to all NULL
+    for(i = 0; i < 100; ++i)
+    {
+        make_address[i] = '\0';
+    }
+
+    outfile.open(filename, ios::app);
+
+    if(!outfile.is_open())
+    {
+        cout << "file error\n";
+        return -1;
+    }
+
+    outcome = sprintf(make_address, "%s\t\t%o\t\t%c\n", type, address, taken);
+
+    outfile << make_address;
+
+    outfile.close();
+
+    return outcome;
+}
+
+
 //writes to file specified by filename. writes address parameter
 //as an octal. returns an int to indicate outcome.
 //takes a char to indicate filename, an int to indicate
@@ -178,6 +210,8 @@ int trace_file(char *filename, int type, uint16_t address) {
     outcome = sprintf(make_address, "%d\t\t%o\n", type, address);
 
     outfile << make_address;
+
+    outfile.close();
 
     return outcome;
 }
@@ -1056,8 +1090,18 @@ int command::instructionB(uint16_t *regs, CPSR *states, i_cache * program)
     return 0;
 }
 
+void command::set_br_trace(char * to_set)
+{
+    if(br_trace)
+        delete [] br_trace;
+    br_trace = new char[strlen(to_set)];
+    strcpy(br_trace, to_set);
+}
+
+
 command::~command() {
 
+    delete [] br_trace;
 }
 
 //extended
@@ -1065,9 +1109,7 @@ extended::extended(): command(), function_code(0), destination(0), source_mode(0
 {
 }
 
-extended::extended(int to_data, char disposition, char * to_tracefile, int to_function_code,
-                   int to_destination, int to_source_mode,
-                   int to_source): command(to_data, disposition, to_tracefile), function_code(to_function_code), destination(to_destination), source_mode(to_source_mode), source(to_source)
+extended::extended(int to_data, char disposition, char * to_tracefile, int to_function_code, int to_destination, int to_source_mode, int to_source): command(to_data, disposition, to_tracefile), function_code(to_function_code), destination(to_destination), source_mode(to_source_mode), source(to_source)
 {
 }
 
@@ -1127,9 +1169,7 @@ trapIntMiscCond::trapIntMiscCond(): command(), function_code(0), trap_code(0)
 }
 
 
-trapIntMiscCond::trapIntMiscCond(int to_data, char to_disposition, char * to_tracefile, int to_function_code,
-                                 int to_trap_code): command(to_data, to_disposition, to_tracefile),
-                                                    function_code(to_function_code), trap_code(to_trap_code)
+trapIntMiscCond::trapIntMiscCond(int to_data, char to_disposition, char * to_tracefile, int to_function_code, int to_trap_code): command(to_data, to_disposition, to_tracefile), function_code(to_function_code), trap_code(to_trap_code)
 {
 }
 
@@ -1272,11 +1312,7 @@ jump_sub::jump_sub(): command(), function_code(0), linkage_reg(0), destination_c
 {
 }
 
-jump_sub::jump_sub(int to_data, char to_disposition, char * to_tracefile, int to_function_code, int to_linkage_reg,
-                   int to_destination_code, int to_destination,
-                   int to_parameters): command(to_data, to_disposition, to_tracefile), function_code(to_function_code),
-                                       linkage_reg(to_linkage_reg), destination_code(to_destination_code),
-                                       destination(to_destination), parameters(to_parameters)
+jump_sub::jump_sub(int to_data, char to_disposition, char * to_tracefile, int to_function_code, int to_linkage_reg, int to_destination_code, int to_destination, int to_parameters): command(to_data, to_disposition, to_tracefile), function_code(to_function_code), linkage_reg(to_linkage_reg), destination_code(to_destination_code), destination(to_destination), parameters(to_parameters)
 {
 }
 
@@ -1296,6 +1332,9 @@ int jump_sub::instruction(uint16_t *regs, CPSR *states, i_cache *program)
     int i;
     uint16_t index;
     int deferred;
+    char taken = 'y';
+    char type[10];
+
 
     cout << "function_code: " << function_code << ": ";
    switch(function_code)
@@ -1319,6 +1358,8 @@ int jump_sub::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                                     break;
                                 }
                                 regs[PC] = regs[destination];
+                                sprintf(type, "JMP");
+                                branch_trace(br_trace, type, regs[PC], taken);
                                 for(i = 0; i < 8; ++i)
                                 {
                                     cout << regs[i] << ' ';
@@ -1337,6 +1378,8 @@ int jump_sub::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                                 }
                                 regs[PC] = regs[destination];
                                 regs[destination] += 2;
+                                sprintf(type, "JMP");
+                                branch_trace(br_trace, type, regs[PC], taken);
                                 for(i = 0; i < 8; ++i)
                                 {
                                     cout << regs[i] << ' ';
@@ -1357,6 +1400,8 @@ int jump_sub::instruction(uint16_t *regs, CPSR *states, i_cache *program)
 
                                 regs[PC] = deferred;
                                 trace_file(tracefile, 0, regs[destination]);
+                                sprintf(type, "JMP");
+                                branch_trace(br_trace, type, regs[PC], taken);
                                 regs[destination] += 2;
                                 for(i = 0; i < 8; ++i)
                                 {
@@ -1376,6 +1421,8 @@ int jump_sub::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                                 }
                                 regs[destination] -= 2;
                                 regs[PC] = regs[destination];
+                                sprintf(type, "JMP");
+                                branch_trace(br_trace, type, regs[PC], taken);
                                 for(i = 0; i < 8; ++i)
                                 {
                                     cout << regs[i] << ' ';
@@ -1397,6 +1444,8 @@ int jump_sub::instruction(uint16_t *regs, CPSR *states, i_cache *program)
 
                                 regs[PC] = deferred;
                                 trace_file(tracefile, 0, regs[destination]);
+                                sprintf(type, "JMP");
+                                branch_trace(br_trace, type, regs[PC], taken);
                                 for(i = 0; i < 8; ++i)
                                 {
                                     cout << regs[i] << ' ';
@@ -1420,6 +1469,8 @@ int jump_sub::instruction(uint16_t *regs, CPSR *states, i_cache *program)
 
                                 regs[PC] = index;
                                 trace_file(tracefile, 0, regs[PC]);
+                                sprintf(type, "JMP");
+                                branch_trace(br_trace, type, regs[PC], taken);
                                 for (i = 0; i < 8; ++i)
                                 {
                                     cout << regs[i] << ' ';
@@ -1446,6 +1497,8 @@ int jump_sub::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                                 regs[PC] = program[index].data;
                                 trace_file(tracefile, 0, regs[PC]);
                                 trace_file(tracefile, 0, index);
+                                sprintf(type, "JMP");
+                                branch_trace(br_trace, type, regs[PC], taken);
                                 for (i = 0; i < 8; ++i)
                                 {
                                     cout << regs[i] << ' ';
@@ -1487,6 +1540,8 @@ int jump_sub::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                                 regs[linkage_reg] = regs[PC];
                                 regs[PC] = regs[destination];
                                 trace_file(tracefile, 1, regs[SP]);
+                                sprintf(type, "JSR");
+                                branch_trace(br_trace, type, regs[PC], taken);
                                 for(i = 0; i < 8; ++i)
                                 {
                                     cout << regs[i] << ' ';
@@ -1511,6 +1566,8 @@ int jump_sub::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                                 regs[linkage_reg] = regs[PC];
                                 regs[PC] = regs[destination];
                                 trace_file(tracefile, 1, regs[SP]);
+                                sprintf(type, "JSR");
+                                branch_trace(br_trace, type, regs[PC], taken);
                                 regs[destination] += 2;
                                 for(i = 0; i < 8; ++i)
                                 {
@@ -1538,6 +1595,8 @@ int jump_sub::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                                 regs[PC] = program[regs[destination]].data;
                                 trace_file(tracefile, 1, regs[SP]);
                                 trace_file(tracefile, 0, regs[destination]);
+                                sprintf(type, "JSR");
+                                branch_trace(br_trace, type, regs[PC], taken);
                                 regs[destination] += 2;
                                 for(i = 0; i < 8; ++i)
                                 {
@@ -1564,6 +1623,8 @@ int jump_sub::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                                 regs[linkage_reg] = regs[PC];
                                 regs[PC] = regs[destination];
                                 trace_file(tracefile, 1, regs[SP]);
+                                sprintf(type, "JSR");
+                                branch_trace(br_trace, type, regs[PC], taken);
                                 for(i = 0; i < 8; ++i)
                                 {
                                     cout << regs[i] << ' ';
@@ -1592,6 +1653,8 @@ int jump_sub::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                                 regs[PC] = program[regs[destination]].data;
                                 trace_file(tracefile, 1, regs[SP]);
                                 trace_file(tracefile, 0, regs[destination]);
+                                sprintf(type, "JSR");
+                                branch_trace(br_trace, type, regs[PC], taken);
                                 for(i = 0; i < 8; ++i)
                                 {
                                     cout << regs[i] << ' ';
@@ -1620,6 +1683,8 @@ int jump_sub::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                                 regs[PC] = index;
                                 trace_file(tracefile, 1, (regs[SP]));
                                 trace_file(tracefile, 0, regs[PC]);
+                                sprintf(type, "JSR");
+                                branch_trace(br_trace, type, regs[PC], taken);
                                 for(i = 0; i < 8; ++i)
                                 {
                                     cout << regs[i] << ' ';
@@ -1650,6 +1715,8 @@ int jump_sub::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                                 trace_file(tracefile, 1, regs[SP]);
                                 trace_file(tracefile, 0, regs[PC]);
                                 trace_file(tracefile, 0, index);
+                                sprintf(type, "JSR");
+                                branch_trace(br_trace, type, regs[PC], taken);
                                 for(i = 0; i < 8; ++i)
                                 {
                                     cout << regs[i] << ' ';
@@ -1681,6 +1748,8 @@ int jump_sub::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                 regs[PC] = regs[linkage_reg];
                 regs[linkage_reg] = program[regs[SP]].data;
                 trace_file(tracefile, 0, regs[SP]);
+                sprintf(type, "RTS");
+                branch_trace(br_trace, type, regs[PC], taken);
                 regs[SP] += 2;
                 for (i = 0; i < 8; ++i)
                 {
@@ -1719,6 +1788,8 @@ void branch::disp()
 
 int branch::instruction(uint16_t *regs, CPSR *states, i_cache *program)
 {
+    char taken = 'y';
+    char type[10];
     int condition = 0;
 
     cout << "function_code: " << function_code << ": ";
@@ -1729,100 +1800,135 @@ int branch::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                 cout << "BR" << endl;
 
                 regs[PC] += (2 * (int8_t)offset - 2);
+                sprintf(type, "BR");
+                branch_trace(br_trace, type, regs[PC], taken); 
 
                 break;
             }
         case BNE:
             {
                 cout << "BNE" << endl;
+                taken = 'n';
 
                 condition = states->get_condition() & ZERO;
                 if(!condition)
                 {
                     regs[PC] += (2 * (int8_t)offset - 2);
+                    taken = 'y';
                 }
+                sprintf(type, "BNE");
+                branch_trace(br_trace, type, regs[PC], taken); 
                 break;
             }
         case BEQ:
             {
                 cout << "BEQ" << endl;
+                taken = 'n';
 
                 condition = states->get_condition() & ZERO;
                 if(condition)
                 {
                     regs[PC] += (2 * (int8_t)offset - 2);
+                    taken = 'y';
                 }
+                sprintf(type, "BEQ");
+                branch_trace(br_trace, type, regs[PC], taken); 
                 break;
             }
         case BPL:
             {
                 cout << "BPL" << endl;
+                taken = 'n';
 
                 condition = states->get_condition() & NEGATIVE;
                 if(!condition)
                 {
                     regs[PC] += (2 * (int8_t)offset - 2);
+                    taken = 'y';
                 }
+                sprintf(type, "BPL");
+                branch_trace(br_trace, type, regs[PC], taken); 
                 break;
             }
         case BMI:
             {
                 cout << "BMI" << endl;
+                taken = 'n';
 
                 condition = states->get_condition() & NEGATIVE;
                 if(condition)
                 {
                     regs[PC] += (2 * (int8_t)offset - 2);
+                    taken = 'y';
                 }
+                sprintf(type, "BMI");
+                branch_trace(br_trace, type, regs[PC], taken); 
                 break;
             }
         case BVC:
             {
                 cout << "BVC" << endl;
+                taken = 'n';
 
                 condition = states->get_condition() & V_OVERFLOW;
                 if(!condition)
                 {
                     regs[PC] += (2 * (int8_t)offset - 2);
+                    taken = 'y';
                 }
+                sprintf(type, "BVC");
+                branch_trace(br_trace, type, regs[PC], taken); 
                 break;
             }
         case BVS:
             {
                 cout << "BVS" << endl;
+                taken = 'n';
 
                 condition = states->get_condition() & V_OVERFLOW;
                 if(condition)
                 {
                     regs[PC] += (2 * (int8_t)offset - 2);
+                    taken = 'y';
                 }
+                sprintf(type, "BVS");
+                branch_trace(br_trace, type, regs[PC], taken); 
                 break;
             }
         case BCC:
             {
                 cout << "BCC" << endl;
-                break;
+                taken = 'n';
 
                 condition = states->get_condition() & CARRY;
                 if(!condition)
                 {
                     regs[PC] += (2 * (int8_t)offset - 2);
+                    taken = 'y';
                 }
+                sprintf(type, "BCC");
+                branch_trace(br_trace, type, regs[PC], taken); 
+                break;
             }
         case BCS:
             {
                 cout << "BCS" << endl;
+                taken = 'n';
 
                 condition = states->get_condition() & CARRY;
                 if(condition)
                 {
                     regs[PC] += (2 * (int8_t)offset - 2);
+                    taken = 'y';
                 }
+                sprintf(type, "BCS");
+                branch_trace(br_trace, type, regs[PC], taken); 
                 break;
             }
         case BGE:
             {   //branch if xnor N and V bits
                 cout << "BGE" << endl;
+                taken = 'n';
  
                 //xor N and V condition bits
                 condition = (states->get_condition() & V_OVERFLOW) >> 1;
@@ -1830,12 +1936,16 @@ int branch::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                 if(!condition)
                 {
                     regs[PC] += (2 * (int8_t)offset - 2);
+                    taken = 'y';
                 }
+                sprintf(type, "BGE");
+                branch_trace(br_trace, type, regs[PC], taken); 
                break;
             }
         case BLT:
             {   //branch if xor N and V bits
                 cout << "BLT" << endl;
+                taken = 'n';
 
                 //xor N and V condition bits
                 condition = (states->get_condition() & V_OVERFLOW) >> 1;
@@ -1843,13 +1953,17 @@ int branch::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                 if(condition)
                 {
                     regs[PC] += (2 * (int8_t)offset - 2);
+                    taken = 'y';
                 }
+                sprintf(type, "BLT");
+                branch_trace(br_trace, type, regs[PC], taken); 
                 break;
             }
         case BGT:
             {   //branch if xnor N and V bits or Z bit
 
                 cout << "BGT" << endl;
+                taken = 'n';
  
                 //xor N and V condition bits
                 condition = (states->get_condition() & V_OVERFLOW) >> 1;
@@ -1858,12 +1972,16 @@ int branch::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                 if(!condition)
                 {
                     regs[PC] += (2 * (int8_t)offset - 2);
+                    taken = 'y';
                 }
+                sprintf(type, "BGT");
+                branch_trace(br_trace, type, regs[PC], taken); 
                 break;
             }
         case BLE:
             {   //branch if xor N and V bits or Z bits
                 cout << "BLE" << endl;
+                taken = 'n';
  
                 //xor N and V condition bits
                 condition = (states->get_condition() & V_OVERFLOW) >> 1;
@@ -1872,19 +1990,26 @@ int branch::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                 if(condition)
                 {
                     regs[PC] += (2 * (int8_t)offset - 2);
+                    taken = 'y';
                 }
+                sprintf(type, "BLE");
+                branch_trace(br_trace, type, regs[PC], taken); 
                 break;
             }
         case BHI:
             {   //branch if C & Z both zero
                 cout << "BHI" << endl;
+                taken = 'n';
  
                 condition = (states->get_condition() & CARRY);
                 condition |= (states->get_condition() & ZERO);
                 if(!condition)
                 {
                     regs[PC] += (2 * (int8_t)offset - 2);
+                    taken = 'y';
                 }
+                sprintf(type, "BHI");
+                branch_trace(br_trace, type, regs[PC], taken); 
                 break;
  
                 break;
@@ -1892,13 +2017,17 @@ int branch::instruction(uint16_t *regs, CPSR *states, i_cache *program)
         case BLOS:
             {   //branch if C | Z set
                 cout << "BLOS" << endl;
+                taken = 'n';
   
                 condition = (states->get_condition() & CARRY);
                 condition |= (states->get_condition() & ZERO);
                 if(condition)
                 {
                     regs[PC] += (2 * (int8_t)offset - 2);
+                    taken = 'y';
                 }
+                sprintf(type, "BLOS");
+                branch_trace(br_trace, type, regs[PC], taken); 
                 break;
             }
         default:

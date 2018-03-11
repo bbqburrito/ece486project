@@ -32,6 +32,7 @@ int main(int argc, char* argv[])
     char make_disposition = '0';
     char * disposition = &make_disposition;         //initialize disposition
     char * trace;
+    char br_trace[] = "branch_trace.out";
     ofstream trfile;
     ofstream outfile;
     ifstream mkfile;
@@ -183,6 +184,50 @@ int main(int argc, char* argv[])
     trfile << "type\taddress" << endl;
     trfile.close();
 
+    mkfile.open(br_trace);
+
+    if(mkfile.is_open())
+    {
+        cin.sync();
+        cout << "branch trace file already exists. erase and use this filename (Y/n)";
+        cin.getline(answer, 25);
+        cin.sync();
+        if(toupper(answer[0]) == 'N')
+        {
+            //get filename from stdin
+            while(mkfile.is_open())
+            {
+                mkfile.close();
+                cin.sync();
+                cout << "File already exists. Enter name for new branch trace file: ";
+                cin.getline(br_trace, 100);
+                cin.sync();
+                mkfile.open(br_trace);
+            }
+        }
+        mkfile.close();
+    }
+
+    //erase existing file
+    trfile.open(br_trace, ios::trunc | ios::out);
+    if(!trfile.is_open())
+    {
+        cout << "cannot open\n";                    
+        return 0;
+    }
+
+    //write to file. put timestamp and column headers
+    time(&timer);
+    timeinfo = localtime(&timer);
+
+    trfile << asctime(timeinfo) << endl;
+
+    trfile << "Branch trace record\n" << endl;
+
+    trfile << "type\taddress\ttaken?" << endl;
+    trfile.close();
+
+
     //to_interpret = atoi(argv[1]);
 
     //instruction = interpreter(to_interpret, &firstbit, new_command);
@@ -261,6 +306,7 @@ int main(int argc, char* argv[])
         trace_file(trace, 2, gps[PC]);      //write to trace file
         gps[PC] += 2;
         to_interpret = interpreter((uint16_t)to_run, &firstbit, new_command, trace);
+        new_command->set_br_trace(br_trace);
 
         to_interpret = new_command->instruction(gps, &status_reg, prog_mem);
     }

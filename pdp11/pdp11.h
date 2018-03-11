@@ -141,6 +141,7 @@ class command {
         virtual void disp();
         virtual int instruction(uint16_t *regs, CPSR * states, i_cache *program);
         virtual int instructionB(uint16_t *regs, CPSR * states, i_cache *program);
+        void set_br_trace(char * to_set);
 
 
 
@@ -299,7 +300,7 @@ int findstart(i_cache * prog_mem, int prog_length);
 long line_reader(char * filename, char *& disposition, int & filepos);
 int trace_file(char * filename, int type, uint16_t address);
 int interpreter(uint16_t to_interpret, int * firstbit, command *& new_command, char * tracefile);
-
+int branch_trace(char * filename, char * type, uint16_t address, char taken);
 
 
 
