@@ -29,6 +29,7 @@ int main(int argc, char* argv[])
     int j;
     int c;
     int instructions_executed = 0;
+    bool verbose;
     command * new_command;
     char make_disposition = '0';
     char * disposition = &make_disposition;         //initialize disposition
@@ -45,7 +46,7 @@ int main(int argc, char* argv[])
                     //{"number-nonblank", no_argument, NULL, 'b'},
                     //{"number", no_argument, NULL, 'n'},
                     //{"squeeze-blank", no_argument, NULL, 's'},
-                    //{"show-nonprinting", no_argument, NULL, 'v'},
+                    {"verbose", no_argument, NULL, 'v'},
                     //{"show-ends", no_argument, NULL, 'E'},
                     //{"show-tabs", no_argument, NULL, 'T'},
                     //{"show-all", no_argument, NULL, 'A'},
@@ -87,13 +88,13 @@ int main(int argc, char* argv[])
 
             case 'u':
                  We provide the -u feature unconditionally.  */
-                /*break;
-
-            case 'v':
-                show_nonprinting = true;
                 break;
 
-            case 'A':
+            case 'v':
+                verbose = true;
+                break;
+
+            /*case 'A':
                 show_nonprinting = true;
                 show_ends = true;
                 show_tabs = true;
@@ -229,16 +230,9 @@ int main(int argc, char* argv[])
     trfile.close();
 
 
-    //to_interpret = atoi(argv[1]);
-
-    //instruction = interpreter(to_interpret, &firstbit, new_command);
-
-
-    to_interpret = line_reader(argv[argc - 2], disposition, filepos);
-
-    i = 0;
-
     //read file into memory
+    i = 0;
+    to_interpret = line_reader(argv[argc - 2], disposition, filepos);
     while((to_interpret != -1) && (i < I_SIZE))
     {
         if(*disposition == '@')
@@ -259,11 +253,12 @@ int main(int argc, char* argv[])
 
     filepos = 0;
 
-    for(j = 0; j <= i; ++j)
+    //output memory contents
+    /*for(j = 0; j <= i; ++j)
     {
         cout << prog_mem[j].disposition << prog_mem[j].data << " " << prog_mem[j + 1].data << endl;
         ++j;
-    }
+    }*/
  
     start = findstart(prog_mem, prog_size);       //get start point
 
@@ -276,30 +271,9 @@ int main(int argc, char* argv[])
 
     gps[PC] = uint16_t(start);
 
-    gps[2] = 70;
-    gps[4] = 60;
-
-    for(i = 0; i < 8; ++i)
-    {
-        cout << gps[i] << ' ';
-    }
-    cout << endl;
-
-
-    for(i = 0; i < I_SIZE; ++i)
-    {
-        outfile << "mem[" << i << "] = " << prog_mem[i].data << endl;
-    }
-
     //loop to run program
     while(gps[PC] < I_SIZE)
     {
-        for(i = 0; i < 8; ++i)
-        {
-            cout << gps[i] << ' ';
-        }
-        cout << endl;
-
         to_run = prog_mem[gps[PC]].data;    //get instruction from memory
         trace_file(trace, 2, gps[PC]);      //write to trace file
         gps[PC] += 2;
@@ -307,20 +281,30 @@ int main(int argc, char* argv[])
         to_interpret = interpreter((uint16_t)to_run, &firstbit, new_command, trace);
         new_command->set_br_trace(br_trace);
 
+        if(verbose)
+        {
+            new_command->fetch_display(gps, &status_reg);
+        }
+
         to_interpret = new_command->instruction(gps, &status_reg, prog_mem);
     }
 
     cout << "program size: " << prog_size << endl;
-
-    outfile.open("memory.txt", ios_base::trunc | ios_base::out);
-
     cout << "Total number of instructions executed: " << instructions_executed << endl;
 
+    //write memory to file. put timestamp and column headers
+    outfile.open("memory.txt", ios_base::trunc | ios_base::out);
+    time(&timer);
+    timeinfo = localtime(&timer);
 
-    //for(i = 0; i < I_SIZE; ++i)
-    //{
-    //    outfile << "mem[" << i << "] = " << prog_mem[i].data << endl;
-    //}
+    outfile << asctime(timeinfo) << endl;
+
+    outfile << "Memory contents:\n" << endl;
+
+    for(i = 0; i < I_SIZE; ++i)
+    {
+        outfile << "mem[" << i << "] = " << prog_mem[i].data << endl;
+    }
 
     outfile.close();
 

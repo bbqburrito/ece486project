@@ -141,6 +141,8 @@ class command {
         virtual void disp();
         virtual int instruction(uint16_t *regs, CPSR * states, i_cache *program);
         virtual int instructionB(uint16_t *regs, CPSR * states, i_cache *program);
+        virtual int fetch_display(uint16_t *regs, CPSR *states);
+
         void set_br_trace(char * to_set);
 
 
@@ -177,6 +179,7 @@ class double_operand: public command
         int bis(uint16_t *regs, CPSR *states, i_cache *program);
         int bit(uint16_t *regs, CPSR *states, i_cache *program);
         int bic(uint16_t *regs, CPSR *states, i_cache *program);
+        int fetch_display(uint16_t *regs, CPSR *states);
 
 
 
@@ -202,6 +205,7 @@ class single_operand: public command
         void disp();
         int instruction(uint16_t *regs, CPSR *states, i_cache *program);
         //int instructionB(uint16_t *regs, CPSR * states, i_cache *program);
+        int fetch_display(uint16_t *regs, CPSR *states);
 
 
     protected:
@@ -223,6 +227,7 @@ class extended: public command
         void disp();
         int instruction(uint16_t *regs, CPSR * states, i_cache *program);
         //int instructionB(uint16_t *regs, CPSR * states, i_cache *program);
+        int fetch_display(uint16_t *regs, CPSR *states);
 
 
     protected:
@@ -244,6 +249,7 @@ class branch: public command
         void disp();
         int instruction(uint16_t *regs, CPSR * states, i_cache *program);
         //int instructionB(uint16_t *regs, CPSR * states, i_cache *program);
+        int fetch_display(uint16_t *regs, CPSR *states);
 
 
     protected:
@@ -264,6 +270,7 @@ class jump_sub: public command
         void disp();
         int instruction(uint16_t *regs, CPSR * states, i_cache *program);
         //int instructionB(uint16_t *regs, CPSR * states, i_cache *program);
+        int fetch_display(uint16_t *regs, CPSR *states);
 
 
     protected:
@@ -287,6 +294,7 @@ class trapIntMiscCond: public command
         void disp();
         int instruction(uint16_t *regs, CPSR * states, i_cache *program);
         //int instructionB(uint16_t *regs, CPSR * states, i_cache *program);
+        int fetch_display(uint16_t *regs, CPSR *states);
 
 
     protected:

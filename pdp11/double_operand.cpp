@@ -2503,3 +2503,162 @@ int double_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
     }
     return result;
 }
+
+
+
+
+
+int double_operand::fetch_display(uint16_t *regs, CPSR *states)
+{
+    int condition;
+    int i;
+
+   switch(function_code)
+    {
+        case MOV:
+            {
+                condition = states->get_condition();
+                cout << "Current instruction: ";  
+                cout << "MOV" << endl;
+                cout << "flags: \t\t" << "N\t" << "Z\t" << "V\t" << "C" << endl;
+                cout << "\t\t" << ((condition >> 3) & 1) << "\t";
+                cout << ((condition >> 2) & 1) << "\t" << ((condition >> 1) & 1);
+                cout << "\t" << (condition & 1) << endl;
+                for(i = 0; i < 8; ++i)
+                {
+                    cout << "register " << i << ": " << regs[i] << "\t";
+                }
+                cout << endl;
+                break;
+            }
+        case CMP:
+            {
+                condition = states->get_condition();
+                cout << "Current instruction: ";  
+                cout << "CMP" << endl;
+
+                cout << "flags: \t\t" << "N\t" << "Z\t" << "V\t" << "C" << endl;
+                cout << "\t\t" << ((condition >> 3) & 1) << "\t";
+                cout << ((condition >> 2) & 1) << "\t" << ((condition >> 1) & 1);
+                cout << "\t" << (condition & 1) << endl;
+                for(i = 0; i < 8; ++i)
+                {
+                    cout << "register " << i << ": " << regs[i] << "\t";
+                }
+                cout << endl;
+                break;
+            }
+        case ADD:
+            {
+                condition = states->get_condition();
+                cout << "Current instruction: ";  
+                cout << "ADD" << endl;
+
+                cout << "flags: \t\t" << "N\t" << "Z\t" << "V\t" << "C" << endl;
+                cout << "\t\t" << ((condition >> 3) & 1) << "\t";
+                cout << ((condition >> 2) & 1) << "\t" << ((condition >> 1) & 1);
+                cout << "\t" << (condition & 1) << endl;
+                for(i = 0; i < 8; ++i)
+                {
+                    cout << "register " << i << ": " << regs[i] << "\t";
+                }
+                cout << endl;
+                break;
+            }
+        case DEC:
+            {
+                condition = states->get_condition();
+                cout << "Current instruction: ";  
+                cout << "DEC" << endl;
+                cout << "flags: \t\t" << "N\t" << "Z\t" << "V\t" << "C" << endl;
+                cout << "\t\t" << ((condition >> 3) & 1) << "\t";
+                cout << ((condition >> 2) & 1) << "\t" << ((condition >> 1) & 1);
+                cout << "\t" << (condition & 1) << endl;
+                for(i = 0; i < 8; ++i)
+                {
+                    cout << "register " << i << ": " << regs[i] << "\t";
+                }
+                cout << endl;
+                break;
+            }
+        case SUB:
+            {
+                condition = states->get_condition();
+                cout << "Current instruction: ";  
+                cout << "SUB" << endl;
+
+                cout << "flags: \t\t" << "N\t" << "Z\t" << "V\t" << "C" << endl;
+                cout << "\t\t" << ((condition >> 3) & 1) << "\t";
+                cout << ((condition >> 2) & 1) << "\t" << ((condition >> 1) & 1);
+                cout << "\t" << (condition & 1) << endl;
+                for(i = 0; i < 8; ++i)
+                {
+                    cout << "register " << i << ": " << regs[i] << "\t";
+                }
+                cout << endl;
+                break;
+            }
+        case BIT:
+            {
+                condition = states->get_condition();
+                cout << "Current instruction: ";  
+                cout << "BIT" << endl;
+
+                cout << "flags: \t\t" << "N\t" << "Z\t" << "V\t" << "C" << endl;
+                cout << "\t\t" << ((condition >> 3) & 1) << "\t";
+                cout << ((condition >> 2) & 1) << "\t" << ((condition >> 1) & 1);
+                cout << "\t" << (condition & 1) << endl;
+                for(i = 0; i < 8; ++i)
+                {
+                    cout << "register " << i << ": " << regs[i] << "\t";
+                }
+                cout << endl;
+                break;
+            }
+
+        case BIC:
+            {
+                condition = states->get_condition();
+                cout << "Current instruction: ";  
+                cout << "BIC" << endl;
+                cout << "flags: \t\t" << "N\t" << "Z\t" << "V\t" << "C" << endl;
+                cout << "\t\t" << ((condition >> 3) & 1) << "\t";
+                cout << ((condition >> 2) & 1) << "\t" << ((condition >> 1) & 1);
+                cout << "\t" << (condition & 1) << endl;
+                for(i = 0; i < 8; ++i)
+                {
+                    cout << "register " << i << ": " << regs[i] << "\t";
+                }
+                cout << endl;
+                break;
+            }
+        case BIS:
+            {
+                condition = states->get_condition();
+                cout << "Current instruction: ";  
+                cout << "BIS" << endl;
+
+                cout << "flags: \t\t" << "N\t" << "Z\t" << "V\t" << "C" << endl;
+                cout << "\t\t" << ((condition >> 3) & 1) << "\t";
+                cout << ((condition >> 2) & 1) << "\t" << ((condition >> 1) & 1);
+                cout << "\t" << (condition & 1) << endl;
+                for(i = 0; i < 8; ++i)
+                {
+                    cout << "register " << i << ": " << regs[i] << "\t";
+                }
+                cout << endl;
+                break;
+            }
+
+        default:
+            {
+                cout << "nope" << endl;
+                break;
+            }
+    }
+    return 0;
+}
+
+
+
+
