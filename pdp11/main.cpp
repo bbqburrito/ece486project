@@ -195,6 +195,12 @@ int main(int argc, char* argv[])
     //read file into memory
     while((to_interpret != -1) && (i < I_SIZE))
     {
+        if(*disposition == '@')
+        {
+            i = to_interpret;
+            to_interpret = line_reader(argv[argc - 2], disposition, filepos);
+        }
+
         prog_mem[i].disposition = *disposition;
         prog_mem[i].data = uint16_t(to_interpret);     //low bytes stored at even-numbered memory locations 
         prog_mem[++i].data = uint16_t(to_interpret);    //high bytes stored at odd-numbered memory locations

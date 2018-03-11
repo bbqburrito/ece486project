@@ -1823,8 +1823,8 @@ int branch::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                 cout << "BGE" << endl;
  
                 //xor N and V condition bits
-                condition = states->get_condition() & V_OVERFLOW;
-                condition ^= (states->get_condition() & NEGATIVE);
+                condition = (states->get_condition() & V_OVERFLOW) >> 1;
+                condition ^= ((states->get_condition() & NEGATIVE) >> 3);
                 if(!condition)
                 {
                     regs[PC] += (2 * (int8_t)offset - 2);
@@ -1836,8 +1836,8 @@ int branch::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                 cout << "BLT" << endl;
 
                 //xor N and V condition bits
-                condition = states->get_condition() & V_OVERFLOW;
-                condition ^= (states->get_condition() & NEGATIVE);
+                condition = (states->get_condition() & V_OVERFLOW) >> 1;
+                condition ^= ((states->get_condition() & NEGATIVE) >> 3);
                 if(condition)
                 {
                     regs[PC] += (2 * (int8_t)offset - 2);
@@ -1850,9 +1850,9 @@ int branch::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                 cout << "BGT" << endl;
  
                 //xor N and V condition bits
-                condition = states->get_condition() & V_OVERFLOW;
-                condition ^= (states->get_condition() & NEGATIVE);
-                condition |= (states->get_condition() & ZERO);
+                condition = (states->get_condition() & V_OVERFLOW) >> 1;
+                condition ^= ((states->get_condition() & NEGATIVE) >> 3);
+                condition |= ((states->get_condition() & ZERO) >> 2);
                 if(!condition)
                 {
                     regs[PC] += (2 * (int8_t)offset - 2);
@@ -1860,13 +1860,13 @@ int branch::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                 break;
             }
         case BLE:
-            {
+            {   //branch if xor N and V bits or Z bits
                 cout << "BLE" << endl;
  
                 //xor N and V condition bits
-                condition = states->get_condition() & V_OVERFLOW;
-                condition ^= (states->get_condition() & NEGATIVE);
-                condition |= (states->get_condition() & ZERO);
+                condition = (states->get_condition() & V_OVERFLOW) >> 1;
+                condition ^= ((states->get_condition() & NEGATIVE) >> 3);
+                condition |= ((states->get_condition() & ZERO) >> 2);
                 if(condition)
                 {
                     regs[PC] += (2 * (int8_t)offset - 2);
