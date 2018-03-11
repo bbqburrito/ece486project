@@ -88,8 +88,8 @@ const int ASHC = 30208; //073000
 const int XOR = 30720;  //074000
 
 
-const int I_SIZE = 65536;
-const int MEM_SIZE = 65536;
+const int I_SIZE = 65535;
+const int MEM_SIZE = 65535;
 const int PC = 7;
 const int SP = 6;
 const uint16_t T_DEBUG = 16;

@@ -28,6 +28,7 @@ int main(int argc, char* argv[])
     int i = 0;
     int j;
     int c;
+    int instructions_executed = 0;
     command * new_command;
     char make_disposition = '0';
     char * disposition = &make_disposition;         //initialize disposition
@@ -290,11 +291,8 @@ int main(int argc, char* argv[])
         outfile << "mem[" << i << "] = " << prog_mem[i].data << endl;
     }
 
-        //to_run = prog_mem[gps[PC]].data + (prog_mem[gps[PC] + 1].data << 8);
-        //to_interpret = interpreter(to_run, &firstbit, new_command, trace);
-        //to_interpret = new_command->instruction(gps, &status_reg, prog_mem);
-
-    while(gps[PC] < prog_size)
+    //loop to run program
+    while(gps[PC] < I_SIZE)
     {
         for(i = 0; i < 8; ++i)
         {
@@ -305,6 +303,7 @@ int main(int argc, char* argv[])
         to_run = prog_mem[gps[PC]].data;    //get instruction from memory
         trace_file(trace, 2, gps[PC]);      //write to trace file
         gps[PC] += 2;
+        ++instructions_executed;
         to_interpret = interpreter((uint16_t)to_run, &firstbit, new_command, trace);
         new_command->set_br_trace(br_trace);
 
@@ -315,11 +314,13 @@ int main(int argc, char* argv[])
 
     outfile.open("memory.txt", ios_base::trunc | ios_base::out);
 
+    cout << "Total number of instructions executed: " << instructions_executed << endl;
 
-    for(i = 0; i < I_SIZE; ++i)
-    {
-        outfile << "mem[" << i << "] = " << prog_mem[i].data << endl;
-    }
+
+    //for(i = 0; i < I_SIZE; ++i)
+    //{
+    //    outfile << "mem[" << i << "] = " << prog_mem[i].data << endl;
+    //}
 
     outfile.close();
 

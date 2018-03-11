@@ -1208,7 +1208,7 @@ int trapIntMiscCond::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                 cin.sync();
 
                 if(toupper(answer[0]) != 'N')
-                    regs[PC] = 0xFFFF;  //set to 65535, so next fetch
+                    regs[PC] = I_SIZE;  //set to 65535, so next fetch
                                         //ends execution
 
                 break;
@@ -1223,7 +1223,7 @@ int trapIntMiscCond::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                 cin.sync();
 
                 if(toupper(answer[0]) != 'Y')
-                    regs[PC] = 0xFFFF;  //set to 65535, so next fetch
+                    regs[PC] = I_SIZE;  //set to 65535, so next fetch
                                         //ends execution
 
                break;
