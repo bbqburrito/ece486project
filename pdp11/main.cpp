@@ -21,6 +21,7 @@ int main(int argc, char* argv[])
     uint16_t gps[8];
     uint16_t to_run;
     CPSR status_reg;
+    int condition;
     int firstbit;
     int to_interpret;
     int filepos = 0;
@@ -80,15 +81,15 @@ int main(int argc, char* argv[])
                 squeeze_blank = true;
                 break;
 
-            */case 't':
-                cout << "option t" << endl;/*
+            case 't':
+                cout << "option t" << endl;
                 show_tabs = true;
                 show_nonprinting = true;
                 break;
 
             case 'u':
-                 We provide the -u feature unconditionally.  */
-                break;
+                 We provide the -u feature unconditionally.
+                break;*/
 
             case 'v':
                 verbose = true;
@@ -123,7 +124,7 @@ int main(int argc, char* argv[])
 
     if(argc < 3)
     {
-        cout << "usage: pdp11 [-options] <input file> <output file>" << endl;
+        cout << "usage: pdp11 [-v] <input file> <output file>" << endl;
 
         return 0;
     }
@@ -140,7 +141,7 @@ int main(int argc, char* argv[])
 
     if(i != 2)
     {
-        cout << "usage: pdp11 [-options] <input file> <output file>" << endl;
+        cout << "usage: pdp11 [-v] <input file> <output file>" << endl;
         return 0;
     }
 
@@ -267,6 +268,21 @@ int main(int argc, char* argv[])
 
     gps[PC] = uint16_t(start);
 
+    if(verbose)         //display registers before executing
+        {
+            condition = status_reg.get_condition();
+
+            cout << "flags: \t\t" << "N\t" << "Z\t" << "V\t" << "C" << endl;
+            cout << "\t\t" << ((condition >> 3) & 1) << "\t";
+            cout << ((condition >> 2) & 1) << "\t" << ((condition >> 1) & 1);
+            cout << "\t" << (condition & 1) << endl;
+            for(i = 0; i < 8; ++i)
+            {
+                cout << "register " << i << ": " << gps[i] << "\t";
+            }
+            cout << endl;
+        }
+
     //loop to run program
     while(gps[PC] < I_SIZE)
     {
@@ -276,13 +292,13 @@ int main(int argc, char* argv[])
         ++instructions_executed;
         to_interpret = interpreter((uint16_t)to_run, &firstbit, new_command, trace);
         new_command->set_br_trace(br_trace);
+        to_interpret = new_command->instruction(gps, &status_reg, prog_mem);
 
         if(verbose)
         {
             new_command->fetch_display(gps, &status_reg);
         }
 
-        to_interpret = new_command->instruction(gps, &status_reg, prog_mem);
     }
 
     cout << "program size: " << prog_size << endl;
@@ -299,7 +315,7 @@ int main(int argc, char* argv[])
 
     for(i = 0; i < I_SIZE; ++i)
     {
-        outfile << "mem[" << i << "] = " << prog_mem[i].data << endl;
+        outfile << "mem[" << oct << i << "] = " << prog_mem[i].data << endl;
     }
 
     outfile.close();
