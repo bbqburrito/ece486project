@@ -30,7 +30,8 @@ int main(int argc, char* argv[])
     int j;
     int c;
     int instructions_executed = 0;
-    bool verbose;
+    bool verbose = false;
+    bool start_entry = false;
     command * new_command;
     char make_disposition = '0';
     char * disposition = &make_disposition;         //initialize disposition
@@ -42,81 +43,23 @@ int main(int argc, char* argv[])
     time_t timer;
     struct tm * timeinfo;
 
-    static struct option const long_options[] =
-            {
-                    //{"number-nonblank", no_argument, NULL, 'b'},
-                    //{"number", no_argument, NULL, 'n'},
-                    //{"squeeze-blank", no_argument, NULL, 's'},
-                    {"verbose", no_argument, NULL, 'v'},
-                    //{"show-ends", no_argument, NULL, 'E'},
-                    //{"show-tabs", no_argument, NULL, 'T'},
-                    //{"show-all", no_argument, NULL, 'A'},
-                    //{GETOPT_HELP_OPTION_DECL},
-                    //{GETOPT_VERSION_OPTION_DECL},
-                    {nullptr, 0, nullptr, 0}
-            };
-
-
     //parse options
     while ((c = getopt (argc, argv, "benstuvAET"))
            != -1)
     {
         switch (c)
         {
-            /*case 'b':
-                number = true;
-                number_nonblank = true;
-                break;
-
-            case 'e':
-                show_ends = true;
-                show_nonprinting = true;
-                break;
-
-            case 'n':
-                number = true;
-                break;
-
             case 's':
-                squeeze_blank = true;
+                start_entry = true;
                 break;
-
-            case 't':
-                cout << "option t" << endl;
-                show_tabs = true;
-                show_nonprinting = true;
-                break;
-
-            case 'u':
-                 We provide the -u feature unconditionally.
-                break;*/
 
             case 'v':
                 verbose = true;
                 break;
 
-            /*case 'A':
-                show_nonprinting = true;
-                show_ends = true;
-                show_tabs = true;
-                break;
-
-            case 'E':
-                show_ends = true;
-                break;
-
-            case 'T':
-                show_tabs = true;
-                break;
-
-                case_GETOPT_HELP_CHAR;
-
-                case_GETOPT_VERSION_CHAR (PROGRAM_NAME, AUTHORS);
-*/
             default:
                 c = 0;
                 //usage (EXIT_FAILURE);
-
         }
     }
 
@@ -124,7 +67,7 @@ int main(int argc, char* argv[])
 
     if(argc < 3)
     {
-        cout << "usage: pdp11 [-v] <input file> <output file>" << endl;
+        cout << "usage: pdp11 [-v] <input file> <output file> [-s <start>]" << endl;
 
         return 0;
     }
@@ -136,16 +79,18 @@ int main(int argc, char* argv[])
         if(argv[j][0] != '-')
         {
             ++i;
-        }                
+        }
     }
 
-    if(i != 2)
+    j = j - i;          //get number of argv that are flags
+
+    if(i != (2 + start_entry))
     {
-        cout << "usage: pdp11 [-v] <input file> <output file>" << endl;
+        cout << "usage: pdp11 [-v] <input file> <output file> [-s <start>]" << endl;
         return 0;
     }
 
-    trace = argv[argc - 1];
+    trace = argv[argc - 1 - start_entry];
 
     mkfile.open(trace);
 
@@ -233,12 +178,14 @@ int main(int argc, char* argv[])
 
     //read file into memory
     i = 0;
-    to_interpret = line_reader(argv[argc - 2], disposition, filepos);
+    to_interpret = line_reader(argv[argc - 2 - start_entry], disposition, filepos);
     while((to_interpret != -1) && (i < I_SIZE))
     {
         if(*disposition == '@')
         {
             i = to_interpret;
+            prog_size = i;
+            start = i;
         } else {
 
             prog_mem[i].disposition = *disposition;
@@ -247,21 +194,20 @@ int main(int argc, char* argv[])
             prog_mem[i].disposition = *disposition;
             ++i;
         }
-        to_interpret = line_reader(argv[argc - 2], disposition, filepos);
+        to_interpret = line_reader(argv[argc - 2 - start_entry], disposition, filepos);
     }
 
-    prog_size = i;
+    prog_size = i - prog_size;
 
     filepos = 0;
 
-    //output memory contents
-    /*for(j = 0; j <= i; ++j)
+    //get start point relative to program load address
+    if(start_entry)
     {
-        cout << prog_mem[j].disposition << prog_mem[j].data << " " << prog_mem[j + 1].data << endl;
-        ++j;
-    }*/
- 
-    start = findstart(prog_mem, prog_size);       //get start point
+        start += strtol(argv[argc - 1], nullptr, 8);
+    } else {
+        start += findstart(prog_mem, prog_size);       //get start point
+    }
 
     cout << "start point: " << start << endl;
     

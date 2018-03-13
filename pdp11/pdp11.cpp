@@ -124,7 +124,7 @@ int findstart(i_cache *prog_mem, int prog_length) {
         cout << "enter start: ";
         cin.getline(answer, 25);
         cin.sync();
-        start = strtol(answer, nullptr, 10);
+        start = strtol(answer, nullptr, 8);
         if(start > prog_length)
         {
             cout << "program only " << prog_length << " lines. Start set to 0\n";
@@ -132,7 +132,7 @@ int findstart(i_cache *prog_mem, int prog_length) {
         }
     }
     else {
-        cout << "find '*' to start at or start at 0." << endl;
+        cout << "find '*' to start at or start at 0 + indicated by @ (if present." << endl;
         i = 0;
         j = 0;                              //indicate '*' found
         while(prog_mem[i].disposition != '*' && i < I_SIZE)
