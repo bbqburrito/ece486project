@@ -1316,7 +1316,7 @@ int trapIntMiscCond::fetch_display(uint16_t *regs, CPSR *states)
                 cout << "\t" << (condition & 1) << endl;
                 for(i = 0; i < 8; ++i)
                 {
-                    cout << "register " << i << ": " << regs[i] << "\t";
+                    cout << oct << "register " << i << ": " << regs[i] << "\t";
                 }
                 cout << endl;
                 break;
@@ -1338,7 +1338,7 @@ int trapIntMiscCond::fetch_display(uint16_t *regs, CPSR *states)
                 cout << "\t" << (condition & 1) << endl;
                 for(i = 0; i < 8; ++i)
                 {
-                    cout << "register " << i << ": " << regs[i] << "\t";
+                    cout << oct << "register " << i << ": " << regs[i] << "\t";
                 }
                 cout << endl;
                 break;
@@ -1355,7 +1355,7 @@ int trapIntMiscCond::fetch_display(uint16_t *regs, CPSR *states)
                 cout << "\t" << (condition & 1) << endl;
                 for(i = 0; i < 8; ++i)
                 {
-                    cout << "register " << i << ": " << regs[i] << "\t";
+                    cout << oct << "register " << i << ": " << regs[i] << "\t";
                 }
                 cout << endl;
                 break;
@@ -1372,7 +1372,7 @@ int trapIntMiscCond::fetch_display(uint16_t *regs, CPSR *states)
                 cout << "\t" << (condition & 1) << endl;
                 for(i = 0; i < 8; ++i)
                 {
-                    cout << "register " << i << ": " << regs[i] << "\t";
+                    cout << oct << "register " << i << ": " << regs[i] << "\t";
                 }
                 cout << endl;
                 break;
@@ -1389,7 +1389,7 @@ int trapIntMiscCond::fetch_display(uint16_t *regs, CPSR *states)
                 cout << "\t" << (condition & 1) << endl;
                 for(i = 0; i < 8; ++i)
                 {
-                    cout << "register " << i << ": " << regs[i] << "\t";
+                    cout << oct << "register " << i << ": " << regs[i] << "\t";
                 }
                 cout << endl;
                 break;
@@ -1406,7 +1406,7 @@ int trapIntMiscCond::fetch_display(uint16_t *regs, CPSR *states)
                 cout << "\t" << (condition & 1) << endl;
                 for(i = 0; i < 8; ++i)
                 {
-                    cout << "register " << i << ": " << regs[i] << "\t";
+                    cout << oct << "register " << i << ": " << regs[i] << "\t";
                 }
                 cout << endl;
                 break;
@@ -1423,7 +1423,7 @@ int trapIntMiscCond::fetch_display(uint16_t *regs, CPSR *states)
                 cout << "\t" << (condition & 1) << endl;
                 for(i = 0; i < 8; ++i)
                 {
-                    cout << "register " << i << ": " << regs[i] << "\t";
+                    cout << oct << "register " << i << ": " << regs[i] << "\t";
                 }
                 cout << endl;
                 break;
@@ -1440,7 +1440,7 @@ int trapIntMiscCond::fetch_display(uint16_t *regs, CPSR *states)
                 cout << "\t" << (condition & 1) << endl;
                 for(i = 0; i < 8; ++i)
                 {
-                    cout << "register " << i << ": " << regs[i] << "\t";
+                    cout << oct << "register " << i << ": " << regs[i] << "\t";
                 }
                 cout << endl;
                 break;
@@ -1457,7 +1457,7 @@ int trapIntMiscCond::fetch_display(uint16_t *regs, CPSR *states)
                 cout << "\t" << (condition & 1) << endl;
                 for(i = 0; i < 8; ++i)
                 {
-                    cout << "register " << i << ": " << regs[i] << "\t";
+                    cout << oct << "register " << i << ": " << regs[i] << "\t";
                 }
                 cout << endl;
                 break;
@@ -1474,7 +1474,7 @@ int trapIntMiscCond::fetch_display(uint16_t *regs, CPSR *states)
                 cout << "\t" << (condition & 1) << endl;
                 for(i = 0; i < 8; ++i)
                 {
-                    cout << "register " << i << ": " << regs[i] << "\t";
+                    cout << oct << "register " << i << ": " << regs[i] << "\t";
                 }
                 cout << endl;
                 break;
@@ -1491,7 +1491,7 @@ int trapIntMiscCond::fetch_display(uint16_t *regs, CPSR *states)
                 cout << "\t" << (condition & 1) << endl;
                 for(i = 0; i < 8; ++i)
                 {
-                    cout << "register " << i << ": " << regs[i] << "\t";
+                    cout << oct << "register " << i << ": " << regs[i] << "\t";
                 }
                 cout << endl;
                 break;
@@ -1508,7 +1508,7 @@ int trapIntMiscCond::fetch_display(uint16_t *regs, CPSR *states)
                 cout << "\t" << (condition & 1) << endl;
                 for(i = 0; i < 8; ++i)
                 {
-                    cout << "register " << i << ": " << regs[i] << "\t";
+                    cout << oct << "register " << i << ": " << regs[i] << "\t";
                 }
                 cout << endl;
                 break;
@@ -1525,7 +1525,7 @@ int trapIntMiscCond::fetch_display(uint16_t *regs, CPSR *states)
                 cout << "\t" << (condition & 1) << endl;
                 for(i = 0; i < 8; ++i)
                 {
-                    cout << "register " << i << ": " << regs[i] << "\t";
+                    cout << oct << "register " << i << ": " << regs[i] << "\t";
                 }
                 cout << endl;
                 break;
@@ -1542,7 +1542,7 @@ int trapIntMiscCond::fetch_display(uint16_t *regs, CPSR *states)
                 cout << "\t" << (condition & 1) << endl;
                 for(i = 0; i < 8; ++i)
                 {
-                    cout << "register " << i << ": " << regs[i] << "\t";
+                    cout << oct << "register " << i << ": " << regs[i] << "\t";
                 }
                 cout << endl;
                 break;
@@ -1559,7 +1559,7 @@ int trapIntMiscCond::fetch_display(uint16_t *regs, CPSR *states)
                 cout << "\t" << (condition & 1) << endl;
                 for(i = 0; i < 8; ++i)
                 {
-                    cout << "register " << i << ": " << regs[i] << "\t";
+                    cout << oct << "register " << i << ": " << regs[i] << "\t";
                 }
                 cout << endl;
                 break;
@@ -1971,7 +1971,7 @@ int jump_sub::fetch_display(uint16_t *regs, CPSR *states)
                 cout << "\t" << (condition & 1) << endl;
                 for(i = 0; i < 8; ++i)
                 {
-                    cout << "register " << i << ": " << regs[i] << "\t";
+                    cout << oct << "register " << i << ": " << regs[i] << "\t";
                 }
                 cout << endl;
                 break;
@@ -1988,7 +1988,7 @@ int jump_sub::fetch_display(uint16_t *regs, CPSR *states)
                 cout << "\t" << (condition & 1) << endl;
                 for(i = 0; i < 8; ++i)
                 {
-                    cout << "register " << i << ": " << regs[i] << "\t";
+                    cout << oct << "register " << i << ": " << regs[i] << "\t";
                 }
                 cout << endl;
                 break;
@@ -2005,7 +2005,7 @@ int jump_sub::fetch_display(uint16_t *regs, CPSR *states)
                 cout << "\t" << (condition & 1) << endl;
                 for(i = 0; i < 8; ++i)
                 {
-                    cout << "register " << i << ": " << regs[i] << "\t";
+                    cout << oct << "register " << i << ": " << regs[i] << "\t";
                 }
                 cout << endl;
                 break;
@@ -2293,7 +2293,7 @@ int branch::fetch_display(uint16_t *regs, CPSR *states)
                 cout << "\t" << (condition & 1) << endl;
                 for(i = 0; i < 8; ++i)
                 {
-                    cout << "register " << i << ": " << regs[i] << "\t";
+                    cout << oct << "register " << i << ": " << regs[i] << "\t";
                 }
                 cout << endl;
                 break;
@@ -2310,7 +2310,7 @@ int branch::fetch_display(uint16_t *regs, CPSR *states)
                 cout << "\t" << (condition & 1) << endl;
                 for(i = 0; i < 8; ++i)
                 {
-                    cout << "register " << i << ": " << regs[i] << "\t";
+                    cout << oct << "register " << i << ": " << regs[i] << "\t";
                 }
                 cout << endl;
                 break;
@@ -2327,7 +2327,7 @@ int branch::fetch_display(uint16_t *regs, CPSR *states)
                 cout << "\t" << (condition & 1) << endl;
                 for(i = 0; i < 8; ++i)
                 {
-                    cout << "register " << i << ": " << regs[i] << "\t";
+                    cout << oct << "register " << i << ": " << regs[i] << "\t";
                 }
                 cout << endl;
                 break;
@@ -2343,7 +2343,7 @@ int branch::fetch_display(uint16_t *regs, CPSR *states)
                 cout << "\t" << (condition & 1) << endl;
                 for(i = 0; i < 8; ++i)
                 {
-                    cout << "register " << i << ": " << regs[i] << "\t";
+                    cout << oct << "register " << i << ": " << regs[i] << "\t";
                 }
                 cout << endl;
                 break;
@@ -2360,7 +2360,7 @@ int branch::fetch_display(uint16_t *regs, CPSR *states)
                 cout << "\t" << (condition & 1) << endl;
                 for(i = 0; i < 8; ++i)
                 {
-                    cout << "register " << i << ": " << regs[i] << "\t";
+                    cout << oct << "register " << i << ": " << regs[i] << "\t";
                 }
                 cout << endl;
                 break;
@@ -2377,7 +2377,7 @@ int branch::fetch_display(uint16_t *regs, CPSR *states)
                 cout << "\t" << (condition & 1) << endl;
                 for(i = 0; i < 8; ++i)
                 {
-                    cout << "register " << i << ": " << regs[i] << "\t";
+                    cout << oct << "register " << i << ": " << regs[i] << "\t";
                 }
                 cout << endl;
                 break;
@@ -2394,7 +2394,7 @@ int branch::fetch_display(uint16_t *regs, CPSR *states)
                 cout << "\t" << (condition & 1) << endl;
                 for(i = 0; i < 8; ++i)
                 {
-                    cout << "register " << i << ": " << regs[i] << "\t";
+                    cout << oct << "register " << i << ": " << regs[i] << "\t";
                 }
                 cout << endl;
                 break;
@@ -2411,7 +2411,7 @@ int branch::fetch_display(uint16_t *regs, CPSR *states)
                 cout << "\t" << (condition & 1) << endl;
                 for(i = 0; i < 8; ++i)
                 {
-                    cout << "register " << i << ": " << regs[i] << "\t";
+                    cout << oct << "register " << i << ": " << regs[i] << "\t";
                 }
                 cout << endl;
                 break;
@@ -2428,7 +2428,7 @@ int branch::fetch_display(uint16_t *regs, CPSR *states)
                 cout << "\t" << (condition & 1) << endl;
                 for(i = 0; i < 8; ++i)
                 {
-                    cout << "register " << i << ": " << regs[i] << "\t";
+                    cout << oct << "register " << i << ": " << regs[i] << "\t";
                 }
                 cout << endl;
                 break;
@@ -2445,7 +2445,7 @@ int branch::fetch_display(uint16_t *regs, CPSR *states)
                 cout << "\t" << (condition & 1) << endl;
                 for(i = 0; i < 8; ++i)
                 {
-                    cout << "register " << i << ": " << regs[i] << "\t";
+                    cout << oct << "register " << i << ": " << regs[i] << "\t";
                 }
                 cout << endl;
                 break;
@@ -2462,7 +2462,7 @@ int branch::fetch_display(uint16_t *regs, CPSR *states)
                 cout << "\t" << (condition & 1) << endl;
                 for(i = 0; i < 8; ++i)
                 {
-                    cout << "register " << i << ": " << regs[i] << "\t";
+                    cout << oct << "register " << i << ": " << regs[i] << "\t";
                 }
                 cout << endl;
                 break;
@@ -2479,7 +2479,7 @@ int branch::fetch_display(uint16_t *regs, CPSR *states)
                 cout << "\t" << (condition & 1) << endl;
                 for(i = 0; i < 8; ++i)
                 {
-                    cout << "register " << i << ": " << regs[i] << "\t";
+                    cout << oct << "register " << i << ": " << regs[i] << "\t";
                 }
                 cout << endl;
                 break;
@@ -2496,7 +2496,7 @@ int branch::fetch_display(uint16_t *regs, CPSR *states)
                 cout << "\t" << (condition & 1) << endl;
                 for(i = 0; i < 8; ++i)
                 {
-                    cout << "register " << i << ": " << regs[i] << "\t";
+                    cout << oct << "register " << i << ": " << regs[i] << "\t";
                 }
                 cout << endl;
                 break;
@@ -2513,7 +2513,7 @@ int branch::fetch_display(uint16_t *regs, CPSR *states)
                 cout << "\t" << (condition & 1) << endl;
                 for(i = 0; i < 8; ++i)
                 {
-                    cout << "register " << i << ": " << regs[i] << "\t";
+                    cout << oct << "register " << i << ": " << regs[i] << "\t";
                 }
                 cout << endl;
                 break;
@@ -2530,7 +2530,7 @@ int branch::fetch_display(uint16_t *regs, CPSR *states)
                 cout << "\t" << (condition & 1) << endl;
                 for(i = 0; i < 8; ++i)
                 {
-                    cout << "register " << i << ": " << regs[i] << "\t";
+                    cout << oct << "register " << i << ": " << regs[i] << "\t";
                 }
                 cout << endl;
                 break;
@@ -6912,7 +6912,7 @@ int single_operand::fetch_display(uint16_t *regs, CPSR *states)
                 cout << "\t" << (condition & 1) << endl;
                 for(i = 0; i < 8; ++i)
                 {
-                    cout << "register " << i << ": " << regs[i] << "\t";
+                    cout << oct << "register " << i << ": " << regs[i] << "\t";
                 }
                 cout << endl;
                 break;
@@ -6929,7 +6929,7 @@ int single_operand::fetch_display(uint16_t *regs, CPSR *states)
                 cout << "\t" << (condition & 1) << endl;
                 for(i = 0; i < 8; ++i)
                 {
-                    cout << "register " << i << ": " << regs[i] << "\t";
+                    cout << oct << "register " << i << ": " << regs[i] << "\t";
                 }
                 cout << endl;
                 break;
@@ -6946,7 +6946,7 @@ int single_operand::fetch_display(uint16_t *regs, CPSR *states)
                 cout << "\t" << (condition & 1) << endl;
                 for(i = 0; i < 8; ++i)
                 {
-                    cout << "register " << i << ": " << regs[i] << "\t";
+                    cout << oct << "register " << i << ": " << regs[i] << "\t";
                 }
                 cout << endl;
                 break;
@@ -6962,7 +6962,7 @@ int single_operand::fetch_display(uint16_t *regs, CPSR *states)
                 cout << "\t" << (condition & 1) << endl;
                 for(i = 0; i < 8; ++i)
                 {
-                    cout << "register " << i << ": " << regs[i] << "\t";
+                    cout << oct << "register " << i << ": " << regs[i] << "\t";
                 }
                 cout << endl;
                 break;
@@ -6979,7 +6979,7 @@ int single_operand::fetch_display(uint16_t *regs, CPSR *states)
                 cout << "\t" << (condition & 1) << endl;
                 for(i = 0; i < 8; ++i)
                 {
-                    cout << "register " << i << ": " << regs[i] << "\t";
+                    cout << oct << "register " << i << ": " << regs[i] << "\t";
                 }
                 cout << endl;
                 break;
@@ -6996,7 +6996,7 @@ int single_operand::fetch_display(uint16_t *regs, CPSR *states)
                 cout << "\t" << (condition & 1) << endl;
                 for(i = 0; i < 8; ++i)
                 {
-                    cout << "register " << i << ": " << regs[i] << "\t";
+                    cout << oct << "register " << i << ": " << regs[i] << "\t";
                 }
                 cout << endl;
                 break;
@@ -7013,7 +7013,7 @@ int single_operand::fetch_display(uint16_t *regs, CPSR *states)
                 cout << "\t" << (condition & 1) << endl;
                 for(i = 0; i < 8; ++i)
                 {
-                    cout << "register " << i << ": " << regs[i] << "\t";
+                    cout << oct << "register " << i << ": " << regs[i] << "\t";
                 }
                 cout << endl;
                 break;
@@ -7030,7 +7030,7 @@ int single_operand::fetch_display(uint16_t *regs, CPSR *states)
                 cout << "\t" << (condition & 1) << endl;
                 for(i = 0; i < 8; ++i)
                 {
-                    cout << "register " << i << ": " << regs[i] << "\t";
+                    cout << oct << "register " << i << ": " << regs[i] << "\t";
                 }
                 cout << endl;
                 break;
@@ -7047,7 +7047,7 @@ int single_operand::fetch_display(uint16_t *regs, CPSR *states)
                 cout << "\t" << (condition & 1) << endl;
                 for(i = 0; i < 8; ++i)
                 {
-                    cout << "register " << i << ": " << regs[i] << "\t";
+                    cout << oct << "register " << i << ": " << regs[i] << "\t";
                 }
                 cout << endl;
                 break;
@@ -7064,7 +7064,7 @@ int single_operand::fetch_display(uint16_t *regs, CPSR *states)
                 cout << "\t" << (condition & 1) << endl;
                 for(i = 0; i < 8; ++i)
                 {
-                    cout << "register " << i << ": " << regs[i] << "\t";
+                    cout << oct << "register " << i << ": " << regs[i] << "\t";
                 }
                 cout << endl;
                 break;
@@ -7081,7 +7081,7 @@ int single_operand::fetch_display(uint16_t *regs, CPSR *states)
                 cout << "\t" << (condition & 1) << endl;
                 for(i = 0; i < 8; ++i)
                 {
-                    cout << "register " << i << ": " << regs[i] << "\t";
+                    cout << oct << "register " << i << ": " << regs[i] << "\t";
                 }
                 cout << endl;
                 break;
@@ -7098,7 +7098,7 @@ int single_operand::fetch_display(uint16_t *regs, CPSR *states)
                 cout << "\t" << (condition & 1) << endl;
                 for(i = 0; i < 8; ++i)
                 {
-                    cout << "register " << i << ": " << regs[i] << "\t";
+                    cout << oct << "register " << i << ": " << regs[i] << "\t";
                 }
                 cout << endl;
                 break;
@@ -7115,7 +7115,7 @@ int single_operand::fetch_display(uint16_t *regs, CPSR *states)
                 cout << "\t" << (condition & 1) << endl;
                 for(i = 0; i < 8; ++i)
                 {
-                    cout << "register " << i << ": " << regs[i] << "\t";
+                    cout << oct << "register " << i << ": " << regs[i] << "\t";
                 }
                 cout << endl;
                 break;
@@ -7132,7 +7132,7 @@ int single_operand::fetch_display(uint16_t *regs, CPSR *states)
                 cout << "\t" << (condition & 1) << endl;
                 for(i = 0; i < 8; ++i)
                 {
-                    cout << "register " << i << ": " << regs[i] << "\t";
+                    cout << oct << "register " << i << ": " << regs[i] << "\t";
                 }
                 cout << endl;
                 break;

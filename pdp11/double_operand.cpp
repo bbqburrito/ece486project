@@ -1166,7 +1166,7 @@ int double_operand::add(uint16_t *regs, CPSR *states, i_cache *program)
                 if(sign)
                     condition |= NEGATIVE;
                 
-                if(!(((uint16_t)source_op) ^ (regs[destination] >> 15)) && ((regs[destination] >> 15) == sign))
+                if(!(((uint16_t)source_op >> 15) ^ (regs[destination] >> 15)) && ((regs[destination] >> 15) != sign))
                     condition |= V_OVERFLOW;
 
                 regs[destination] += ((uint16_t)source_op);
@@ -1199,7 +1199,7 @@ int double_operand::add(uint16_t *regs, CPSR *states, i_cache *program)
                 if(sign)
                     condition |= NEGATIVE;
                 
-                if(!(((uint16_t)source_op) ^ (program[regs[destination]].data >> 15)) && ((program[regs[destination]].data >> 15) == sign))
+                if(!(((uint16_t)source_op >> 15) ^ (program[regs[destination]].data >> 15)) && ((program[regs[destination]].data >> 15) != sign))
                     condition |= V_OVERFLOW;
 
                 program[regs[destination]].data += ((uint16_t)source_op);
@@ -1236,7 +1236,7 @@ int double_operand::add(uint16_t *regs, CPSR *states, i_cache *program)
                 if(sign)
                     condition |= NEGATIVE;
                 
-                if(!(((uint16_t)source_op) ^ (program[regs[destination]].data >> 15)) && ((program[regs[destination]].data >> 15) == sign))
+                if(!(((uint16_t)source_op >> 15) ^ (program[regs[destination]].data >> 15)) && ((program[regs[destination]].data >> 15) != sign))
                     condition |= V_OVERFLOW;
 
                 program[regs[destination]].data += ((uint16_t)source_op);
@@ -1275,7 +1275,7 @@ int double_operand::add(uint16_t *regs, CPSR *states, i_cache *program)
                 if(sign)
                     condition |= NEGATIVE;
                 
-                if(!(((uint16_t)source_op) ^ (program[program[regs[destination]].data].data >> 15)) && ((program[program[regs[destination]].data].data >> 15) == sign))
+                if(!(((uint16_t)source_op >> 15) ^ (program[program[regs[destination]].data].data >> 15)) && ((program[program[regs[destination]].data].data >> 15) != sign))
                     condition |= V_OVERFLOW;
 
                 program[program[regs[destination]].data].data += ((uint16_t)source_op);
@@ -1314,7 +1314,7 @@ int double_operand::add(uint16_t *regs, CPSR *states, i_cache *program)
                 if(sign)
                     condition |= NEGATIVE;
                 
-                if(!(((uint16_t)source_op) ^ (program[regs[destination]].data >> 15)) && ((program[regs[destination]].data >> 15) == sign))
+                if(!(((uint16_t)source_op >> 15) ^ (program[regs[destination]].data >> 15)) && ((program[regs[destination]].data >> 15) != sign))
                     condition |= V_OVERFLOW;
 
                 program[regs[destination]].data += ((uint16_t)source_op);
@@ -1350,7 +1350,7 @@ int double_operand::add(uint16_t *regs, CPSR *states, i_cache *program)
                 if(sign)
                     condition |= NEGATIVE;
                 
-                if(!(((uint16_t)source_op) ^ (program[program[regs[destination]].data].data >> 15)) && ((program[program[regs[destination]].data].data >> 15) == sign))
+                if(!(((uint16_t)source_op >> 15) ^ (program[program[regs[destination]].data].data >> 15)) && ((program[program[regs[destination]].data].data >> 15) != sign))
                     condition |= V_OVERFLOW;
 
                 program[program[regs[destination]].data].data += ((uint16_t)source_op);
@@ -1389,7 +1389,7 @@ int double_operand::add(uint16_t *regs, CPSR *states, i_cache *program)
                 if(sign)
                     condition |= NEGATIVE;
                 
-                if(!(((uint16_t)source_op) ^ (program[index].data >> 15)) && ((program[index].data >> 15) == sign))
+                if(!(((uint16_t)source_op >> 15) ^ (program[index].data >> 15)) && ((program[index].data >> 15) != sign))
                     condition |= V_OVERFLOW;
 
                 program[index].data += ((uint16_t)source_op);
@@ -1430,7 +1430,7 @@ int double_operand::add(uint16_t *regs, CPSR *states, i_cache *program)
                 if(sign)
                     condition |= NEGATIVE;
                 
-                if(!(((uint16_t)source_op) ^ (program[program[index].data].data >> 15)) && ((program[program[index].data].data >> 15) == sign))
+                if(!(((uint16_t)source_op >> 15) ^ (program[program[index].data].data >> 15)) && ((program[program[index].data].data >> 15) != sign))
                     condition |= V_OVERFLOW;
 
                 program[program[index].data].data += ((uint16_t)source_op);
@@ -2166,7 +2166,7 @@ int double_operand::fetch_display(uint16_t *regs, CPSR *states)
                 cout << "\t" << (condition & 1) << endl;
                 for(i = 0; i < 8; ++i)
                 {
-                    cout << "register " << i << ": " << regs[i] << "\t";
+                    cout  << oct << "register " << i << ": " << regs[i] << "\t";
                 }
                 cout << endl;
                 break;
@@ -2183,7 +2183,7 @@ int double_operand::fetch_display(uint16_t *regs, CPSR *states)
                 cout << "\t" << (condition & 1) << endl;
                 for(i = 0; i < 8; ++i)
                 {
-                    cout << "register " << i << ": " << regs[i] << "\t";
+                    cout << oct <<  "register " << i << ": " << regs[i] << "\t";
                 }
                 cout << endl;
                 break;
@@ -2192,7 +2192,7 @@ int double_operand::fetch_display(uint16_t *regs, CPSR *states)
             {
                 condition = states->get_condition();
                 cout << "Current instruction: ";  
-                cout << "ADD" << endl;
+                cout << "ADD ";
 
                 cout << "flags: \t\t" << "N\t" << "Z\t" << "V\t" << "C" << endl;
                 cout << "\t\t" << ((condition >> 3) & 1) << "\t";
@@ -2200,7 +2200,7 @@ int double_operand::fetch_display(uint16_t *regs, CPSR *states)
                 cout << "\t" << (condition & 1) << endl;
                 for(i = 0; i < 8; ++i)
                 {
-                    cout << "register " << i << ": " << regs[i] << "\t";
+                    cout << oct << "register " << i << ": " << regs[i] << "\t";
                 }
                 cout << endl;
                 break;
@@ -2216,7 +2216,7 @@ int double_operand::fetch_display(uint16_t *regs, CPSR *states)
                 cout << "\t" << (condition & 1) << endl;
                 for(i = 0; i < 8; ++i)
                 {
-                    cout << "register " << i << ": " << regs[i] << "\t";
+                    cout << oct << "register " << i << ": " << regs[i] << "\t";
                 }
                 cout << endl;
                 break;
@@ -2233,7 +2233,7 @@ int double_operand::fetch_display(uint16_t *regs, CPSR *states)
                 cout << "\t" << (condition & 1) << endl;
                 for(i = 0; i < 8; ++i)
                 {
-                    cout << "register " << i << ": " << regs[i] << "\t";
+                    cout << oct << "register " << i << ": " << regs[i] << "\t";
                 }
                 cout << endl;
                 break;
@@ -2250,7 +2250,7 @@ int double_operand::fetch_display(uint16_t *regs, CPSR *states)
                 cout << "\t" << (condition & 1) << endl;
                 for(i = 0; i < 8; ++i)
                 {
-                    cout << "register " << i << ": " << regs[i] << "\t";
+                    cout << oct << "register " << i << ": " << regs[i] << "\t";
                 }
                 cout << endl;
                 break;
@@ -2267,7 +2267,7 @@ int double_operand::fetch_display(uint16_t *regs, CPSR *states)
                 cout << "\t" << (condition & 1) << endl;
                 for(i = 0; i < 8; ++i)
                 {
-                    cout << "register " << i << ": " << regs[i] << "\t";
+                    cout << oct << "register " << i << ": " << regs[i] << "\t";
                 }
                 cout << endl;
                 break;
@@ -2284,7 +2284,7 @@ int double_operand::fetch_display(uint16_t *regs, CPSR *states)
                 cout << "\t" << (condition & 1) << endl;
                 for(i = 0; i < 8; ++i)
                 {
-                    cout << "register " << i << ": " << regs[i] << "\t";
+                    cout << oct << "register " << i << ": " << regs[i] << "\t";
                 }
                 cout << endl;
                 break;

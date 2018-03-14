@@ -1,0 +1,9 @@
+A: .WORD 07777
+B: .WORD 0001
+C: .WORD 016702
+START: MOV A, R1;
+    MOV B, R2;
+    ADD R1, R2;
+    ADC R2
+    ADD R3, C;
+    HALT;
