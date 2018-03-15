@@ -1,3 +1,5 @@
+//all functions in application, except those in double operand
+//class. std namespace declared.
 //compile with -std=c++11
 //uses auto type declaration, range-based for loops,
 //nullptr
@@ -1172,6 +1174,10 @@ int extended::fetch_display(uint16_t *regs, CPSR *states)
     return 0;
 }
 
+extended::~extended()
+{
+}
+
 //trapIntMiscCond
 trapIntMiscCond::trapIntMiscCond(): command(), function_code(0), trap_code(0)
 {
@@ -1298,6 +1304,7 @@ int trapIntMiscCond::instruction(uint16_t *regs, CPSR *states, i_cache *program)
     return 0;
 }
 
+//display information when -v option set
 int trapIntMiscCond::fetch_display(uint16_t *regs, CPSR *states)
 {
     int condition;
@@ -1571,6 +1578,10 @@ int trapIntMiscCond::fetch_display(uint16_t *regs, CPSR *states)
             }
     }
     return 0;
+}
+
+trapIntMiscCond::~trapIntMiscCond()
+{
 }
 
 
@@ -1953,6 +1964,7 @@ int jump_sub::instruction(uint16_t *regs, CPSR *states, i_cache *program)
     return 0;
 }
 
+//display information when -v option set
 int jump_sub::fetch_display(uint16_t *regs, CPSR *states)
 {
     int condition;
@@ -2019,6 +2031,9 @@ int jump_sub::fetch_display(uint16_t *regs, CPSR *states)
     return 0;
 }
 
+jump_sub::~jump_sub()
+{
+}
 
 
 //branch
@@ -2275,6 +2290,7 @@ int branch::instruction(uint16_t *regs, CPSR *states, i_cache *program)
     return 0;
 }
 
+//display information when -v option set
 int branch::fetch_display(uint16_t *regs, CPSR *states)
 {
     int condition;
@@ -2546,7 +2562,9 @@ int branch::fetch_display(uint16_t *regs, CPSR *states)
     return 0;
 }
 
-
+branch::~branch()
+{
+}
 
 
 //single operand
@@ -3171,6 +3189,7 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
             }
         case INCB:
             {
+                cout << "INCB" << endl;/*
                 switch (destination_mode) {
                     case 0: {           //register:
                         //add 1 to signed value
@@ -3429,7 +3448,7 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
                         cout << "invalid destination mode" << endl;
                         break;
                     }
-                }
+                }*/
                 break;
             }
         case DEC:
@@ -6893,7 +6912,7 @@ int single_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
     return outcome;
 }
 
-
+//display information when -v option set
 int single_operand::fetch_display(uint16_t *regs, CPSR *states)
 {
     int condition;
@@ -7148,6 +7167,8 @@ int single_operand::fetch_display(uint16_t *regs, CPSR *states)
 }
 
 
-
+single_operand::~single_operand()
+{
+}
 
 

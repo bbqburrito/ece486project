@@ -2147,7 +2147,7 @@ int double_operand::instruction(uint16_t *regs, CPSR *states, i_cache *program)
 
 
 
-
+//function to display information when -v option set
 int double_operand::fetch_display(uint16_t *regs, CPSR *states)
 {
     int condition;
@@ -2160,6 +2160,7 @@ int double_operand::fetch_display(uint16_t *regs, CPSR *states)
                 condition = states->get_condition();
                 cout << "Current instruction: ";  
                 cout << "MOV" << endl;
+
                 cout << "flags: \t\t" << "N\t" << "Z\t" << "V\t" << "C" << endl;
                 cout << "\t\t" << ((condition >> 3) & 1) << "\t";
                 cout << ((condition >> 2) & 1) << "\t" << ((condition >> 1) & 1);
@@ -2301,4 +2302,6 @@ int double_operand::fetch_display(uint16_t *regs, CPSR *states)
 
 
 
-
+double_operand::~double_operand()
+{
+}

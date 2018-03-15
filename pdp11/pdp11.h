@@ -8,7 +8,7 @@
 #include <getopt.h>
 #include <cstdint>
 
-
+//store every instruction code as constant
 const int CLR = 2560;   //005000
 const int CLRB = 35328; //105000
 const int COM = 2624;   //005100
@@ -87,19 +87,26 @@ const int ASH = 29696;  //072000
 const int ASHC = 30208; //073000
 const int XOR = 30720;  //074000
 
-
+//size of device memory
 const int I_SIZE = 65535;
 const int MEM_SIZE = 65535;
+//register number for PC register
 const int PC = 7;
+//register number for stack register
 const int SP = 6;
+//position of T flag in condition register
 const uint16_t T_DEBUG = 16;
+//position of N in condition register
 const uint16_t NEGATIVE = 8;
+//position of Z in conditon register
 const uint16_t ZERO = 4;
+//position of V in conditon register
 const uint16_t V_OVERFLOW = 2;
+//position of C in conditon register
 const uint16_t CARRY = 1;
 
 
-
+//struct to use as program memory
 struct i_cache {
 
     i_cache();
@@ -107,6 +114,7 @@ struct i_cache {
     char disposition;
 };
 
+//class for condition register
 class CPSR {
     public:
         CPSR();
@@ -135,7 +143,7 @@ class command {
     public:
         command();
         command(int to_data, char to_disposition, char * to_tracefile);
-        ~command();
+        virtual ~command();
         command (const command &to_copy);
 
         virtual void disp();
@@ -156,7 +164,7 @@ class command {
 };
 
 
-
+//operations for all double_operand instructions. derives from command class
 class double_operand: public command
 {
     public:
@@ -193,6 +201,7 @@ class double_operand: public command
         int destination;
 };
 
+//operations for all single operand instructions. derives from command class
 class single_operand: public command
 {
     public:
@@ -214,7 +223,7 @@ class single_operand: public command
         int destination;
 };
 
-
+//operations for all extended instructions. derives from command class
 class extended: public command
 {
     public:
@@ -237,7 +246,7 @@ class extended: public command
         int source;
 };
 
-
+//operations for all branch instructions. derives from command class
 class branch: public command
 {
     public:
@@ -257,7 +266,7 @@ class branch: public command
         int offset;
 };
 
-
+//operations for all jump and subroutine instructions. derives from command class
 class jump_sub: public command
 {
     public:
@@ -282,7 +291,7 @@ class jump_sub: public command
 
 };
 
-
+//operations for all other commands. derives from command class
 class trapIntMiscCond: public command
 {
     public:
