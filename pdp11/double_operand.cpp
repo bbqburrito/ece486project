@@ -2192,7 +2192,7 @@ int double_operand::fetch_display(uint16_t *regs, CPSR *states)
             {
                 condition = states->get_condition();
                 cout << "Current instruction: ";  
-                cout << "ADD ";
+                cout << "ADD " << endl;
 
                 cout << "flags: \t\t" << "N\t" << "Z\t" << "V\t" << "C" << endl;
                 cout << "\t\t" << ((condition >> 3) & 1) << "\t";

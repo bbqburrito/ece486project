@@ -233,7 +233,10 @@ int main(int argc, char* argv[])
         }
 
     if(new_command)
+    {
         delete new_command;
+        new_command = nullptr;
+    }
 
     //loop to run program
     while(gps[PC] < I_SIZE)
@@ -252,7 +255,10 @@ int main(int argc, char* argv[])
         }
 
         if(new_command)
+        {
             delete new_command;
+            new_command = nullptr;
+        }
 
     }
 
