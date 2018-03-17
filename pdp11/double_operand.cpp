@@ -2047,7 +2047,6 @@ int double_operand::make_source(uint16_t *regs, i_cache *program)
                 cout << "boundary error\n";
                 return 0x10000;
             }
-            index = program[index].data;
             trace_file(tracefile, 0, regs[PC]);
             trace_file(tracefile, 0, index);
             trace_file(tracefile, 0, program[index].data);

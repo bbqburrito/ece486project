@@ -1,3 +1,6 @@
+//William Boyd, Jonathan Anchell, Thao Tran, Dai Ho
+//ECE 486 final project
+//Winter 2018
 //compile with -std=c++11
 //uses auto type declaration, range-based for loops,
 //nullptr 
@@ -32,7 +35,7 @@ int main(int argc, char* argv[])
     int instructions_executed = 0;
     bool verbose = false;
     bool start_entry = false;
-    command * new_command;
+    command * new_command = nullptr;
     char make_disposition = '0';
     char * disposition = &make_disposition;         //initialize disposition
     char * trace;
@@ -229,6 +232,9 @@ int main(int argc, char* argv[])
             cout << endl;
         }
 
+    if(new_command)
+        delete new_command;
+
     //loop to run program
     while(gps[PC] < I_SIZE)
     {
@@ -244,6 +250,9 @@ int main(int argc, char* argv[])
         {
             new_command->fetch_display(gps, &status_reg);
         }
+
+        if(new_command)
+            delete new_command;
 
     }
 

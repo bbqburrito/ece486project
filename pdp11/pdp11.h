@@ -1,3 +1,10 @@
+//William Boyd, Jonathan Anchell, Dai Ho, Thao Tran
+//ECE 486 final project
+//winter 2018
+
+
+
+
 #include <iostream>
 #include <fstream>
 #include <cstdlib>
